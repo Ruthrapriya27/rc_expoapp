@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 # Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
 
 # dependencies
@@ -61,3 +62,28 @@ rad.json
 #Test results file
 TestResults.xml
 >>>>>>> 362184d671fefd26654e1c48315843891c7e0471
+=======
+# node modules
+node_modules/
+
+# log files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# metro bundler cache
+.expo/
+.expo-shared/
+
+# build directories
+android/app/build/
+ios/build/
+ios/Pods/
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# environment files
+.env
+>>>>>>> c461d3c6bee6c31d14bd3f793a9f2acade29bbf7
