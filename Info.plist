@@ -1,0 +1,4 @@
+<key>NSBluetoothAlwaysUsageDescription</key>
+<string>We need Bluetooth access to connect to devices</string>
+<key>NSBluetoothPeripheralUsageDescription</key>
+<string>We need Bluetooth access to connect to devices</string>

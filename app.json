@@ -1,0 +1,31 @@
+{
+  "expo": {
+    "entryPoint": "./App.js",
+    "plugins": [
+      [
+        "react-native-ble-plx",
+        {
+          "isBackgroundEnabled": true,
+          "modes": [
+            "peripheral",
+            "central"
+          ],
+          "bluetoothAlwaysPermission": "Allow $(PRODUCT_NAME) to connect to bluetooth devices"
+        }
+      ]
+    ],
+    "android": {
+      "permissions": [
+        "android.permission.BLUETOOTH",
+        "android.permission.BLUETOOTH_ADMIN",
+        "android.permission.BLUETOOTH_CONNECT"
+      ],
+      "package": "com.anonymous.rc_expoapp"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "ae9892ae-f751-4125-8c5f-9ee0c02b4ba8"
+      }
+    }
+  }
+}
