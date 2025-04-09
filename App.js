@@ -2,9 +2,10 @@ import { registerRootComponent } from 'expo';
 import App from './Navigations/Navigation';
 import { BluetoothProvider } from './Bluetooth/BluetoothContext'; 
 
-const RootApp = () => (
+const RootApp = () => 
+  (
   <BluetoothProvider>
-    <App />
+    <App/>
   </BluetoothProvider>
 );
 

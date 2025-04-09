@@ -4,7 +4,7 @@ import { View, Text } from 'react-native';
 const DashboardScreen = () => {
   return (
     <View>
-      <Text>Dashboard Screen</Text>
+      <Text style={{ fontSize: 16 , justifyContent : 'center' , alignContent : 'center' }}>Update Screen</Text>
     </View>
   );
 };
