@@ -14,7 +14,7 @@ import {
 from 'react-native';
 import { BleManager } from 'react-native-ble-plx';
 import { Buffer } from 'buffer';
-import { BluetoothContext } from '../Bluetooth/BluetoothContext';
+import { BluetoothContext } from '../Context/BluetoothContext';
 
 const manager = new BleManager();
 
@@ -148,7 +148,7 @@ const BluetoothConfigScreen = () => {
           return prevDevices;
         });
 
-        scanDevices(); // optional: to refresh state
+        scanDevices();
 
       } catch (error) {
         console.log('Disconnect error:', error);
