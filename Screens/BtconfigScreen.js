@@ -10,10 +10,10 @@ import {
   ScrollView,
   PermissionsAndroid,
   Platform,
-} 
-from 'react-native';
-import { BleManager } from 'react-native-ble-plx';
-import { Buffer } from 'buffer';
+  Alert,
+  StyleSheet,
+} from 'react-native';
+import { BleManager, State } from 'react-native-ble-plx';
 import { BluetoothContext } from '../Context/BluetoothContext';
 
 const manager = new BleManager();
@@ -28,6 +28,8 @@ const predefinedUUIDList = [
 ];
 
 const BluetoothConfigScreen = () => {
+  const styles = getStyles();
+
   const [devices, setDevices] = useState([]);
   const [isScanning, setIsScanning] = useState(false);
   const [showUuidModal, setShowUuidModal] = useState(false);
@@ -61,7 +63,13 @@ const BluetoothConfigScreen = () => {
     }
   };
 
-  const scanDevices = () => {
+  const scanDevices = async () => {
+    const state = await manager.state();
+    if (state !== State.PoweredOn) {
+      Alert.alert('Please turn on Bluetooth to scan for devices');
+      return;
+    }
+
     setIsScanning(true);
     setDevices([]);
 
@@ -111,18 +119,8 @@ const BluetoothConfigScreen = () => {
 
     try {
       const connected = await manager.connectToDevice(device.id, { autoConnect: false });
-
       await connected.discoverAllServicesAndCharacteristics();
       await connected.requestMTU(517);
-
-      const services = await connected.services();
-      for (const svc of services) {
-        const chars = await connected.characteristicsForService(svc.uuid);
-        chars.forEach((c) => {
-          console.log(`Characteristic: ${c.uuid}, Writable: ${c.isWritableWithResponse}`);
-        });
-      }
-
       setConnectedDevice(connected);
       setServiceUUID(serviceUUID);
       setWriteUUID(writeUUID);
@@ -139,7 +137,6 @@ const BluetoothConfigScreen = () => {
         await manager.cancelDeviceConnection(connectedDevice.id);
         const disconnected = connectedDevice;
         setConnectedDevice(null);
-
         setDevices((prevDevices) => {
           const exists = prevDevices.some((d) => d.id === disconnected.id);
           if (!exists) {
@@ -147,9 +144,7 @@ const BluetoothConfigScreen = () => {
           }
           return prevDevices;
         });
-
         scanDevices();
-
       } catch (error) {
         console.log('Disconnect error:', error);
       }
@@ -157,21 +152,24 @@ const BluetoothConfigScreen = () => {
   };
 
   const renderDeviceItem = ({ item }) => (
-    <TouchableOpacity
-      onPress={() => connectToDevice(item)}
-      style={{ padding: 12, borderBottomWidth: 1, borderColor: '#ccc' }}
-    >
-      <Text style={{ fontWeight: '500' }}>{item.name}</Text>
-      <Text style={{ fontSize: 12, color: '#555' }}>{item.id}</Text>
+    <TouchableOpacity onPress={() => connectToDevice(item)} style={styles.deviceItem}>
+      <Text style={styles.deviceName}>{item.name}</Text>
+      <Text style={styles.deviceId}>{item.id}</Text>
     </TouchableOpacity>
   );
 
   return (
-    <View style={{ flex: 1, padding: 20 }}>
+    <View style={styles.container}>
+      <Button
+        title={isScanning ? 'Scanning...' : 'Scan for Devices'}
+        onPress={scanDevices}
+        disabled={isScanning}
+      />
+
       {connectedDevice && (
-        <View style={{ borderWidth: 1, borderRadius: 8, padding: 16, marginBottom: 20 }}>
-          <Text style={{ fontSize: 16, fontWeight: 'bold' }}>Connected Device</Text>
-          <Text style={{ marginTop: 6 }}>{connectedDevice.name || 'Unnamed Device'}</Text>
+        <View style={styles.connectedContainer}>
+          <Text style={styles.connectedTitle}>Connected Device</Text>
+          <Text style={styles.deviceName}>{connectedDevice.name || 'Unnamed Device'}</Text>
           <Text>ID: {connectedDevice.id}</Text>
           <TouchableOpacity onPress={disconnectFromDevice} style={{ marginTop: 10 }}>
             <Text style={{ color: 'red' }}>Disconnect</Text>
@@ -179,24 +177,20 @@ const BluetoothConfigScreen = () => {
         </View>
       )}
 
-      <Button
-        title={isScanning ? 'Scanning...' : 'Scan for Devices'}
-        onPress={scanDevices}
-        disabled={isScanning}
-      />
-
-      <Text style={{ marginTop: 30, fontWeight: 'bold', fontSize: 16 }}>Available Devices</Text>
-      <FlatList
-        data={devices.filter((d) => d.id !== connectedDevice?.id)}
-        keyExtractor={(item) => item.id}
-        renderItem={renderDeviceItem}
-        style={{ marginTop: 10 }}
-      />
+      <View style={styles.deviceListContainer}>
+        <Text style={styles.deviceListTitle}>Available Devices</Text>
+        <FlatList
+          data={devices.filter((d) => d.id !== connectedDevice?.id)}
+          keyExtractor={(item) => item.id}
+          renderItem={renderDeviceItem}
+          style={{ marginTop: 10 }}
+        />
+      </View>
 
       <Modal visible={showUuidModal} transparent animationType="slide">
-        <View style={{ flex: 1, justifyContent: 'center', padding: 20, backgroundColor: 'rgba(0,0,0,0.5)' }}>
-          <View style={{ backgroundColor: 'white', borderRadius: 10, padding: 20, maxHeight: '90%' }}>
-            <Text style={{ fontSize: 16, fontWeight: 'bold', marginBottom: 10 }}>Connect Using</Text>
+        <View style={styles.modalBackground}>
+          <View style={styles.modalContainer}>
+            <Text style={styles.modalTitle}>Connect Using</Text>
 
             <TouchableOpacity onPress={() => setUuidMode('predefined')} style={{ marginBottom: 10 }}>
               <Text style={{ color: uuidMode === 'predefined' ? 'black' : 'gray' }}>• Predefined UUIDs</Text>
@@ -231,21 +225,21 @@ const BluetoothConfigScreen = () => {
               <ScrollView style={{ marginTop: 10 }}>
                 <Text>Service UUID:</Text>
                 <TextInput
-                  style={{ borderWidth: 1, padding: 8, marginBottom: 10 }}
+                  style={styles.input}
                   placeholder="Enter service UUID"
                   value={customUUIDs.service}
                   onChangeText={(text) => setCustomUUIDs({ ...customUUIDs, service: text })}
                 />
                 <Text>Read Characteristic UUID:</Text>
                 <TextInput
-                  style={{ borderWidth: 1, padding: 8, marginBottom: 10 }}
+                  style={styles.input}
                   placeholder="Enter read UUID"
                   value={customUUIDs.read}
                   onChangeText={(text) => setCustomUUIDs({ ...customUUIDs, read: text })}
                 />
                 <Text>Write Characteristic UUID:</Text>
                 <TextInput
-                  style={{ borderWidth: 1, padding: 8, marginBottom: 10 }}
+                  style={styles.input}
                   placeholder="Enter write UUID"
                   value={customUUIDs.write}
                   onChangeText={(text) => setCustomUUIDs({ ...customUUIDs, write: text })}
@@ -253,7 +247,7 @@ const BluetoothConfigScreen = () => {
               </ScrollView>
             )}
 
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 20 }}>
+            <View style={styles.modalButtons}>
               <Button title="Cancel" onPress={() => setShowUuidModal(false)} />
               <Button
                 title="Connect"
@@ -267,5 +261,90 @@ const BluetoothConfigScreen = () => {
     </View>
   );
 };
+
+const getStyles = () =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      padding: 20,
+      backgroundColor: 'white',
+      elevation: 4,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.3,
+      shadowRadius: 4,
+    },
+    connectedContainer: {
+      borderRadius: 8,
+      padding: 16,
+      marginTop: 20,
+      backgroundColor: '#FFFFFF',
+      elevation: 4,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.3,
+      shadowRadius: 4,
+    },
+    connectedTitle: {
+      fontSize: 16,
+      fontWeight: 'bold',
+    },
+    deviceListContainer: {
+      borderRadius: 8,
+      padding: 16,
+      marginTop: 20,
+      flex: 1,
+      backgroundColor: 'white',
+      elevation: 4,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.3,
+      shadowRadius: 4,
+    },
+    deviceListTitle: {
+      fontSize: 16,
+      fontWeight: 'bold',
+    },
+    deviceItem: {
+      padding: 12,
+      borderBottomWidth: 1,
+      borderColor: '#ccc',
+    },
+    deviceName: {
+      fontWeight: '500',
+    },
+    deviceId: {
+      fontSize: 12,
+      color: '#555',
+    },
+    modalBackground: {
+      flex: 1,
+      justifyContent: 'center',
+      padding: 20,
+      backgroundColor: 'rgba(0,0,0,0.3)',
+    },
+    modalContainer: {
+      backgroundColor: 'white',
+      borderRadius: 10,
+      padding: 20,
+      maxHeight: '90%',
+      elevation: 5,
+    },
+    modalTitle: {
+      fontSize: 16,
+      fontWeight: 'bold',
+      marginBottom: 10,
+    },
+    input: {
+      borderWidth: 1,
+      padding: 8,
+      marginBottom: 10,
+    },
+    modalButtons: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      marginTop: 20,
+    },
+  });
 
 export default BluetoothConfigScreen;

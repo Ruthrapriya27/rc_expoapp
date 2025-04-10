@@ -22,7 +22,7 @@ const App = () =>
         <Stack.Screen
           name="Users"
           component={UserScreen}
-          options={{ title: 'Login/Signup'}}
+          options={{ title: 'Login/Signup',headerShown: false}}
         />
 
         <Stack.Screen

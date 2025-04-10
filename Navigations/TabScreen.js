@@ -11,14 +11,13 @@ const Tab = createBottomTabNavigator();
 
 export default function TabScreen() {
   return (
-      <Tab.Navigator
-      tabBarOptions=
-      {{
-        tabBarInactiveTintColor: 'black',  
-        tabBarActiveTintColor: 'red',   
-      }} 
-      >
-
+    <Tab.Navigator
+    screenOptions={{
+      tabBarInactiveTintColor: 'grey',
+      tabBarActiveTintColor: 'black',
+    }}
+  >
+  
         <Tab.Screen 
           name="Dashboard" 
           component={DashboardScreen} 

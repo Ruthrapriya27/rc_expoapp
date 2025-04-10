@@ -1,19 +1,25 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
 const SettingsScreen = ({ navigation }) => 
 {
-
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [mobile, setMobile] = useState('');
   const [bluetoothName, setBluetoothName] = useState('');
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
 
   const handleSaveChanges = () => {
     console.log("Changes Saved");
+  };
+
+  const handleLogout = () => {
+    navigation.replace('Users');
   };
 
   return (
@@ -71,45 +77,70 @@ const SettingsScreen = ({ navigation }) =>
       <View style={styles.BoxAboveHeader}>
         <Text style={styles.label}>Current Password</Text>
       </View>
-      <TextInput
-        style={styles.inputBox}
-        placeholder="Enter your current password"
-        placeholderTextColor="grey"
-        value={currentPassword}
-        onChangeText={setCurrentPassword}
-        secureTextEntry
-      />
+      <View style={styles.passwordContainer}>
+        <TextInput
+          style={styles.passwordInput}
+          placeholder="Enter your current password"
+          placeholderTextColor="grey"
+          value={currentPassword}
+          onChangeText={setCurrentPassword}
+          secureTextEntry={!showCurrentPassword}
+        />
+        <TouchableOpacity
+          style={styles.eyeIcon}
+          onPress={() => setShowCurrentPassword(!showCurrentPassword)}
+        >
+          <Ionicons
+            name={showCurrentPassword ? 'eye-off' : 'eye'}
+            size={24}
+            color="grey"
+          />
+        </TouchableOpacity>
+      </View>
 
       {/* New Password Section */}
       <View style={styles.BoxAboveHeader}>
         <Text style={styles.label}>New Password</Text>
       </View>
-      <TextInput
-        style={styles.inputBox}
-        placeholder="Enter a new password"
-        placeholderTextColor="grey"
-        value={newPassword}
-        onChangeText={setNewPassword}
-        secureTextEntry
-      />
+      <View style={styles.passwordContainer}>
+        <TextInput
+          style={styles.passwordInput}
+          placeholder="Enter a new password"
+          placeholderTextColor="grey"
+          value={newPassword}
+          onChangeText={setNewPassword}
+          secureTextEntry={!showNewPassword}
+        />
+        <TouchableOpacity
+          style={styles.eyeIcon}
+          onPress={() => setShowNewPassword(!showNewPassword)}
+        >
+          <Ionicons
+            name={showNewPassword ? 'eye-off' : 'eye'}
+            size={24}
+            color="grey"
+          />
+        </TouchableOpacity>
+      </View>
 
       {/* Save Button */}
       <TouchableOpacity style={styles.saveButton} onPress={handleSaveChanges}>
         <Text style={styles.saveButtonText}>Save Changes</Text>
       </TouchableOpacity>
 
-      {/* Logout Link */}
-      <TouchableOpacity 
-        style={styles.logoutLink} 
-        onPress={() => navigation.navigate('Users')}
-      >
-        <Icon name="sign-out" size={30} color="red" style={styles.logoutIcon} />
-        <Text style={styles.logoutLinkText}>Logout</Text>
-      </TouchableOpacity>
+      {/* Logout Button-like Container */}
+      <View style={styles.logoutButtonContainer}>
+        <TouchableOpacity 
+          onPress={handleLogout}
+          style={styles.logoutButton}
+        >
+          <Icon name="sign-out" size={24} color="white" style={{ marginRight: 10 }} />
+          <Text style={styles.logoutButtonText}>Logout</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };
-
 
 const styles = StyleSheet.create({
   container: {
@@ -153,14 +184,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
-  logoutLink: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 20,
-    padding: 10,
-  },
-
   passwordContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -168,27 +191,34 @@ const styles = StyleSheet.create({
     borderColor: 'grey',
     borderRadius: 10,
     marginBottom: 10,
+    paddingHorizontal: 10,
+    backgroundColor: '#fff',
   },
   passwordInput: {
     flex: 1,
     height: 45,
     fontSize: 14,
     color: '#000',
-    paddingHorizontal: 10,
   },
   eyeIcon: {
-    padding: 10,
+    padding: 4,
   },
-
-  logoutIcon: 
-  {
-    marginRight: 2,
+  logoutButtonContainer: {
+    marginTop: 20,
+    alignItems: 'center',
   },
-  logoutLinkText: 
-  {
-    color: 'red',
-    fontSize: 20,
-    textDecorationLine: 'underline',
+  logoutButton: {
+    flexDirection: 'row',
+    backgroundColor: 'black',
+    paddingVertical: 12,
+    paddingHorizontal: 22,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  logoutButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 18,
   },
 });
 

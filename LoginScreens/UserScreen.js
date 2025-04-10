@@ -1,40 +1,59 @@
 import React from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  Alert
+} from 'react-native';
+import { Ionicons, MaterialIcons, FontAwesome } from '@expo/vector-icons';
 
-const UserScreen = ({ navigation }) =>
-  {
+const UserScreen = ({ navigation }) => {
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
+  const [showPassword, setShowPassword] = React.useState(false);
+
+  const handleLogin = () => navigation.navigate('TabScreen');
+  
+  // const handleLogin = () => {
+  //   if (email === 'admin@gmail.com' && password === 'admin') {
+  //     navigation.navigate('TabScreen'); 
+  //   } else {
+  //     Alert.alert('Error', 'Invalid credentials');
+  //   }
+  // };
 
   return (
-    <View style={styles.container}>   
-
-     {/* Logo */}
-     <View style={styles.logoContainer}>
-        {/*<Image
-           source={require('../../assets/images/innospace_logo.png')} 
-          style={styles.logo}
-        />*/}
+    <View style={styles.container}>
+      <View style={styles.logoContainer}>
         <Text style={styles.startLine}>Welcome to Innospace</Text>
       </View>
 
-      {/*1.Email*/} 
-
+      {/* Email Input */}
       <View style={styles.BoxAboveHeader}>
         <Text style={styles.label}>Enter your email</Text>
       </View>
 
-      <TextInput
-        style={styles.inputBox}
-        placeholder= " @gmail.com"
-        placeholderTextColor="grey"
-        value={email}
-        onChangeText={setEmail}
-        keyboardType="email-address"
-      />
-      
-      {/*2.Password*/}
+      <View style={styles.inputContainer}>
+        <MaterialIcons
+          name="email"
+          size={20}
+          color="grey"
+          style={styles.inputIcon}
+        />
+        <TextInput
+          style={styles.inputBox}
+          placeholder="yourname@gmail.com"
+          placeholderTextColor="grey"
+          value={email}
+          onChangeText={setEmail}
+          keyboardType="email-address"
+          autoCapitalize="none"
+        />
+      </View>
 
+      {/* Password Input */}
       <View style={styles.BoxAboveHeader}>
         <Text style={styles.label}>Enter your password</Text>
         <TouchableOpacity>
@@ -42,95 +61,126 @@ const UserScreen = ({ navigation }) =>
         </TouchableOpacity>
       </View>
 
-      <TextInput
-        style={styles.inputBox}
-        placeholder=""
-        placeholderTextColor="grey"
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-      />
-      
-      {/*3.Login*/}
+      <View style={styles.passwordContainer}>
+        <FontAwesome
+          name="key"
+          size={18}
+          color="grey"
+          style={styles.inputIcon}
+        />
+        <TextInput
+          style={styles.passwordInput}
+          placeholder="Enter your password"
+          placeholderTextColor="grey"
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry={!showPassword}
+          autoCapitalize="none"
+        />
+        <TouchableOpacity
+          style={styles.eyeIcon}
+          onPress={() => setShowPassword(!showPassword)}
+        >
+          <Ionicons
+            name={showPassword ? 'eye-off' : 'eye'}
+            size={24}
+            color="grey"
+          />
+        </TouchableOpacity>
+      </View>
 
-      <TouchableOpacity style={styles.loginButton}
-
-      onPress={() => navigation.navigate('TabScreen')}
+      {/* Login Button */}
+      <TouchableOpacity
+        style={styles.loginButton}
+        onPress={handleLogin} 
       >
-       <Text style={styles.loginButtonText}>Login</Text>
+        <Text style={styles.loginButtonText}>Login</Text>
       </TouchableOpacity>
-      
-      {/*4.Signup*/}
 
+      {/* Signup Link */}
       <View style={styles.signupContainer}>
         <Text style={styles.signupLabel}>Don't have an account? </Text>
         <TouchableOpacity>
           <Text style={styles.signupLink}>Sign up here</Text>
         </TouchableOpacity>
       </View>
-
     </View>
   );
 };
 
-const styles = StyleSheet.create
-({
-  container: 
-  {
+const styles = StyleSheet.create({
+  container: {
     flex: 1,
     justifyContent: 'center',
     paddingHorizontal: 30,
     backgroundColor: '#fff',
   },
-
-  startLine: 
-  {
+  startLine: {
     fontSize: 24,
     fontWeight: 'bold',
     color: '#000',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginRight: 10,
-    marginBottom:30,
+    marginBottom: 30,
     textAlign: 'center'
   },
-
-  BoxAboveHeader: 
-  {
+  BoxAboveHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginTop: 10,
   },
-
-  label: 
-  {
+  label: {
     fontSize: 14,
     color: '#000',
     marginBottom: 10,
     fontWeight: '400',
   },
-
-  inputBox: 
-  {
-    height: 50,
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
     borderWidth: 1,
     borderColor: 'grey',
     borderRadius: 10,
     marginBottom: 10,
-    fontSize: 16,
-    color: '#000',
     backgroundColor: '#fff',
   },
- 
-  forgotPassword: 
-  {
+  inputBox: {
+    flex: 1,
+    height: 50,
+    fontSize: 16,
     color: '#000',
+    paddingLeft: 10,
+    paddingRight: 15,
+  },
+  passwordContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'grey',
+    borderRadius: 10,
+    marginBottom: 10,
+    backgroundColor: '#fff',
+  },
+  passwordInput: {
+    flex: 1,
+    height: 50,
+    fontSize: 16,
+    color: '#000',
+    paddingLeft: 10,
+    paddingRight: 15,
+  },
+  inputIcon: {
+    marginLeft: 15,
+    marginRight: 10,
+  },
+  eyeIcon: {
+    padding: 10,
+  },
+  forgotPassword: {
+    color: '#1a73e8', 
     fontSize: 14,
+    fontWeight: 'bold',                                                   
     textDecorationLine: 'underline'
   },
-
-  loginButton: 
-  {
+  loginButton: {
     backgroundColor: '#000',
     height: 50,
     borderRadius: 4,
@@ -139,25 +189,19 @@ const styles = StyleSheet.create
     marginTop: 30,
     marginBottom: 30,
   },
-
-  loginButtonText: 
-  {
+  loginButtonText: {
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
   },
-
-  signupContainer: 
-  {
+  signupContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
     marginTop: 10,
   },
-
-  signupLink: 
-  {
-    color: '#000',
+  signupLink: {
+    color: '#1a73e8',
     fontSize: 14,
     fontWeight: 'bold',
     textDecorationLine: 'underline'

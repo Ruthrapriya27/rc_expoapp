@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import { View, Text, ScrollView, StyleSheet, Alert, TouchableOpacity } from 'react-native';
+import { View, Text, FlatList, StyleSheet, Alert, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LogContext } from '../Context/LogContext';
 
@@ -9,7 +9,7 @@ const DashboardScreen = () => {
   const handleClearPress = () => {
     Alert.alert(
       'Clear All Logs',
-      'This will permanently delete all activity logs. Continue?',
+      'Are you sure you want to clear all the logs?',
       [
         {
           text: 'Cancel',
@@ -25,8 +25,21 @@ const DashboardScreen = () => {
     );
   };
 
+  const renderLogItem = ({ item, index }) => (
+    <View style={styles.logItem}>
+      <Ionicons name="ellipse" size={8} color="#007AFF" style={styles.bullet} />
+      <Text style={styles.logText}>{item}</Text>
+    </View>
+  );
+
   return (
     <View style={styles.container}>
+      <View style={styles.deviceInfo}>
+        <Text style={styles.infoText}>Device ID: {deviceId}</Text>
+        <View style={{ height: 10 }} />
+        <Text style={styles.infoText}>Customer Name: {customerName}</Text>
+      </View>
+
       <View style={styles.header}>
         <Text style={styles.title}>Activity Logs</Text>
         <TouchableOpacity 
@@ -42,11 +55,6 @@ const DashboardScreen = () => {
         </TouchableOpacity>
       </View>
 
-      <View style={styles.deviceInfo}>
-        <Text style={styles.infoText}>Device ID: {deviceId}</Text>
-        <Text style={styles.infoText}>Customer Name: {customerName}</Text>
-      </View>
-
       <View style={styles.logsContainer}>
         {!logs || logs.length === 0 ? (
           <View style={styles.emptyState}>
@@ -54,17 +62,13 @@ const DashboardScreen = () => {
             <Text style={styles.emptyText}>No activity recorded yet</Text>
           </View>
         ) : (
-          <ScrollView
+          <FlatList
+            data={logs}
+            renderItem={renderLogItem}
+            keyExtractor={(item, index) => index.toString()}
             contentContainerStyle={styles.scrollContent}
             showsVerticalScrollIndicator={false}
-          >
-            {logs.map((log, index) => (
-              <View key={index} style={styles.logItem}>
-                <Ionicons name="ellipse" size={8} color="#007AFF" style={styles.bullet} />
-                <Text style={styles.logText}>{log}</Text>
-              </View>
-            ))}
-          </ScrollView>
+          />
         )}
       </View>
     </View>
@@ -78,10 +82,11 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   header: {
+    fontSize: 18,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 20,  
   },
   title: {
     fontSize: 22,
@@ -93,10 +98,11 @@ const styles = StyleSheet.create({
   },
   deviceInfo: {
     marginBottom: 16,
-    paddingHorizontal: 12,
+    paddingHorizontal: 4,
   },
   infoText: {
-    fontSize: 16,
+    fontSize: 18,
+    fontWeight: '600',
     color: '#333',
     marginBottom: 4,
   },

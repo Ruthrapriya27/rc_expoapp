@@ -1,26 +1,19 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { View, Button, StyleSheet, Alert, TextInput } from 'react-native';
+import { View, Alert, TextInput, Modal, Text, TouchableOpacity } from 'react-native';
 import { BluetoothContext } from '../Context/BluetoothContext';
 import { LogContext } from '../Context/LogContext';
 import { Buffer } from 'buffer';
 
 const KeyScreen = () => {
-  const {
-    connectedDevice,
-    serviceUUID,
-    writeUUID,
-    readUUID,
-  } = useContext(BluetoothContext);
-
+  const { connectedDevice, serviceUUID, writeUUID, readUUID } = useContext(BluetoothContext);
   const { addLog, setDeviceId, setCustomerName } = useContext(LogContext);
-  const [devIdCommand, setDevIdCommand] = useState('{"cmd": "DEV_IDCODE_SET","args": ["1234"]}');
-  const [timestampCommand, setTimestampCommand] = useState('{"cmd": "PROD_TIMESTAMP_GET"}');
-  const [custNameSetCommand, setCustNameSetCommand] = useState('{"cmd": "CUSTOMER_NAME_SET", "args": ["INNOSPACE"]}');
-  const [relayCountCommand, setRelayCountCommand] = useState('{"cmd": "RELAY_COUNT_GET"}');
+  
+  const [modalVisible, setModalVisible] = useState(false);
+  const [inputValue, setInputValue] = useState('');
+  const [currentAction, setCurrentAction] = useState(null);
 
   useEffect(() => {
     let subscription;
-
     const monitorResponse = async () => {
       if (connectedDevice && serviceUUID && readUUID) {
         subscription = connectedDevice.monitorCharacteristicForService(
@@ -36,7 +29,6 @@ const KeyScreen = () => {
               try {
                 const decoded = Buffer.from(characteristic.value, 'base64').toString('utf8');
                 console.log('Received from ESP32:', decoded);
-                addLog(`Received from ESP32: ${decoded}`);
 
                 let parsed;
 
@@ -102,14 +94,8 @@ const KeyScreen = () => {
         );
       }
     };
-
     monitorResponse();
-
-    return () => {
-      if (subscription) {
-        subscription.remove();
-      }
-    };
+    return () => subscription?.remove();
   }, [connectedDevice, serviceUUID, readUUID]);
 
   const sendCommand = async (jsonCommand) => {
@@ -118,9 +104,8 @@ const KeyScreen = () => {
       return;
     }
   
-    const base64Command = Buffer.from(jsonCommand).toString('base64');
-  
     try {
+      const base64Command = Buffer.from(jsonCommand).toString('base64');
       await connectedDevice.writeCharacteristicWithoutResponseForService(
         serviceUUID,
         writeUUID,
@@ -128,124 +113,140 @@ const KeyScreen = () => {
       );
       console.log('Command sent successfully:', jsonCommand);
       addLog(`Command sent successfully: ${jsonCommand}`);
-
     } catch (error) {
       console.log('Error sending command:', error.message);
       addLog(`Error sending command: ${error.message}`);
     }
   };
-  
-  
-  return (
-    
-    <View style={styles.container}>
-    <TextInput
-      placeholder="Enter ID Code eg.,1234"
-      onChangeText={(text) => {
-        setDeviceId(text);
-        const newCommand = {
-          cmd: "DEV_IDCODE_SET",
-          args: [text]
-        };
-        setDevIdCommand(JSON.stringify(newCommand));
-      }}
-      style={styles.input}
-    />
-    <Button
-      title="Set Device ID"
-      onPress={() => {
-        try {
-          const parsed = JSON.parse(devIdCommand);
-          const arg = parsed.args?.[0];
-  
-          if (!/^\d+$/.test(arg)|| arg.length > 15) {
-            Alert.alert('Invalid input. Command not sent');
-            return;
-          }
-  
-          sendCommand(devIdCommand);
-        } catch (e) {
-          Alert.alert('Invalid input format');
-        }
-      }}
-    />
-    
- <TextInput
-  placeholder="Enter Timestamp eg.,202503"
-  onChangeText={(text) => {
-    const newCommand = {
-      cmd: "PROD_TIMESTAMP_SET",
-      args: [parseInt(text)]
-    };
-    setTimestampCommand(JSON.stringify(newCommand));
-  }}
-  style={styles.input}
-/>
-<Button
-  title="Set Timestamp"
-  onPress={() => {
-    try {
-      const parsed = JSON.parse(timestampCommand);
-      const arg = parsed.args?.[0];
 
-      if (!/^\d+$/.test(arg)) {
-        Alert.alert('Invalid input. Command not sent.');
-        return;
+  const buttons = [
+    {
+      title: 'Set Device ID',
+      action: 'DEV_IDCODE_SET',
+      needsInput: true,
+      placeholder: 'Enter ID Code (e.g., 1234)',
+      validate: (value) => /^\d+$/.test(value) && value.length <= 15,
+      errorMessage: 'Invalid input. Only numbers up to 15 digits allowed.',
+      onSend: (value) => {
+        setDeviceId(value);
+        return JSON.stringify({ cmd: "DEV_IDCODE_SET", args: [value] });
       }
-
-      sendCommand(timestampCommand);
-    } catch (e) {
-      Alert.alert('Invalid input format.');
+    },
+    {
+      title: 'Set Timestamp',
+      action: 'PROD_TIMESTAMP_SET',
+      needsInput: true,
+      placeholder: 'Enter Year and Month (e.g., 202503)',
+      validate: (value) => /^\d{6}$/.test(value),
+      errorMessage: 'Invalid input. Format must be YYYYMM.',
+      onSend: (value) => {
+        const year = parseInt(value.substring(0, 4));
+        const month = parseInt(value.substring(4, 6));
+        return JSON.stringify({
+          cmd: "PROD_TIMESTAMP_SET",
+          args: [{ year: year, month: month }]
+        });
+      }
+    },
+    {
+      title: 'Set Customer Name',
+      action: 'CUSTOMER_NAME_SET',
+      needsInput: true,
+      placeholder: 'Enter Customer Name (e.g., Innospace)',
+      validate: (value) => /^[a-zA-Z0-9 ]+$/.test(value),
+      errorMessage: 'Invalid input. Only alphanumeric characters and spaces allowed.',
+      onSend: (value) => {
+        setCustomerName(value);
+        return JSON.stringify({ cmd: "CUSTOMER_NAME_SET", args: [value] });
+      }
+    },
+    {
+      title: 'Get Customer Name',
+      action: 'CUSTOMER_NAME_GET',
+      needsInput: false,
+      onSend: () => JSON.stringify({ cmd: "CUSTOMER_NAME_GET" })
+    },
+    {
+      title: 'Get Firmware Version',
+      action: 'FIRMWARE_VERSION_GET',
+      needsInput: false,
+      onSend: () => JSON.stringify({ cmd: "FIRMWARE_VERSION_GET" })
     }
-  }}
-/>
+  ];
 
-  
-    <TextInput
-      placeholder="Enter Customer Name eg.,Innospace"
-      onChangeText={(text) => {
-        setCustomerName(text);
-        const newCommand = {
-          cmd: "CUSTOMER_NAME_SET",
-          args: [text]
-        };
-        setCustNameSetCommand(JSON.stringify(newCommand));
-      }}
-      style={styles.input}
-    />
-    <Button
-      title="Set Customer Name"
-      onPress={() => {
-        try {
-          const parsed = JSON.parse(custNameSetCommand);
-          const arg = parsed.args?.[0];
-  
-          if (!/^[a-zA-Z0-9 ]+$/.test(arg)) {
-            Alert.alert('Invalid input. Command not sent.');
-            return;
-          }
-  
-          sendCommand(custNameSetCommand);
-        } catch (e) {
-          Alert.alert('Invalid input format.');
-        }
-      }}
-    />
-  
-    <Button
-      title="Get Customer Name"
-      onPress={() => sendCommand(custNameGetCommand)}
-    />
-  
-    <Button
-      title="Get Relay Count"
-      onPress={() => sendCommand(relayCountCommand)}
-    />
-  </View>
+  const handleButtonPress = (buttonConfig) => {
+    setCurrentAction(buttonConfig);
+    if (buttonConfig.needsInput) {
+      setInputValue('');
+      setModalVisible(true);
+    } else {
+      sendCommand(buttonConfig.onSend());
+    }
+  };
+
+  const handleSend = () => {
+    if (currentAction.validate && !currentAction.validate(inputValue)) {
+      Alert.alert('Error', currentAction.errorMessage);
+      return;
+    }
+    sendCommand(currentAction.onSend(inputValue));
+    setModalVisible(false);
+  };
+
+  return (
+    <View style={styles.container}>
+      {buttons.map((button, index) => (
+        <TouchableOpacity
+          key={index}
+          style={styles.button}
+          onPress={() => handleButtonPress(button)}
+        >
+          <Text style={styles.buttonText}>{button.title}</Text>
+        </TouchableOpacity>
+      ))}
+
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>{currentAction?.title}</Text>
+            
+            {currentAction?.needsInput && (
+              <TextInput
+                placeholder={currentAction.placeholder}
+                value={inputValue}
+                onChangeText={setInputValue}
+                style={styles.input}
+              />
+            )}
+
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.cancelButton]}
+                onPress={() => setModalVisible(false)}
+              >
+                <Text style={styles.modalButtonText}>Cancel</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity
+                style={[styles.modalButton, styles.sendButton]}
+                onPress={handleSend}
+              >
+                <Text style={styles.modalButtonText}>Send</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+    </View>
   );
-}  
+};
 
-const styles = StyleSheet.create({
+const styles = {
   container: {
     padding: 24,
     margin: 16,
@@ -254,15 +255,74 @@ const styles = StyleSheet.create({
     height: '90%',
     backgroundColor: '#ffffff'
   },
-
+  button: {
+    backgroundColor: '#E5E5EA',
+    padding: 15,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginVertical: 8,
+  },
+  buttonText: {
+    color: '#000000',
+    fontSize: 16,
+    fontWeight: '500'
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.5)'
+  },
+  modalContent: {
+    margin: 20,
+    backgroundColor: 'white',
+    borderRadius: 20,
+    padding: 35,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+    width: '80%'
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 20,
+    textAlign: 'center'
+  },
   input: {
     borderColor: '#cccccc',
     borderWidth: 1,
     borderRadius: 8,
-    padding: 8,
-    marginBottom: 8
+    padding: 12,
+    marginBottom: 20,
+    width: '100%'
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%'
+  },
+  modalButton: {
+    borderRadius: 8,
+    padding: 12,
+    elevation: 2,
+    minWidth: '45%',
+    alignItems: 'center'
+  },
+  cancelButton: {
+    backgroundColor: '#E5E5EA'
+  },
+  sendButton: {
+    backgroundColor: '#E5E5EA'
+  },
+  modalButtonText: {
+    color: '#000000',
+    fontWeight: 'bold',
+    textAlign: 'center'
   }
-});
+};
 
 export default KeyScreen;
- 
