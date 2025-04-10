@@ -1,8 +1,7 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { NavigationContainer } from '@react-navigation/native';
-
 import Icon from 'react-native-vector-icons/Ionicons'; 
+
 import DashboardScreen from '../Screens/DashboardScreen';
 import BtconfigScreen from '../Screens/BtconfigScreen';
 import KeyScreen from '../Screens/KeyScreen';
