@@ -12,9 +12,12 @@ import {
   Platform,
   Alert,
   StyleSheet,
+  ActivityIndicator,
+  Image
 } from 'react-native';
 import { BleManager, State } from 'react-native-ble-plx';
 import { BluetoothContext } from '../Context/BluetoothContext';
+import Icon from 'react-native-vector-icons/MaterialIcons';
 
 const manager = new BleManager();
 
@@ -66,7 +69,7 @@ const BluetoothConfigScreen = () => {
   const scanDevices = async () => {
     const state = await manager.state();
     if (state !== State.PoweredOn) {
-      Alert.alert('Please turn on Bluetooth to scan for devices');
+      Alert.alert('Bluetooth Required', 'Please turn on Bluetooth to scan for devices');
       return;
     }
 
@@ -109,7 +112,7 @@ const BluetoothConfigScreen = () => {
       readUUID = selectedPredefinedUUID.read;
     } else {
       if (!customUUIDs.service || !customUUIDs.write) {
-        console.warn('Custom UUIDs are incomplete');
+        Alert.alert('Incomplete UUIDs', 'Please provide at least Service and Write UUIDs');
         return;
       }
       serviceUUID = customUUIDs.service;
@@ -118,6 +121,7 @@ const BluetoothConfigScreen = () => {
     }
 
     try {
+      setShowUuidModal(false);
       const connected = await manager.connectToDevice(device.id, { autoConnect: false });
       await connected.discoverAllServicesAndCharacteristics();
       await connected.requestMTU(517);
@@ -125,9 +129,10 @@ const BluetoothConfigScreen = () => {
       setServiceUUID(serviceUUID);
       setWriteUUID(writeUUID);
       setReadUUID(readUUID);
-      setShowUuidModal(false);
+      Alert.alert('Connected', `Successfully connected to ${device.name}`);
     } catch (error) {
       console.log('Connection error:', error.message || error);
+      Alert.alert('Connection Failed', error.message || 'Failed to connect to device');
     }
   };
 
@@ -144,116 +149,221 @@ const BluetoothConfigScreen = () => {
           }
           return prevDevices;
         });
+        Alert.alert('Disconnected', `Disconnected from ${disconnected.name}`);
         scanDevices();
       } catch (error) {
         console.log('Disconnect error:', error);
+        Alert.alert('Error', 'Failed to disconnect from device');
       }
     }
   };
 
   const renderDeviceItem = ({ item }) => (
-    <TouchableOpacity onPress={() => connectToDevice(item)} style={styles.deviceItem}>
-      <Text style={styles.deviceName}>{item.name}</Text>
-      <Text style={styles.deviceId}>{item.id}</Text>
+    <TouchableOpacity 
+      onPress={() => connectToDevice(item)} 
+      style={[
+        styles.deviceItem,
+        connectedDevice?.id === item.id && styles.connectedDeviceItem
+      ]}
+    >
+      <View style={styles.deviceIconContainer}>
+        <Icon name="bluetooth" size={24} color="#6200ee" />
+      </View>
+      <View style={styles.deviceInfoContainer}>
+        <Text style={styles.deviceName}>{item.name || 'Unknown Device'}</Text>
+        <Text style={styles.deviceId}>{item.id}</Text>
+      </View>
+      <Icon name="chevron-right" size={24} color="#888" />
     </TouchableOpacity>
   );
 
   return (
     <View style={styles.container}>
-      <Button
-        title={isScanning ? 'Scanning...' : 'Scan for Devices'}
-        onPress={scanDevices}
-        disabled={isScanning}
-      />
 
-      {connectedDevice && (
-        <View style={styles.connectedContainer}>
-          <Text style={styles.connectedTitle}>Connected Device</Text>
-          <Text style={styles.deviceName}>{connectedDevice.name || 'Unnamed Device'}</Text>
-          <Text>ID: {connectedDevice.id}</Text>
-          <TouchableOpacity onPress={disconnectFromDevice} style={{ marginTop: 10 }}>
-            <Text style={{ color: 'red' }}>Disconnect</Text>
-          </TouchableOpacity>
+      <View style={styles.content}>
+        <TouchableOpacity 
+          onPress={scanDevices} 
+          disabled={isScanning}
+          style={styles.scanButton}
+        >
+          {isScanning ? (
+            <ActivityIndicator color="white" />
+          ) : (
+            <Text style={styles.scanButtonText}>
+              <Icon name="search" size={18} color="white" /> Scan for Devices
+            </Text>
+          )}
+        </TouchableOpacity>
+
+        {connectedDevice && (
+          <View style={styles.connectedContainer}>
+            <View style={styles.connectedHeader}>
+              <Icon name="bluetooth-connected" size={24} color="#4CAF50" />
+              <Text style={styles.connectedTitle}>Connected Device</Text>
+            </View>
+            <View style={styles.connectedDeviceInfo}>
+              <Text style={styles.connectedDeviceName}>{connectedDevice.name || 'Unnamed Device'}</Text>
+              <Text style={styles.connectedDeviceId}>{connectedDevice.id}</Text>
+            </View>
+            <TouchableOpacity 
+              onPress={disconnectFromDevice} 
+              style={styles.disconnectButton}
+            >
+              <Text style={styles.disconnectButtonText}>
+                <Icon name="link-off" size={16} color="white" /> Disconnect
+              </Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
+        <View style={styles.deviceListContainer}>
+          <View style={styles.listHeader}>
+            <Text style={styles.deviceListTitle}>Available Devices</Text>
+            <Text style={styles.deviceCount}>{devices.filter(d => d.id !== connectedDevice?.id).length} found</Text>
+          </View>
+          
+          {devices.filter(d => d.id !== connectedDevice?.id).length > 0 ? (
+            <FlatList
+              data={devices.filter((d) => d.id !== connectedDevice?.id)}
+              keyExtractor={(item) => item.id}
+              renderItem={renderDeviceItem}
+              contentContainerStyle={styles.listContent}
+            />
+          ) : (
+            <View style={styles.emptyState}>
+              <Icon name="bluetooth-disabled" size={48} color="#ccc" />
+              <Text style={styles.emptyStateText}>No devices found</Text>
+              <Text style={styles.emptyStateSubtext}>Press scan to search for devices</Text>
+            </View>
+          )}
         </View>
-      )}
-
-      <View style={styles.deviceListContainer}>
-        <Text style={styles.deviceListTitle}>Available Devices</Text>
-        <FlatList
-          data={devices.filter((d) => d.id !== connectedDevice?.id)}
-          keyExtractor={(item) => item.id}
-          renderItem={renderDeviceItem}
-          style={{ marginTop: 10 }}
-        />
       </View>
 
-      <Modal visible={showUuidModal} transparent animationType="slide">
+      <Modal visible={showUuidModal} transparent animationType="fade">
         <View style={styles.modalBackground}>
           <View style={styles.modalContainer}>
-            <Text style={styles.modalTitle}>Connect Using</Text>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Connection Settings</Text>
+              <TouchableOpacity onPress={() => setShowUuidModal(false)}>
+                <Icon name="close" size={24} color="#666" />
+              </TouchableOpacity>
+            </View>
 
-            <TouchableOpacity onPress={() => setUuidMode('predefined')} style={{ marginBottom: 10 }}>
-              <Text style={{ color: uuidMode === 'predefined' ? 'black' : 'gray' }}>• Predefined UUIDs</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => setUuidMode('custom')} style={{ marginBottom: 10 }}>
-              <Text style={{ color: uuidMode === 'custom' ? 'black' : 'gray' }}>• Custom UUIDs</Text>
-            </TouchableOpacity>
+            <Text style={styles.modalSubtitle}>Select UUID Mode</Text>
+            <View style={styles.uuidModeSelector}>
+              <TouchableOpacity 
+                onPress={() => setUuidMode('predefined')} 
+                style={[
+                  styles.uuidModeButton,
+                  uuidMode === 'predefined' && styles.uuidModeButtonActive
+                ]}
+              >
+                <Text style={[
+                  styles.uuidModeButtonText,
+                  uuidMode === 'predefined' && styles.uuidModeButtonTextActive
+                ]}>
+                  Predefined
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                onPress={() => setUuidMode('custom')} 
+                style={[
+                  styles.uuidModeButton,
+                  uuidMode === 'custom' && styles.uuidModeButtonActive
+                ]}
+              >
+                <Text style={[
+                  styles.uuidModeButtonText,
+                  uuidMode === 'custom' && styles.uuidModeButtonTextActive
+                ]}>
+                  Custom
+                </Text>
+              </TouchableOpacity>
+            </View>
 
             {uuidMode === 'predefined' && (
-              <ScrollView style={{ maxHeight: 150 }}>
-                {predefinedUUIDList.map((uuid, index) => (
-                  <TouchableOpacity
-                    key={index}
-                    onPress={() => setSelectedPredefinedUUID(uuid)}
-                    style={{
-                      padding: 8,
-                      borderWidth: selectedPredefinedUUID.name === uuid.name ? 2 : 1,
-                      borderColor: '#888',
-                      marginBottom: 5,
-                    }}
-                  >
-                    <Text style={{ fontWeight: 'bold' }}>{uuid.name}</Text>
-                    <Text>Service: {uuid.service}</Text>
-                    <Text>Read: {uuid.read}</Text>
-                    <Text>Write: {uuid.write}</Text>
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
+              <View style={styles.uuidListContainer}>
+                <Text style={styles.sectionTitle}>Select UUID Set</Text>
+                <ScrollView style={styles.uuidScrollView}>
+                  {predefinedUUIDList.map((uuid, index) => (
+                    <TouchableOpacity
+                      key={index}
+                      onPress={() => setSelectedPredefinedUUID(uuid)}
+                      style={[
+                        styles.uuidItem,
+                        selectedPredefinedUUID.name === uuid.name && styles.selectedUuidItem
+                      ]}
+                    >
+                      <View style={styles.uuidRadio}>
+                        {selectedPredefinedUUID.name === uuid.name && (
+                          <View style={styles.uuidRadioSelected} />
+                        )}
+                      </View>
+                      <View style={styles.uuidDetails}>
+                        <Text style={styles.uuidName}>{uuid.name}</Text>
+                        <Text style={styles.uuidValue}>Service: {uuid.service}</Text>
+                        <Text style={styles.uuidValue}>Read: {uuid.read}</Text>
+                        <Text style={styles.uuidValue}>Write: {uuid.write}</Text>
+                      </View>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </View>
             )}
 
             {uuidMode === 'custom' && (
-              <ScrollView style={{ marginTop: 10 }}>
-                <Text>Service UUID:</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Enter service UUID"
-                  value={customUUIDs.service}
-                  onChangeText={(text) => setCustomUUIDs({ ...customUUIDs, service: text })}
-                />
-                <Text>Read Characteristic UUID:</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Enter read UUID"
-                  value={customUUIDs.read}
-                  onChangeText={(text) => setCustomUUIDs({ ...customUUIDs, read: text })}
-                />
-                <Text>Write Characteristic UUID:</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Enter write UUID"
-                  value={customUUIDs.write}
-                  onChangeText={(text) => setCustomUUIDs({ ...customUUIDs, write: text })}
-                />
-              </ScrollView>
+              <View style={styles.customUuidContainer}>
+                <Text style={styles.sectionTitle}>Enter Custom UUIDs</Text>
+                <View style={styles.inputGroup}>
+                  <Text style={styles.inputLabel}>Service UUID</Text>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="0000xxxx-0000-1000-8000-00805f9b34fb"
+                    value={customUUIDs.service}
+                    onChangeText={(text) => setCustomUUIDs({ ...customUUIDs, service: text })}
+                  />
+                </View>
+                <View style={styles.inputGroup}>
+                  <Text style={styles.inputLabel}>Read Characteristic UUID (Optional)</Text>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="0000xxxx-0000-1000-8000-00805f9b34fb"
+                    value={customUUIDs.read}
+                    onChangeText={(text) => setCustomUUIDs({ ...customUUIDs, read: text })}
+                  />
+                </View>
+                <View style={styles.inputGroup}>
+                  <Text style={styles.inputLabel}>Write Characteristic UUID</Text>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="0000xxxx-0000-1000-8000-00805f9b34fb"
+                    value={customUUIDs.write}
+                    onChangeText={(text) => setCustomUUIDs({ ...customUUIDs, write: text })}
+                  />
+                </View>
+              </View>
             )}
 
             <View style={styles.modalButtons}>
-              <Button title="Cancel" onPress={() => setShowUuidModal(false)} />
-              <Button
-                title="Connect"
+              <TouchableOpacity 
+                onPress={() => setShowUuidModal(false)} 
+                style={styles.secondaryButton}
+              >
+                <Text style={styles.secondaryButtonText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
                 onPress={connectWithUUIDs}
                 disabled={uuidMode === 'custom' && (!customUUIDs.service || !customUUIDs.write)}
-              />
+                style={[
+                  styles.primaryButton,
+                  (uuidMode === 'custom' && (!customUUIDs.service || !customUUIDs.write)) && 
+                    styles.primaryButtonDisabled
+                ]}
+              >
+                <Text style={styles.primaryButtonText}>
+                  <Icon name="bluetooth" size={16} color="white" /> Connect
+                </Text>
+              </TouchableOpacity>
             </View>
           </View>
         </View>
@@ -266,84 +376,307 @@ const getStyles = () =>
   StyleSheet.create({
     container: {
       flex: 1,
-      padding: 20,
-      backgroundColor: 'white',
+      backgroundColor: '#f5f5f5',
+    },
+    header: {
+      padding: 16,
+      backgroundColor: '#6200ee',
       elevation: 4,
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.3,
-      shadowRadius: 4,
+    },
+    headerTitle: {
+      fontSize: 20,
+      fontWeight: 'bold',
+      color: 'white',
+    },
+    content: {
+      flex: 1,
+      padding: 16,
+    },
+    scanButton: {
+      backgroundColor: '#6200ee',
+      padding: 16,
+      borderRadius: 8,
+      alignItems: 'center',
+      justifyContent: 'center',
+      elevation: 2,
+      marginBottom: 16,
+    },
+    scanButtonText: {
+      color: 'white',
+      fontWeight: 'bold',
+      fontSize: 16,
     },
     connectedContainer: {
+      backgroundColor: 'white',
       borderRadius: 8,
       padding: 16,
-      marginTop: 20,
-      backgroundColor: '#FFFFFF',
-      elevation: 4,
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.3,
-      shadowRadius: 4,
+      marginBottom: 16,
+      elevation: 2,
+    },
+    connectedHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: 8,
     },
     connectedTitle: {
       fontSize: 16,
       fontWeight: 'bold',
+      marginLeft: 8,
+    },
+    connectedDeviceInfo: {
+      marginBottom: 12,
+    },
+    connectedDeviceName: {
+      fontSize: 16,
+      fontWeight: '500',
+    },
+    connectedDeviceId: {
+      fontSize: 12,
+      color: '#666',
+      marginTop: 4,
+    },
+    disconnectButton: {
+      backgroundColor: '#f44336',
+      padding: 10,
+      borderRadius: 6,
+      alignItems: 'center',
+    },
+    disconnectButtonText: {
+      color: 'white',
+      fontWeight: '500',
     },
     deviceListContainer: {
-      borderRadius: 8,
-      padding: 16,
-      marginTop: 20,
       flex: 1,
       backgroundColor: 'white',
-      elevation: 4,
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.3,
-      shadowRadius: 4,
+      borderRadius: 8,
+      elevation: 2,
+      padding: 16,
+    },
+    listHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: 12,
     },
     deviceListTitle: {
       fontSize: 16,
       fontWeight: 'bold',
     },
+    deviceCount: {
+      fontSize: 12,
+      color: '#666',
+    },
+    listContent: {
+      paddingBottom: 8,
+    },
     deviceItem: {
-      padding: 12,
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingVertical: 12,
+      paddingHorizontal: 8,
       borderBottomWidth: 1,
-      borderColor: '#ccc',
+      borderColor: '#eee',
+    },
+    connectedDeviceItem: {
+      backgroundColor: '#e3f2fd',
+    },
+    deviceIconContainer: {
+      width: 40,
+      height: 40,
+      borderRadius: 20,
+      backgroundColor: '#e3f2fd',
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginRight: 12,
+    },
+    deviceInfoContainer: {
+      flex: 1,
     },
     deviceName: {
+      fontSize: 16,
       fontWeight: '500',
+      color: '#333',
     },
     deviceId: {
       fontSize: 12,
-      color: '#555',
+      color: '#888',
+      marginTop: 2,
+    },
+    emptyState: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: 40,
+    },
+    emptyStateText: {
+      fontSize: 16,
+      color: '#666',
+      marginTop: 16,
+    },
+    emptyStateSubtext: {
+      fontSize: 14,
+      color: '#999',
+      marginTop: 8,
     },
     modalBackground: {
       flex: 1,
+      backgroundColor: 'rgba(0,0,0,0.5)',
       justifyContent: 'center',
-      padding: 20,
-      backgroundColor: 'rgba(0,0,0,0.3)',
+      padding: 24,
     },
     modalContainer: {
       backgroundColor: 'white',
-      borderRadius: 10,
-      padding: 20,
-      maxHeight: '90%',
-      elevation: 5,
+      borderRadius: 12,
+      maxHeight: '80%',
+    },
+    modalHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      padding: 16,
+      borderBottomWidth: 1,
+      borderColor: '#eee',
     },
     modalTitle: {
-      fontSize: 16,
+      fontSize: 18,
       fontWeight: 'bold',
-      marginBottom: 10,
+    },
+    modalSubtitle: {
+      fontSize: 14,
+      color: '#666',
+      marginHorizontal: 16,
+      marginTop: 8,
+    },
+    uuidModeSelector: {
+      flexDirection: 'row',
+      marginHorizontal: 16,
+      marginTop: 12,
+      borderWidth: 1,
+      borderColor: '#ddd',
+      borderRadius: 8,
+      overflow: 'hidden',
+    },
+    uuidModeButton: {
+      flex: 1,
+      padding: 12,
+      backgroundColor: '#f5f5f5',
+    },
+    uuidModeButtonActive: {
+      backgroundColor: '#6200ee',
+    },
+    uuidModeButtonText: {
+      textAlign: 'center',
+      color: '#666',
+      fontWeight: '500',
+    },
+    uuidModeButtonTextActive: {
+      color: 'white',
+    },
+    uuidListContainer: {
+      marginTop: 16,
+      paddingHorizontal: 16,
+    },
+    sectionTitle: {
+      fontSize: 14,
+      fontWeight: '500',
+      color: '#666',
+      marginBottom: 8,
+    },
+    uuidScrollView: {
+      maxHeight: 200,
+    },
+    uuidItem: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      padding: 12,
+      borderWidth: 1,
+      borderColor: '#eee',
+      borderRadius: 8,
+      marginBottom: 8,
+    },
+    selectedUuidItem: {
+      borderColor: '#6200ee',
+      backgroundColor: '#f3e5ff',
+    },
+    uuidRadio: {
+      width: 20,
+      height: 20,
+      borderRadius: 10,
+      borderWidth: 2,
+      borderColor: '#888',
+      marginRight: 12,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    uuidRadioSelected: {
+      width: 10,
+      height: 10,
+      borderRadius: 5,
+      backgroundColor: '#6200ee',
+    },
+    uuidDetails: {
+      flex: 1,
+    },
+    uuidName: {
+      fontWeight: '500',
+      marginBottom: 4,
+    },
+    uuidValue: {
+      fontSize: 12,
+      color: '#666',
+    },
+    customUuidContainer: {
+      marginTop: 16,
+      paddingHorizontal: 16,
+    },
+    inputGroup: {
+      marginBottom: 12,
+    },
+    inputLabel: {
+      fontSize: 14,
+      color: '#666',
+      marginBottom: 4,
     },
     input: {
       borderWidth: 1,
-      padding: 8,
-      marginBottom: 10,
+      borderColor: '#ddd',
+      borderRadius: 8,
+      padding: 12,
+      backgroundColor: '#f9f9f9',
     },
     modalButtons: {
       flexDirection: 'row',
       justifyContent: 'space-between',
-      marginTop: 20,
+      padding: 16,
+      borderTopWidth: 1,
+      borderColor: '#eee',
+    },
+    primaryButton: {
+      flex: 1,
+      backgroundColor: '#6200ee',
+      padding: 14,
+      borderRadius: 8,
+      alignItems: 'center',
+      marginLeft: 8,
+    },
+    primaryButtonDisabled: {
+      backgroundColor: '#b388ff',
+    },
+    primaryButtonText: {
+      color: 'white',
+      fontWeight: 'bold',
+    },
+    secondaryButton: {
+      flex: 1,
+      backgroundColor: '#e0e0e0',
+      padding: 14,
+      borderRadius: 8,
+      alignItems: 'center',
+      marginRight: 8,
+    },
+    secondaryButtonText: {
+      color: '#333',
+      fontWeight: '500',
     },
   });
 
