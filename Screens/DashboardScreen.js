@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { LogContext } from '../Context/LogContext';
 
 const DashboardScreen = () => {
-  const { logs, clearLogs, deviceId, customerName } = useContext(LogContext);
+  const { logs, clearLogs, deviceId, customerName, timestamp, rfChannel } = useContext(LogContext);
 
   const handleClearPress = () => {
     Alert.alert(
@@ -25,22 +25,44 @@ const DashboardScreen = () => {
     );
   };
 
-  const renderLogItem = ({ item, index }) => (
+  const renderLogItem = ({ item }) => (
     <View style={styles.logItem}>
       <Ionicons name="ellipse" size={8} color="#007AFF" style={styles.bullet} />
       <Text style={styles.logText}>{item}</Text>
     </View>
   );
 
+  const renderSettingItem = ({ item }) => (
+    <View style={styles.logItem}>
+      <Ionicons name="ellipse" size={8} color="#007AFF" style={styles.bullet} />
+      <Text style={styles.logText}>{item.key}: {item.value || 'N/A'}</Text>
+    </View>
+  );
+
+  const settingsData = [
+    { key: 'Device ID', value: deviceId || 'N/A' },
+    { key: 'Customer Name', value: customerName || 'N/A' },
+    { key: 'Timestamp', value: timestamp || 'N/A' },
+    { key: 'RF Channel', value: rfChannel || 'N/A' },
+  ];
+
   return (
     <View style={styles.container}>
-      <View style={styles.deviceInfo}>
-        <Text style={styles.infoText}>Device ID: {deviceId}</Text>
-        <View style={{ height: 10 }} />
-        <Text style={styles.infoText}>Customer Name: {customerName}</Text>
+      <View style={styles.header}>
+        <Text style={styles.title}>Current Settings</Text>
       </View>
 
-      <View style={styles.header}>
+      <View style={styles.logsContainer}>
+        <FlatList
+          data={settingsData}
+          renderItem={renderSettingItem}
+          keyExtractor={(item) => item.key}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        />
+      </View>
+
+      <View style={[styles.header, { marginTop: 24 }]}>
         <Text style={styles.title}>Activity Logs</Text>
         <TouchableOpacity 
           onPress={handleClearPress} 
@@ -115,6 +137,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.08,
     shadowRadius: 6,
     elevation: 3,
+    marginBottom: 16,
   },
   emptyState: {
     flex: 1,

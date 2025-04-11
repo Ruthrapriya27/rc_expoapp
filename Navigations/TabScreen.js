@@ -40,7 +40,7 @@ export default function TabScreen() {
         />
           
           <Tab.Screen 
-          name="Key Configuration" 
+          name="Device Configuration" 
           component={KeyScreen} 
           options={{
             tabBarIcon: ({ color, size }) => 

@@ -79,7 +79,7 @@ const BluetoothConfigScreen = () => {
         setIsScanning(false);
         return;
       }
-      if (device && device.name) {
+      if (device?.name?.startsWith("SIO-RX-")) {
         setDevices((prev) => {
           const exists = prev.some((d) => d.id === device.id);
           return exists ? prev : [...prev, device];

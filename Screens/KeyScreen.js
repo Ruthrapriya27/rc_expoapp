@@ -1,16 +1,18 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { View, Alert, TextInput, Modal, Text, TouchableOpacity } from 'react-native';
+import { View, Alert, TextInput, Modal, Text, TouchableOpacity , StyleSheet} from 'react-native';
 import { BluetoothContext } from '../Context/BluetoothContext';
 import { LogContext } from '../Context/LogContext';
 import { Buffer } from 'buffer';
 
 const KeyScreen = () => {
   const { connectedDevice, serviceUUID, writeUUID, readUUID } = useContext(BluetoothContext);
-  const { addLog, setDeviceId, setCustomerName } = useContext(LogContext);
-  
+  const { addLog, setDeviceId, setCustomerName , setRfChannel, setTimestamp} = useContext(LogContext);
+
   const [modalVisible, setModalVisible] = useState(false);
   const [inputValue, setInputValue] = useState('');
   const [currentAction, setCurrentAction] = useState(null);
+  const [serialNumber, setSerialNumber] = useState('');
+  const [deviceName, setDeviceName] = useState('');
 
   useEffect(() => {
     let subscription;
@@ -18,6 +20,7 @@ const KeyScreen = () => {
       if (connectedDevice && serviceUUID && readUUID) {
         subscription = connectedDevice.monitorCharacteristicForService(
           serviceUUID,
+
           readUUID,
           (error, characteristic) => {
             if (error) {
@@ -29,11 +32,38 @@ const KeyScreen = () => {
               try {
                 const decoded = Buffer.from(characteristic.value, 'base64').toString('utf8');
                 console.log('Received from ESP32:', decoded);
-
+                addLog(`Received from ESP32:' ${decoded}`);                                                           
                 let parsed;
 
                 try {
                   parsed = JSON.parse(decoded);
+                  if (parsed.rsp === "DEV_SERIAL_NO_GET" && parsed.err === 0 && parsed.data && parsed.data.length > 0) {
+                    const serialNumber = parsed.data[0];
+                    setSerialNumber(serialNumber);
+                    
+                    if (serialNumber.length >= 7) 
+                      {
+                      const char5 = serialNumber.charAt(5); // 'G'
+                      const char6 = serialNumber.charAt(6); // 'R'
+                      
+                      if (char5 === 'G' && char6 === 'R')                                                                                                                                                              
+                      {
+                        setDeviceName("GRAB");
+                      } 
+                      // else if (char5 === 'I' && char6 === 'R') 
+                      // {
+                      //   setDeviceName("IR/RF");
+                      // } 
+                      // else if (char5 === 'L' && char6 === 'B') 
+                      // {
+                      //   setDeviceName("LRM3");
+                      // }    
+                      else 
+                      {
+                        setDeviceName("UNKNOWN"); 
+                      }
+                    }
+                  }
                 } catch (jsonError) {
                   Alert.alert('JSON Parse Error', jsonError.message);
                   return;
@@ -73,7 +103,8 @@ const KeyScreen = () => {
 
                 let dataOutput = 'NULL';
 
-                if (parsed.data !== undefined && parsed.data !== '' && !(Array.isArray(parsed.data) && parsed.data.length === 0)) {
+                if (parsed.data !== undefined && parsed.data !== '' && !(Array.isArray(parsed.data) && parsed.data.length === 0)) 
+                  {
                   if (Array.isArray(parsed.data)) {
                     dataOutput = parsed.data.join(', ');
                   } else {
@@ -94,6 +125,7 @@ const KeyScreen = () => {
         );
       }
     };
+
     monitorResponse();
     return () => subscription?.remove();
   }, [connectedDevice, serviceUUID, readUUID]);
@@ -103,7 +135,7 @@ const KeyScreen = () => {
       console.log('Error: Bluetooth service/characteristics are not set');
       return;
     }
-  
+
     try {
       const base64Command = Buffer.from(jsonCommand).toString('base64');
       await connectedDevice.writeCharacteristicWithoutResponseForService(
@@ -119,9 +151,18 @@ const KeyScreen = () => {
     }
   };
 
-  const buttons = [
+  const buttons = [ 
     {
-      title: 'Set Device ID',
+      title: 'Get Product Name',
+      action: 'DEV_SERIAL_NO_GET',
+      needsInput: false,
+      onSend: () => {
+        return JSON.stringify({ cmd: "DEV_SERIAL_NO_GET" });
+      }
+    },
+  
+    {
+      title: 'Set Device ID CODE',
       action: 'DEV_IDCODE_SET',
       needsInput: true,
       placeholder: 'Enter ID Code (e.g., 1234)',
@@ -140,6 +181,7 @@ const KeyScreen = () => {
       validate: (value) => /^\d{6}$/.test(value),
       errorMessage: 'Invalid input. Format must be YYYYMM.',
       onSend: (value) => {
+        setTimestamp(value);
         const year = parseInt(value.substring(0, 4));
         const month = parseInt(value.substring(4, 6));
         return JSON.stringify({
@@ -160,20 +202,35 @@ const KeyScreen = () => {
         return JSON.stringify({ cmd: "CUSTOMER_NAME_SET", args: [value] });
       }
     },
+
     {
       title: 'Get Customer Name',
       action: 'CUSTOMER_NAME_GET',
       needsInput: false,
       onSend: () => JSON.stringify({ cmd: "CUSTOMER_NAME_GET" })
     },
+
     {
-      title: 'Get Firmware Version',
-      action: 'FIRMWARE_VERSION_GET',
+      title: 'Set RF Channel',
+      action: 'RF_CHANNEL_SET',
+      needsInput: true,
+      placeholder: 'Enter RF Channel (e.g., 1)',
+      validate: (value) => /^[0-9]+$/.test(value),
+      errorMessage: 'Invalid input. Only numeric values allowed.',
+      onSend: (value) => {
+        setRfChannel(value)
+        return JSON.stringify({ cmd: "RF_CHANNEL_SET", args: [parseInt(value)] });
+      }
+      },
+
+    {
+      title: 'Get RF Channel',
+      action: 'RF_CHANNEL_GET',
       needsInput: false,
-      onSend: () => JSON.stringify({ cmd: "FIRMWARE_VERSION_GET" })
+      onSend: () => JSON.stringify({ cmd: "RF_CHANNEL_GET" })
     }
   ];
-
+  
   const handleButtonPress = (buttonConfig) => {
     setCurrentAction(buttonConfig);
     if (buttonConfig.needsInput) {
@@ -183,7 +240,7 @@ const KeyScreen = () => {
       sendCommand(buttonConfig.onSend());
     }
   };
-
+  
   const handleSend = () => {
     if (currentAction.validate && !currentAction.validate(inputValue)) {
       Alert.alert('Error', currentAction.errorMessage);
@@ -195,16 +252,27 @@ const KeyScreen = () => {
 
   return (
     <View style={styles.container}>
-      {buttons.map((button, index) => (
-        <TouchableOpacity
-          key={index}
-          style={styles.button}
-          onPress={() => handleButtonPress(button)}
-        >
-          <Text style={styles.buttonText}>{button.title}</Text>
-        </TouchableOpacity>
-      ))}
-
+      <View style={styles.buttonContainer}>
+        {buttons.map((button, index) => (
+          <View key={button.title}>
+            <TouchableOpacity
+              style={styles.button}
+              onPress={() => handleButtonPress(button)}
+            >
+              <Text style={styles.buttonText}>{button.title}</Text>
+            </TouchableOpacity>
+  
+            {index === 0 && deviceName !== '' && (
+              <View style={styles.deviceNameBox}>
+                <Text style={styles.deviceNameText}>
+                  Device Name: {deviceName}
+                </Text>
+              </View>
+            )}
+          </View>
+        ))}
+      </View>
+  
       <Modal
         animationType="slide"
         transparent={true}
@@ -214,7 +282,7 @@ const KeyScreen = () => {
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>{currentAction?.title}</Text>
-            
+  
             {currentAction?.needsInput && (
               <TextInput
                 placeholder={currentAction.placeholder}
@@ -223,7 +291,7 @@ const KeyScreen = () => {
                 style={styles.input}
               />
             )}
-
+  
             <View style={styles.modalButtons}>
               <TouchableOpacity
                 style={[styles.modalButton, styles.cancelButton]}
@@ -231,7 +299,7 @@ const KeyScreen = () => {
               >
                 <Text style={styles.modalButtonText}>Cancel</Text>
               </TouchableOpacity>
-              
+  
               <TouchableOpacity
                 style={[styles.modalButton, styles.sendButton]}
                 onPress={handleSend}
@@ -244,85 +312,107 @@ const KeyScreen = () => {
       </Modal>
     </View>
   );
-};
-
-const styles = {
-  container: {
-    padding: 24,
-    margin: 16,
-    borderRadius: 12,
-    justifyContent: 'space-evenly',
-    height: '90%',
-    backgroundColor: '#ffffff'
-  },
-  button: {
-    backgroundColor: '#E5E5EA',
-    padding: 15,
-    borderRadius: 8,
-    alignItems: 'center',
-    marginVertical: 8,
-  },
-  buttonText: {
-    color: '#000000',
-    fontSize: 16,
-    fontWeight: '500'
-  },
-  modalContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.5)'
-  },
-  modalContent: {
-    margin: 20,
-    backgroundColor: 'white',
-    borderRadius: 20,
-    padding: 35,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
-    width: '80%'
-  },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 20,
-    textAlign: 'center'
-  },
-  input: {
-    borderColor: '#cccccc',
-    borderWidth: 1,
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 20,
-    width: '100%'
-  },
-  modalButtons: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '100%'
-  },
-  modalButton: {
-    borderRadius: 8,
-    padding: 12,
-    elevation: 2,
-    minWidth: '45%',
-    alignItems: 'center'
-  },
-  cancelButton: {
-    backgroundColor: '#E5E5EA'
-  },
-  sendButton: {
-    backgroundColor: '#E5E5EA'
-  },
-  modalButtonText: {
-    color: '#000000',
-    fontWeight: 'bold',
-    textAlign: 'center'
-  }
-};
+  };
+  
+  const styles = {
+    container: {
+      padding: 24,
+      margin: 16,
+      borderRadius: 12,
+      justifyContent: 'space-evenly',
+      height: '90%',
+      backgroundColor: '#ffffff'
+    },
+    buttonContainer: {
+      flexDirection: 'column',
+      justifyContent: 'center'
+    },
+    button: {
+      backgroundColor: '#E5E5EA',
+      padding: 15,
+      borderRadius: 8,
+      alignItems: 'center',
+      marginVertical: 8,
+    },
+    buttonText: {
+      color: '#000000',
+      fontSize: 16,
+      fontWeight: '500'
+    },
+    deviceNameBox: {
+      alignSelf: 'center',
+      marginTop: 20,
+      marginBottom: 20,
+      paddingHorizontal: 20,
+      paddingVertical: 12,
+      backgroundColor: '#E0F7FA', 
+      borderRadius: 10,
+      height: 60,                 
+      justifyContent: 'center'
+    },
+    deviceNameText: {
+      fontWeight: 'bold',
+      fontSize: 16,              
+      color: '#000000',
+      textAlign: 'center'
+    },
+    modalContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: 'rgba(0,0,0,0.5)'
+    },
+    modalContent: {
+      margin: 20,
+      backgroundColor: 'white',
+      borderRadius: 20,
+      padding: 35,
+      alignItems: 'center',
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.25,
+      shadowRadius: 4,
+      elevation: 5,
+      width: '80%'
+    },
+    modalTitle: {
+      fontSize: 20,
+      fontWeight: 'bold',
+      marginBottom: 20,
+      textAlign: 'center'
+    },
+    input: {
+      borderColor: '#cccccc',
+      borderWidth: 1,
+      borderRadius: 8,
+      padding: 12,
+      marginBottom: 20,
+      width: '100%'
+    },
+    modalButtons: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      width: '100%'
+    },
+    modalButton: {
+      borderRadius: 8,
+      padding: 12,
+      elevation: 2,
+      minWidth: '45%',
+      alignItems: 'center'
+    },
+    cancelButton: {
+      backgroundColor: '#E5E5EA'
+    },
+    sendButton: {
+      backgroundColor: '#E5E5EA'
+    },
+    modalButtonText: {
+      color: '#000000',
+      fontWeight: 'bold',
+      textAlign: 'center'
+    }
+  };
+  
 
 export default KeyScreen;

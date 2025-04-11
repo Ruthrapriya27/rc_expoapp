@@ -6,7 +6,9 @@ export const LogProvider = ({ children }) => {
   const [logs, setLogs] = useState([]);
   const [deviceId, setDeviceId] = useState("N/A");
   const [customerName, setCustomerName] = useState("N/A");
-
+  const [timestamp, setTimestamp] = useState("N/A");
+  const [RfChannel, setRfChannel] = useState("N/A");
+  
   const addLog = (log) => {
     setLogs((prevLogs) => [log, ...prevLogs]);
   };
@@ -24,7 +26,11 @@ export const LogProvider = ({ children }) => {
         deviceId,
         setDeviceId,
         customerName,
-        setCustomerName
+        setCustomerName,
+        setTimestamp,
+        timestamp,
+        RfChannel,
+        setRfChannel
       }}
     >
       {children}
