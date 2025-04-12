@@ -51,7 +51,7 @@ export default function TabScreen() {
         />
 
         <Tab.Screen 
-          name="Setings" 
+          name="User Settings" 
           component={SettingsScreen} 
           options={{
             tabBarIcon: ({ color, size }) => (
