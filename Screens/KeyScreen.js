@@ -366,7 +366,7 @@ const KeyScreen = () => {
     },
     modalContent: {
       margin: 20,
-      backgroundColor: '#ffffff', // White modal background
+      backgroundColor: '#ffffff', // White modal 
       borderRadius: 20,
       padding: 35,
       alignItems: 'center',
@@ -382,13 +382,13 @@ const KeyScreen = () => {
       fontWeight: 'bold',
       marginBottom: 20,
       textAlign: 'center',
-      color: '#FF6D60', // Coral red title
+      color: '#FF6D60', // Coral red 
       borderBottomWidth: 2,
-      borderBottomColor: '#F7D060', // Yellow underline
+      borderBottomColor: '#F7D060', // Yellow 
       paddingBottom: 4
     },
     input: {
-      borderColor: '#F7D060', // Yellow border
+      borderColor: '#F7D060', // Yellow 
       borderWidth: 1,
       borderRadius: 8,
       padding: 12,
@@ -408,10 +408,10 @@ const KeyScreen = () => {
       alignItems: 'center'
     },
     cancelButton: {
-      backgroundColor: '#FF6D60' // Coral red button
+      backgroundColor: '#FF6D60' // Coral red 
     },
     sendButton: {
-      backgroundColor: '#98D8AA' // Light green button
+      backgroundColor: '#98D8AA' // Light green 
     },
     modalButtonText: {
       color: '#000000',
