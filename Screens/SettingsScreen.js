@@ -4,25 +4,28 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
 const SettingsScreen = ({ navigation }) => {
-  const [name, setName] = useState('John Doe');
-  const [email, setEmail] = useState('john.doe@example.com');
-  const [mobile, setMobile] = useState('+1 234 567 8901');
-  const [bluetoothName, setBluetoothName] = useState('MyDevice-BT');
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [mobile, setMobile] = useState('');
+  const [bluetoothName, setBluetoothName] = useState('');
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
 
-  const handleSaveChanges = () => {
-    Alert.alert(
+  const handleSaveChanges = () => 
+    {
+    Alert.alert
+    (
       "Changes Saved",
-      "Your settings have been updated successfully!",
       [{ text: "OK", onPress: () => console.log("OK Pressed") }]
     );
   };
 
-  const handleLogout = () => {
-    Alert.alert(
+  const handleLogout = () => 
+    {
+    Alert.alert
+    (
       "Logout",
       "Are you sure you want to logout?",
       [
@@ -34,12 +37,14 @@ const SettingsScreen = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      <KeyboardAvoidingView 
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={styles.keyboardView}
-      >
+   <KeyboardAvoidingView
+  behavior=
+  {
+      Platform.OS === 'android' && Platform.Version >= 23   ? 'height'  : undefined     
+  }
+  style={styles.keyboardView}
+>
         <ScrollView contentContainerStyle={styles.scrollContainer}>
-
           {/* Profile Section */}
           <View style={styles.sectionContainer}>
             <Text style={styles.sectionTitle}>Profile Information</Text>
@@ -159,11 +164,10 @@ const SettingsScreen = ({ navigation }) => {
           <TouchableOpacity 
             style={styles.saveButton} 
             onPress={handleSaveChanges}
-            activeOpacity={0.7}
+            activeOpacity={0.5}
           >
             <View style={styles.buttonContent}>
               <Text style={styles.saveButtonText}>Save Changes</Text>
-              <Ionicons name="checkmark-circle" size={20} color="white" style={styles.buttonIcon} />
             </View>
           </TouchableOpacity>
 
@@ -171,7 +175,7 @@ const SettingsScreen = ({ navigation }) => {
           <TouchableOpacity 
             onPress={handleLogout}
             style={styles.logoutButton}
-            activeOpacity={0.7}
+            activeOpacity={0.5}
           >
             <View style={styles.buttonContent}>
               <Icon name="sign-out" size={18} color="white" style={styles.buttonIcon} />
@@ -185,34 +189,34 @@ const SettingsScreen = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  container: {
+  container: 
+  {
     flex: 1,
-    backgroundColor: '#f5f7fa',
+    backgroundColor: '#F3E99F', // Light yellow 
   },
-  keyboardView: {
+  keyboardView: 
+  {
     flex: 1,
   },
-  scrollContainer: {
+  scrollContainer: 
+  {
     paddingHorizontal: 25,
     paddingVertical: 20,
     paddingBottom: 40,
   },
-  header: {
-    marginBottom: 20,
-  },
-  headerText: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 5,
-  },
-  headerLine: {
-    height: 3,
-    width: 50,
-    backgroundColor: '#667eea',
-    borderRadius: 3,
-  },
-  sectionContainer: {
+  // header: 
+  // {
+  //   marginBottom: 20,
+  //  },
+  // headerText: 
+  // {
+  //   fontSize: 28,
+  //   fontWeight: 'bold',
+  //   color: '#FF6D60', // Coral red 
+  //   marginBottom: 5,
+  // },
+  sectionContainer: 
+  {
     backgroundColor: 'white',
     borderRadius: 12,
     padding: 15,
@@ -222,81 +226,96 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 6,
     elevation: 3,
+    borderLeftWidth: 4,
+    borderLeftColor: '#98D8AA', // Light green accent border
   },
-  sectionTitle: {
+  sectionTitle: 
+  {
     fontSize: 18,
     fontWeight: '600',
-    color: '#444',
+    color: '#FF6D60', // Coral red for section titles
     marginBottom: 15,
     paddingBottom: 8,
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    borderBottomColor: '#F7D060', // Yellow for section title underline
   },
-  inputContainer: {
+  inputContainer: 
+  {
     marginBottom: 15,
   },
-  label: {
+  label: 
+  {
     fontSize: 14,
     color: '#555',
     marginBottom: 8,
     fontWeight: '500',
   },
-  inputBox: {
+  inputBox: 
+  {
     height: 50,
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: '#F7D060', // Yellow border for inputs
     borderRadius: 10,
     paddingHorizontal: 15,
     fontSize: 15,
     color: '#333',
-    backgroundColor: '#f9f9f9',
+    backgroundColor: '#fff',
   },
-  passwordContainer: {
+  passwordContainer: 
+  {
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: '#F7D060', // Yellow border for password inputs
     borderRadius: 10,
     paddingHorizontal: 15,
-    backgroundColor: '#f9f9f9',
+    backgroundColor: '#fff',
   },
-  passwordInput: {
+  passwordInput: 
+  {
     flex: 1,
     height: 50,
     fontSize: 15,
     color: '#333',
   },
-  eyeIcon: {
+  eyeIcon: 
+  {
     padding: 10,
   },
-  saveButton: {
-    backgroundColor: '#667eea',
+  saveButton: 
+  {
+    backgroundColor: '#98D8AA', // Light green 
     borderRadius: 10,
     marginTop: 10,
     marginBottom: 20,
   },
-  logoutButton: {
-    backgroundColor: '#ff758c',
+  logoutButton: 
+  {
+    backgroundColor: '#FF6D60', // Coral red 
     borderRadius: 10,
   },
-  buttonContent: {
+  buttonContent: 
+  {
     paddingVertical: 15,
     alignItems: 'center',
     justifyContent: 'center',
     flexDirection: 'row',
   },
-  saveButtonText: {
+  saveButtonText: 
+  {
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
   },
-  logoutButtonText: {
+  logoutButtonText: 
+  {
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
     marginLeft: 10,
   },
-  buttonIcon: {
+  buttonIcon: 
+  {
     marginLeft: 10,
   },
 });

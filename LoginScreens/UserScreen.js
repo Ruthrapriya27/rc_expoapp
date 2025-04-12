@@ -113,14 +113,15 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     paddingHorizontal: 30,
-    backgroundColor: '#fff',
+    backgroundColor: '#F3E99F', // Light yellow 
   },
   startLine: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#000',
+    color: '#FF6D60', // Coral red
     marginBottom: 30,
-    textAlign: 'center'
+    textAlign: 'center',
+    textDecorationColor: '#F7D060', // Yellow 
   },
   BoxAboveHeader: {
     flexDirection: 'row',
@@ -129,7 +130,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 14,
-    color: '#000',
+    color: '#FF6D60', // Coral red
     marginBottom: 10,
     fontWeight: '400',
   },
@@ -137,10 +138,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: 'grey',
+    borderColor: '#F7D060', // Yellow 
     borderRadius: 10,
     marginBottom: 10,
     backgroundColor: '#fff',
+    borderLeftWidth: 5, 
+    borderLeftColor: '#98D8AA',// Light green l
   },
   inputBox: {
     flex: 1,
@@ -154,10 +157,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: 'grey',
+    borderColor: '#F7D060', // Yellow border
     borderRadius: 10,
     marginBottom: 10,
     backgroundColor: '#fff',
+    borderLeftWidth: 5, 
+    borderLeftColor: '#98D8AA',// Light green 
   },
   passwordInput: {
     flex: 1,
@@ -175,13 +180,14 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   forgotPassword: {
-    color: '#1a73e8', 
+    color: '#FF6D60', // Coral red
     fontSize: 14,
-    fontWeight: 'bold',                                                   
+    fontWeight: 'bold',
     textDecorationLine: 'underline'
   },
   loginButton: {
-    backgroundColor: '#000',
+    // backgroundColor: '#98D8AA', // Light green
+  backgroundColor: '#5DB075',
     height: 50,
     borderRadius: 4,
     justifyContent: 'center',
@@ -200,8 +206,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 10,
   },
+  signupLabel: {
+    color: '#FF6D60', // Coral red
+  },
   signupLink: {
-    color: '#1a73e8',
+    color: '#FF6D60', // Coral red
     fontSize: 14,
     fontWeight: 'bold',
     textDecorationLine: 'underline'

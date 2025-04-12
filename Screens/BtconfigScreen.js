@@ -190,7 +190,7 @@ const BluetoothConfigScreen = () => {
             <ActivityIndicator color="white" />
           ) : (
             <Text style={styles.scanButtonText}>
-              <Icon name="search" size={18} color="white" /> Scan for Devices
+              Scan for Devices
             </Text>
           )}
         </TouchableOpacity>
@@ -294,9 +294,9 @@ const BluetoothConfigScreen = () => {
                         selectedPredefinedUUID.name === uuid.name && styles.selectedUuidItem
                       ]}
                     >
-                      <View style={styles.uuidRadio}>
+                      <View style={styles.uuidSelect}>
                         {selectedPredefinedUUID.name === uuid.name && (
-                          <View style={styles.uuidRadioSelected} />
+                          <View style={styles.uuidSelected} />
                         )}
                       </View>
                       <View style={styles.uuidDetails}>
@@ -376,11 +376,11 @@ const getStyles = () =>
   StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: '#f5f5f5',
+      backgroundColor: '#F3E99F', // Light yellow background
     },
     header: {
       padding: 16,
-      backgroundColor: '#6200ee',
+      backgroundColor: '#FF6D60', // Coral red header
       elevation: 4,
     },
     headerTitle: {
@@ -393,7 +393,7 @@ const getStyles = () =>
       padding: 16,
     },
     scanButton: {
-      backgroundColor: '#6200ee',
+      backgroundColor: '#FF6D60', // Coral red
       padding: 16,
       borderRadius: 8,
       alignItems: 'center',
@@ -412,6 +412,8 @@ const getStyles = () =>
       padding: 16,
       marginBottom: 16,
       elevation: 2,
+      borderLeftWidth: 5,
+      borderLeftColor: '#98D8AA', // Light green left border
     },
     connectedHeader: {
       flexDirection: 'row',
@@ -422,6 +424,9 @@ const getStyles = () =>
       fontSize: 16,
       fontWeight: 'bold',
       marginLeft: 8,
+      color: '#FF6D60', // Coral red
+      textDecorationLine: 'underline',
+      textDecorationColor: '#F7D060', // Yellow underline
     },
     connectedDeviceInfo: {
       marginBottom: 12,
@@ -429,14 +434,15 @@ const getStyles = () =>
     connectedDeviceName: {
       fontSize: 16,
       fontWeight: '500',
+      color: '#FF6D60', // Coral red
     },
     connectedDeviceId: {
       fontSize: 12,
-      color: '#666',
+      color: '#555',
       marginTop: 4,
     },
     disconnectButton: {
-      backgroundColor: '#f44336',
+      backgroundColor: '#FF6D60', // Coral red
       padding: 10,
       borderRadius: 6,
       alignItems: 'center',
@@ -451,6 +457,8 @@ const getStyles = () =>
       borderRadius: 8,
       elevation: 2,
       padding: 16,
+      borderLeftWidth: 5,
+      borderLeftColor: '#98D8AA', // Light green left border
     },
     listHeader: {
       flexDirection: 'row',
@@ -461,6 +469,9 @@ const getStyles = () =>
     deviceListTitle: {
       fontSize: 16,
       fontWeight: 'bold',
+      color: '#FF6D60', // Coral red
+      textDecorationLine: 'underline',
+      textDecorationColor: '#F7D060', // Yellow underline
     },
     deviceCount: {
       fontSize: 12,
@@ -495,7 +506,7 @@ const getStyles = () =>
     deviceName: {
       fontSize: 16,
       fontWeight: '500',
-      color: '#333',
+      color: '#FF6D60', // Coral red
     },
     deviceId: {
       fontSize: 12,
@@ -528,6 +539,8 @@ const getStyles = () =>
       backgroundColor: 'white',
       borderRadius: 12,
       maxHeight: '80%',
+      borderLeftWidth: 5,
+      borderLeftColor: '#98D8AA', // Light green left border
     },
     modalHeader: {
       flexDirection: 'row',
@@ -540,6 +553,9 @@ const getStyles = () =>
     modalTitle: {
       fontSize: 18,
       fontWeight: 'bold',
+      color: '#FF6D60', // Coral red
+      textDecorationLine: 'underline',
+      textDecorationColor: '#F7D060', // Yellow underline
     },
     modalSubtitle: {
       fontSize: 14,
@@ -562,7 +578,7 @@ const getStyles = () =>
       backgroundColor: '#f5f5f5',
     },
     uuidModeButtonActive: {
-      backgroundColor: '#6200ee',
+      backgroundColor: '#FF6D60', // Coral red
     },
     uuidModeButtonText: {
       textAlign: 'center',
@@ -579,7 +595,7 @@ const getStyles = () =>
     sectionTitle: {
       fontSize: 14,
       fontWeight: '500',
-      color: '#666',
+      color: '#FF6D60', // Coral red
       marginBottom: 8,
     },
     uuidScrollView: {
@@ -595,10 +611,10 @@ const getStyles = () =>
       marginBottom: 8,
     },
     selectedUuidItem: {
-      borderColor: '#6200ee',
-      backgroundColor: '#f3e5ff',
+      borderColor: '#FF6D60', // Coral red
+      backgroundColor: '#f5f5f5', 
     },
-    uuidRadio: {
+    uuidSelect: {
       width: 20,
       height: 20,
       borderRadius: 10,
@@ -608,11 +624,11 @@ const getStyles = () =>
       alignItems: 'center',
       justifyContent: 'center',
     },
-    uuidRadioSelected: {
+    uuidSelected: {
       width: 10,
       height: 10,
       borderRadius: 5,
-      backgroundColor: '#6200ee',
+      backgroundColor: '#FF6D60', // Coral red
     },
     uuidDetails: {
       flex: 1,
@@ -620,6 +636,7 @@ const getStyles = () =>
     uuidName: {
       fontWeight: '500',
       marginBottom: 4,
+      color: '#FF6D60', // Coral red
     },
     uuidValue: {
       fontSize: 12,
@@ -634,12 +651,12 @@ const getStyles = () =>
     },
     inputLabel: {
       fontSize: 14,
-      color: '#666',
+      color: '#FF6D60', // Coral red
       marginBottom: 4,
     },
     input: {
       borderWidth: 1,
-      borderColor: '#ddd',
+      borderColor: '#F7D060', // Yellow
       borderRadius: 8,
       padding: 12,
       backgroundColor: '#f9f9f9',
@@ -653,14 +670,14 @@ const getStyles = () =>
     },
     primaryButton: {
       flex: 1,
-      backgroundColor: '#6200ee',
+      backgroundColor: '#98D8AA', // Light green
       padding: 14,
       borderRadius: 8,
       alignItems: 'center',
       marginLeft: 8,
     },
     primaryButtonDisabled: {
-      backgroundColor: '#b388ff',
+      backgroundColor: '#C1E1C1', // Lighter green
     },
     primaryButtonText: {
       color: 'white',
@@ -668,14 +685,14 @@ const getStyles = () =>
     },
     secondaryButton: {
       flex: 1,
-      backgroundColor: '#e0e0e0',
+      backgroundColor: '#FF6D60', // Coral red
       padding: 14,
       borderRadius: 8,
       alignItems: 'center',
       marginRight: 8,
     },
     secondaryButtonText: {
-      color: '#333',
+      color: 'white',
       fontWeight: '500',
     },
   });

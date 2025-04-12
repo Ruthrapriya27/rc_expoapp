@@ -321,14 +321,14 @@ const KeyScreen = () => {
       borderRadius: 12,
       justifyContent: 'space-evenly',
       height: '90%',
-      backgroundColor: '#ffffff'
+      backgroundColor: '#F3E99F' // Light yellow for main background
     },
     buttonContainer: {
       flexDirection: 'column',
       justifyContent: 'center'
     },
     button: {
-      backgroundColor: '#E5E5EA',
+      backgroundColor: '#98D8AA', // Light green button
       padding: 15,
       borderRadius: 8,
       alignItems: 'center',
@@ -345,14 +345,16 @@ const KeyScreen = () => {
       marginBottom: 20,
       paddingHorizontal: 20,
       paddingVertical: 12,
-      backgroundColor: '#E0F7FA', 
+      backgroundColor: '#ffffff', // Section container background
+      borderLeftWidth: 4,
+      borderLeftColor: '#98D8AA', // Light green left border
       borderRadius: 10,
-      height: 60,                 
+      height: 60,
       justifyContent: 'center'
     },
     deviceNameText: {
       fontWeight: 'bold',
-      fontSize: 16,              
+      fontSize: 16,
       color: '#000000',
       textAlign: 'center'
     },
@@ -364,7 +366,7 @@ const KeyScreen = () => {
     },
     modalContent: {
       margin: 20,
-      backgroundColor: 'white',
+      backgroundColor: '#ffffff', // White modal background
       borderRadius: 20,
       padding: 35,
       alignItems: 'center',
@@ -379,10 +381,14 @@ const KeyScreen = () => {
       fontSize: 20,
       fontWeight: 'bold',
       marginBottom: 20,
-      textAlign: 'center'
+      textAlign: 'center',
+      color: '#FF6D60', // Coral red title
+      borderBottomWidth: 2,
+      borderBottomColor: '#F7D060', // Yellow underline
+      paddingBottom: 4
     },
     input: {
-      borderColor: '#cccccc',
+      borderColor: '#F7D060', // Yellow border
       borderWidth: 1,
       borderRadius: 8,
       padding: 12,
@@ -402,17 +408,16 @@ const KeyScreen = () => {
       alignItems: 'center'
     },
     cancelButton: {
-      backgroundColor: '#E5E5EA'
+      backgroundColor: '#FF6D60' // Coral red button
     },
     sendButton: {
-      backgroundColor: '#E5E5EA'
+      backgroundColor: '#98D8AA' // Light green button
     },
     modalButtonText: {
       color: '#000000',
       fontWeight: 'bold',
       textAlign: 'center'
     }
-  };
-  
+  };  
 
 export default KeyScreen;

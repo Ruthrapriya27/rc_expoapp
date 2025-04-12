@@ -100,7 +100,7 @@ const DashboardScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F7F7F7',
+    backgroundColor: '#F3E99F', // Light yellow
     padding: 16,
   },
   header: {
@@ -113,7 +113,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 22,
     fontWeight: '600',
-    color: '#1C1C1E',
+    color: '#FF6D60', // Coral red
   },
   clearButton: {
     padding: 8,
@@ -125,13 +125,17 @@ const styles = StyleSheet.create({
   infoText: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#333',
+    color: '#FF6D60', // Coral red
     marginBottom: 4,
+    textDecorationLine: 'underline',
+    textDecorationColor: '#F7D060', // Yellow underline
   },
   logsContainer: {
     flex: 1,
     backgroundColor: '#FFFFFF',
     borderRadius: 12,
+    borderLeftWidth: 4,
+    borderLeftColor: '#98D8AA', // Light green left border
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
