@@ -2,9 +2,13 @@ import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 
-import UserScreen from '../LoginScreens/UserScreen';
+import LoginScreen from '../LoginScreens/LoginScreen.js';
 import TabScreen from './TabScreen'
 import DashboardScreen from '../Screens/DashboardScreen';
+import SignUpScreen from '../LoginScreens/SignUpScreen.js';
+import OtpScreen from '../LoginScreens/OtpScreen';
+import NewUserRegistrationScreen from '../LoginScreens/NewUserRegistrationScreen';
+import ForgotPasswordScreen from '../LoginScreens/ForgetPasswordScreen.js';
 
 const Stack = createStackNavigator();
 
@@ -18,11 +22,35 @@ const App = () =>
         {{
           headerTitleAlign: 'center' 
         }}
-      >
+      > 
         <Stack.Screen
-          name="Users"
-          component={UserScreen}
+          name="Login"
+          component={LoginScreen}
           options={{ title: 'Login/Signup',headerShown: false}}
+        />
+         
+        <Stack.Screen
+          name="SignUp"
+          component={SignUpScreen}
+          options={{ title: 'New User Registration',headerShown: true}}
+        />
+         
+         <Stack.Screen
+          name="OtpVerification"
+          component={OtpScreen}
+          options={{ title: 'OTP',headerShown: true}}
+        />
+         
+         <Stack.Screen
+          name="Forgot Password"
+          component={ForgotPasswordScreen}
+          options={{ title: 'Rest Password',headerShown: true}}
+        />
+
+        <Stack.Screen
+          name="User Registration"
+          component={NewUserRegistrationScreen}
+          options={{ title: 'Create Account',headerShown: true}}
         />
 
         <Stack.Screen

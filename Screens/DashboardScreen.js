@@ -1,25 +1,29 @@
-import React, { useContext } from 'react';
-import { View, Text, FlatList, StyleSheet, Alert, TouchableOpacity } from 'react-native';
+import React, { useContext, useState } from 'react';
+import { View, Text, FlatList, StyleSheet, Alert, TouchableOpacity, Animated, Easing } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LogContext } from '../Context/LogContext';
 
 const DashboardScreen = () => {
   const { logs, clearLogs, deviceId, customerName, timestamp, rfChannel } = useContext(LogContext);
+  const [areLogsExpanded, setAreLogsExpanded] = useState(false);
+  const [animation] = useState(new Animated.Value(0));
+
+  const toggleLogs = () => {
+    Animated.timing(animation, {
+      toValue: areLogsExpanded ? 0 : 1,
+      duration: 300,
+      easing: Easing.out(Easing.cubic),
+      useNativeDriver: false,
+    }).start(() => setAreLogsExpanded(!areLogsExpanded));
+  };
 
   const handleClearPress = () => {
     Alert.alert(
       'Clear All Logs',
       'Are you sure you want to clear all the logs?',
       [
-        {
-          text: 'Cancel',
-          style: 'cancel',
-        },
-        {
-          text: 'Delete All',
-          style: 'destructive',
-          onPress: () => clearLogs(),
-        },
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Delete All', style: 'destructive', onPress: () => clearLogs() }
       ],
       { cancelable: true }
     );
@@ -45,6 +49,16 @@ const DashboardScreen = () => {
     { key: 'Timestamp', value: timestamp || 'N/A' },
     { key: 'RF Channel', value: rfChannel || 'N/A' },
   ];
+
+  const containerHeight = animation.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, 300] // Adjust this value based on your content height
+  });
+
+  const rotateArrow = animation.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '180deg']
+  });
 
   return (
     <View style={styles.container}>
@@ -77,7 +91,26 @@ const DashboardScreen = () => {
         </TouchableOpacity>
       </View>
 
-      <View style={styles.logsContainer}>
+      <TouchableOpacity onPress={toggleLogs} style={styles.toggleButton}>
+        <Animated.Text style={[styles.toggleText, { transform: [{ rotate: rotateArrow }] }]}>
+          <Ionicons name="chevron-down" size={20} color="#007AFF" />
+        </Animated.Text>
+        <Text style={styles.toggleLabel}>
+          {areLogsExpanded ? 'Hide Logs' : 'Show Logs'}
+        </Text>
+      </TouchableOpacity>
+
+      <Animated.View style={[
+        styles.logsContainer,
+        { 
+          height: containerHeight,
+          opacity: animation,
+          padding: animation.interpolate({
+            inputRange: [0, 1],
+            outputRange: [0, 12]
+          })
+        }
+      ]}>
         {!logs || logs.length === 0 ? (
           <View style={styles.emptyState}>
             <Ionicons name="time-outline" size={40} color="#AEAEB2" />
@@ -92,7 +125,7 @@ const DashboardScreen = () => {
             showsVerticalScrollIndicator={false}
           />
         )}
-      </View>
+      </Animated.View>
     </View>
   );
 };
@@ -100,48 +133,55 @@ const DashboardScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F3E99F', // Light yellow
+    backgroundColor: '#F3E99F',
     padding: 16,
   },
   header: {
-    fontSize: 18,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 20,  
+    marginBottom: 20,
   },
   title: {
     fontSize: 22,
     fontWeight: '600',
-    color: '#FF6D60', // Coral red
+    color: '#FF6D60',
+  },
+  toggleButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    backgroundColor: 'rgba(0, 122, 255, 0.1)',
+    borderRadius: 8,
+    marginBottom: 10,
+    marginTop: -6,
+    alignSelf: 'center',
+    minWidth: '60%', 
+  },
+  toggleText: {
+    marginRight: 8,
+  },
+  toggleLabel: {
+    color: '#59981a',
+    fontWeight: 'bold',
   },
   clearButton: {
     padding: 8,
   },
-  deviceInfo: {
-    marginBottom: 16,
-    paddingHorizontal: 4,
-  },
-  infoText: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#FF6D60', // Coral red
-    marginBottom: 4,
-    textDecorationLine: 'underline',
-    textDecorationColor: '#F7D060', // Yellow underline
-  },
   logsContainer: {
-    flex: 1,
     backgroundColor: '#FFFFFF',
     borderRadius: 12,
     borderLeftWidth: 4,
-    borderLeftColor: '#98D8AA', // Light green left border
+    borderLeftColor: '#98D8AA',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: { width: 0, height: 2},
     shadowOpacity: 0.08,
     shadowRadius: 6,
     elevation: 3,
     marginBottom: 16,
+    overflow: 'hidden',
   },
   emptyState: {
     flex: 1,

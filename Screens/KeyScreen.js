@@ -3,6 +3,8 @@ import { View, Alert, TextInput, Modal, Text, TouchableOpacity , StyleSheet} fro
 import { BluetoothContext } from '../Context/BluetoothContext';
 import { LogContext } from '../Context/LogContext';
 import { Buffer } from 'buffer';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import { Picker } from '@react-native-picker/picker';
 
 const KeyScreen = () => {
   const { connectedDevice, serviceUUID, writeUUID, readUUID } = useContext(BluetoothContext);
@@ -13,6 +15,8 @@ const KeyScreen = () => {
   const [currentAction, setCurrentAction] = useState(null);
   const [serialNumber, setSerialNumber] = useState('');
   const [deviceName, setDeviceName] = useState('');
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(null);
 
   useEffect(() => {
     let subscription;
@@ -160,7 +164,7 @@ const KeyScreen = () => {
         return JSON.stringify({ cmd: "DEV_SERIAL_NO_GET" });
       }
     },
-  
+
     {
       title: 'Set Device ID CODE',
       action: 'DEV_IDCODE_SET',
@@ -173,23 +177,26 @@ const KeyScreen = () => {
         return JSON.stringify({ cmd: "DEV_IDCODE_SET", args: [value] });
       }
     },
+
     {
       title: 'Set Timestamp',
       action: 'PROD_TIMESTAMP_SET',
       needsInput: true,
-      placeholder: 'Enter Year and Month (e.g., 202503)',
+      placeholder: 'Select Year and Month',
       validate: (value) => /^\d{6}$/.test(value),
       errorMessage: 'Invalid input. Format must be YYYYMM.',
       onSend: (value) => {
+        // value is in the format YYYYMM from calendar picker
         setTimestamp(value);
         const year = parseInt(value.substring(0, 4));
         const month = parseInt(value.substring(4, 6));
         return JSON.stringify({
-          cmd: "PROD_TIMESTAMP_SET",
-          args: [{ year: year, month: month }]
+          cmd: 'PROD_TIMESTAMP_SET',
+          args: [{ year: year, month: month }],
         });
       }
     },
+    
     {
       title: 'Set Customer Name',
       action: 'CUSTOMER_NAME_SET',
@@ -213,16 +220,16 @@ const KeyScreen = () => {
     {
       title: 'Set RF Channel',
       action: 'RF_CHANNEL_SET',
-      needsInput: true,
-      placeholder: 'Enter RF Channel (e.g., 1)',
-      validate: (value) => /^[0-9]+$/.test(value),
+      needsInput: true,  
+      placeholder: 'Select RF Channel',  
+      validate: (value) => /^[0-9]+$/.test(value), 
       errorMessage: 'Invalid input. Only numeric values allowed.',
       onSend: (value) => {
-        setRfChannel(value)
-        return JSON.stringify({ cmd: "RF_CHANNEL_SET", args: [parseInt(value)] });
+        setRfChannel(value); 
+        return JSON.stringify({ cmd: "RF_CHANNEL_SET", args: [parseInt(value,10)] });
       }
-      },
-
+    },
+    
     {
       title: 'Get RF Channel',
       action: 'RF_CHANNEL_GET',
@@ -274,42 +281,93 @@ const KeyScreen = () => {
       </View>
   
       <Modal
-        animationType="slide"
-        transparent={true}
-        visible={modalVisible}
-        onRequestClose={() => setModalVisible(false)}
-      >
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>{currentAction?.title}</Text>
-  
-            {currentAction?.needsInput && (
-              <TextInput
-                placeholder={currentAction.placeholder}
-                value={inputValue}
-                onChangeText={setInputValue}
-                style={styles.input}
-              />
-            )}
-  
-            <View style={styles.modalButtons}>
-              <TouchableOpacity
-                style={[styles.modalButton, styles.cancelButton]}
-                onPress={() => setModalVisible(false)}
-              >
-                <Text style={styles.modalButtonText}>Cancel</Text>
-              </TouchableOpacity>
-  
-              <TouchableOpacity
-                style={[styles.modalButton, styles.sendButton]}
-                onPress={handleSend}
-              >
-                <Text style={styles.modalButtonText}>Send</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
+  animationType="slide"
+  transparent={true}
+  visible={modalVisible}
+  onRequestClose={() => setModalVisible(false)}
+>
+  <View style={styles.modalContainer}>
+    <View style={styles.modalContent}>
+      <Text style={styles.modalTitle}>{currentAction?.title}</Text>
+
+      {currentAction?.title === 'Set Timestamp' ? (
+        <>
+          <TouchableOpacity
+            onPress={() => setShowDatePicker(true)}
+            style={styles.input}
+          >
+            <Text>
+              {selectedDate
+                ? `${selectedDate.getFullYear()}${String(
+                    selectedDate.getMonth() + 1
+                  ).padStart(2, '0')}`
+                : 'Pick Year and Month'}
+            </Text>
+          </TouchableOpacity>
+
+          {showDatePicker && (
+            <DateTimePicker
+              value={selectedDate || new Date()}
+              mode="date"
+              display="calendar"
+              onChange={(event, selected) => {
+                setShowDatePicker(false);
+                if (selected) {
+                  setSelectedDate(selected);
+                  const y = selected.getFullYear();
+                  const m = selected.getMonth() + 1;
+                  setInputValue(`${y}${m < 10 ? '0' + m : m}`);
+                }
+              }}
+              minimumDate={new Date(2000, 0, 1)}
+              maximumDate={new Date(2099, 11, 31)}
+            />
+          )}
+        </>
+      ) : currentAction?.title === 'Set RF Channel' ? (
+        <View style={styles.input}>
+          <Picker
+            selectedValue={inputValue}
+            onValueChange={(itemValue) => setInputValue(itemValue)}
+          >
+            <Picker.Item label="None" value="" />
+            <Picker.Item label="1" value="1" />
+            <Picker.Item label="2" value="2" />
+            <Picker.Item label="3" value="3" />
+            <Picker.Item label="4" value="4" />
+            <Picker.Item label="5" value="5" />
+          </Picker>
         </View>
-      </Modal>
+      ) : (
+        currentAction?.needsInput && (
+          <TextInput
+            placeholder={currentAction.placeholder}
+            value={inputValue}
+            onChangeText={setInputValue}
+            style={styles.input}
+          />
+        )
+      )}
+
+      <View style={styles.modalButtons}>
+        <TouchableOpacity
+          style={[styles.modalButton, styles.cancelButton]}
+          onPress={() => setModalVisible(false)}
+        >
+          <Text style={styles.modalButtonText}>Cancel</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.modalButton, styles.sendButton]}
+          onPress={handleSend}
+        >
+          <Text style={styles.modalButtonText}>Send</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  </View>
+</Modal>
+
     </View>
   );
   };
@@ -345,7 +403,7 @@ const KeyScreen = () => {
       marginBottom: 20,
       paddingHorizontal: 20,
       paddingVertical: 12,
-      backgroundColor: '#ffffff', // Section container background
+      backgroundColor: '#ffffff', // Section container
       borderLeftWidth: 4,
       borderLeftColor: '#98D8AA', // Light green left border
       borderRadius: 10,
@@ -421,3 +479,68 @@ const KeyScreen = () => {
   };  
 
 export default KeyScreen;
+
+// import React, { useState } from 'react';
+// import { View, Text, TouchableOpacity, Platform, Alert } from 'react-native';
+// import DateTimePicker from '@react-native-community/datetimepicker';
+
+// const KeyScreen = () => {
+//   const [showPicker, setShowPicker] = useState(false);
+//   const [selectedYearMonth, setSelectedYearMonth] = useState(null);
+
+//   const showDatePicker = () => {
+//     setShowPicker(true);
+//   };
+
+//   const onChange = (event, selectedDate) => {
+//     setShowPicker(false);
+//     if (selectedDate) {
+//       const year = selectedDate.getFullYear();
+//       const month = selectedDate.getMonth() + 1;
+//       const formatted = `${year}-${month < 10 ? '0' + month : month}`;
+
+//       setSelectedYearMonth(formatted);
+
+//       const jsonCommand = {
+//         command: 'setDate',
+//         yearMonth: formatted,
+//       };
+
+//       console.log('Generated JSON Command:', JSON.stringify(jsonCommand));
+//       Alert.alert('Selected Year-Month', formatted);
+//     }
+//   };
+
+//   return (
+//     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+//       <TouchableOpacity
+//         onPress={showDatePicker}
+//         style={{
+//           padding: 10,
+//           backgroundColor: '#FFA500',
+//           borderRadius: 5,
+//           marginBottom: 20,
+//         }}
+//       >
+//         <Text style={{ color: '#fff' }}>Pick Year and Month</Text>
+//       </TouchableOpacity>
+
+//       {selectedYearMonth && <Text>Selected Year-Month: {selectedYearMonth}</Text>}
+
+//       {showPicker && (
+//         <DateTimePicker
+//           value={new Date()}
+//           mode="date"
+//           display={Platform.OS === 'ios' ? 'spinner' : 'calendar'}
+//           onChange={onChange}
+//           maximumDate={new Date()}
+//           minimumDate={new Date(2000, 0, 1)}
+//         />
+//       )}
+//     </View>
+//   );
+// };
+
+// export default KeyScreen;
+
+

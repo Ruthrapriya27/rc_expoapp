@@ -7,7 +7,7 @@ export const LogProvider = ({ children }) => {
   const [deviceId, setDeviceId] = useState("N/A");
   const [customerName, setCustomerName] = useState("N/A");
   const [timestamp, setTimestamp] = useState("N/A");
-  const [RfChannel, setRfChannel] = useState("N/A");
+  const [rfChannel, setRfChannel] = useState("N/A");
   
   const addLog = (log) => {
     setLogs((prevLogs) => [log, ...prevLogs]);
@@ -29,7 +29,7 @@ export const LogProvider = ({ children }) => {
         setCustomerName,
         setTimestamp,
         timestamp,
-        RfChannel,
+        rfChannel,
         setRfChannel
       }}
     >

@@ -85,10 +85,6 @@ const BluetoothConfigScreen = () => {
         setIsScanning(false);
         return;
       }
-<<<<<<< HEAD
-=======
-      
->>>>>>> development
       if (device?.name?.startsWith("SIO-RX-")) {
         setDevices((prev) => {
           const exists = prev.some((d) => d.id === device.id);
@@ -120,18 +116,9 @@ const BluetoothConfigScreen = () => {
       serviceUUID = selectedPredefinedUUID.service;
       writeUUID = selectedPredefinedUUID.write;
       readUUID = selectedPredefinedUUID.read;
-<<<<<<< HEAD
     } else {
       if (!customUUIDs.service || !customUUIDs.write) {
         Alert.alert('Incomplete UUIDs', 'Please provide at least Service and Write UUIDs');
-=======
-    } 
-    else 
-    {
-      if (!customUUIDs.service || !customUUIDs.write) 
-      {
-        console.warn('Custom UUIDs are incomplete');
->>>>>>> development
         return;
       }
       serviceUUID = customUUIDs.service;
@@ -139,13 +126,8 @@ const BluetoothConfigScreen = () => {
       readUUID = customUUIDs.read || '';
     }
 
-<<<<<<< HEAD
     try {
       setShowUuidModal(false);
-=======
-    try 
-    {
->>>>>>> development
       const connected = await manager.connectToDevice(device.id, { autoConnect: false });
       await connected.discoverAllServicesAndCharacteristics();
       await connected.requestMTU(512);
@@ -187,7 +169,6 @@ const BluetoothConfigScreen = () => {
     }
   };
 
-<<<<<<< HEAD
   const renderDeviceItem = ({ item }) => (
     <TouchableOpacity 
       onPress={() => connectToDevice(item)} 
@@ -204,35 +185,11 @@ const BluetoothConfigScreen = () => {
         <Text style={styles.deviceId}>{item.id}</Text>
       </View>
       <Icon name="chevron-right" size={24} color="#888" />
-=======
-  const renderDeviceItem = ({ item }) => 
-    (
-    <TouchableOpacity onPress={() => connectToDevice(item)} style={styles.deviceItem}>
-      <Text style={styles.deviceName}>{item.name}</Text>
-      <Text style={styles.deviceId}>{item.id}</Text>
->>>>>>> development
     </TouchableOpacity>
     );
 
-<<<<<<< HEAD
   return (
     <View style={styles.container}>
-=======
-    return (
-      <View style={styles.container}>
-         <TouchableOpacity 
-      onPress={scanDevices}
-      disabled={isScanning}
-      style={[
-        styles.scanButton,
-        isScanning && styles.scanButtonDisabled
-      ]}
-    >
-      <Text style={styles.scanButtonText}>
-        {isScanning ? 'Scanning...' : 'Scan for Devices'}
-      </Text>
-    </TouchableOpacity>
->>>>>>> development
 
       <View style={styles.content}>
         <TouchableOpacity 
@@ -296,7 +253,6 @@ const BluetoothConfigScreen = () => {
       <Modal visible={showUuidModal} transparent animationType="fade">
         <View style={styles.modalBackground}>
           <View style={styles.modalContainer}>
-<<<<<<< HEAD
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Connection Settings</Text>
               <TouchableOpacity onPress={() => setShowUuidModal(false)}>
@@ -397,63 +353,6 @@ const BluetoothConfigScreen = () => {
                   />
                 </View>
               </View>
-=======
-            <TouchableOpacity onPress={() => setUuidMode('predefined')} style={{ marginBottom: 10 }}>
-              <Text style={{ color: uuidMode === 'predefined' ? 'black' : 'gray' }}>• Predefined UUIDs</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => setUuidMode('custom')} style={{ marginBottom: 10 }}>
-              <Text style={{ color: uuidMode === 'custom' ? 'black' : 'gray' }}>• Custom UUIDs</Text>
-            </TouchableOpacity>
-
-            {uuidMode === 'predefined' && 
-            (
-              <ScrollView style={{ maxHeight: 150 }}>
-                {predefinedUUIDList.map((uuid, index) => (
-                  <TouchableOpacity
-                    key={index}
-                    onPress={() => setSelectedPredefinedUUID(uuid)}
-                    style={{
-                      padding: 8,
-                      borderWidth: selectedPredefinedUUID.name === uuid.name ? 2 : 1,
-                      borderColor: '#888',
-                      marginBottom: 5,
-                    }}
-                  >
-                    <Text style={{ fontWeight: 'bold' }}>{uuid.name}</Text>
-                    <Text>Service: {uuid.service}</Text>
-                    <Text>Read: {uuid.read}</Text>
-                    <Text>Write: {uuid.write}</Text>
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
-            )}
-
-            {uuidMode === 'custom' && 
-            (
-              <ScrollView style={{ marginTop: 10 }}>
-                <Text>Service UUID:</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Enter service UUID"
-                  value={customUUIDs.service}
-                  onChangeText={(text) => setCustomUUIDs({ ...customUUIDs, service: text })}
-                />
-                <Text>Read Characteristic UUID:</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Enter read UUID"
-                  value={customUUIDs.read}
-                  onChangeText={(text) => setCustomUUIDs({ ...customUUIDs, read: text })}
-                />
-                <Text>Write Characteristic UUID:</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Enter write UUID"
-                  value={customUUIDs.write}
-                  onChangeText={(text) => setCustomUUIDs({ ...customUUIDs, write: text })}
-                />
-              </ScrollView>
->>>>>>> development
             )}
 
             <View style={styles.modalButtons}>
@@ -488,16 +387,11 @@ const getStyles = () =>
   StyleSheet.create({
     container: {
       flex: 1,
-<<<<<<< HEAD
       backgroundColor: '#F3E99F', // Light yellow background
     },
     header: {
       padding: 16,
       backgroundColor: '#FF6D60', // Coral red header
-=======
-      padding: 20,
-      backgroundColor: '#F3E99F', // Light yellow 
->>>>>>> development
       elevation: 4,
     },
     headerTitle: {
@@ -527,7 +421,6 @@ const getStyles = () =>
       backgroundColor: 'white',
       borderRadius: 8,
       padding: 16,
-<<<<<<< HEAD
       marginBottom: 16,
       elevation: 2,
       borderLeftWidth: 5,
@@ -537,22 +430,10 @@ const getStyles = () =>
       flexDirection: 'row',
       alignItems: 'center',
       marginBottom: 8,
-=======
-      marginTop: 20,
-      backgroundColor: '#FFFFFF',
-      borderLeftWidth: 5,
-      borderLeftColor: '#98D8AA', // Light green 
-      elevation: 4,
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.3,
-      shadowRadius: 4,
->>>>>>> development
     },
     connectedTitle: {
       fontSize: 16,
       fontWeight: 'bold',
-<<<<<<< HEAD
       marginLeft: 8,
       color: '#FF6D60', // Coral red
       textDecorationLine: 'underline',
@@ -580,16 +461,10 @@ const getStyles = () =>
     disconnectButtonText: {
       color: 'white',
       fontWeight: '500',
-=======
-      color: '#FF6D60', // Coral red
-      textDecorationLine: 'underline',
-      textDecorationColor: '#F7D060', // Yellow 
->>>>>>> development
     },
     deviceListContainer: {
       flex: 1,
       backgroundColor: 'white',
-<<<<<<< HEAD
       borderRadius: 8,
       elevation: 2,
       padding: 16,
@@ -601,22 +476,12 @@ const getStyles = () =>
       justifyContent: 'space-between',
       alignItems: 'center',
       marginBottom: 12,
-=======
-      borderLeftWidth: 5,
-      borderLeftColor: '#98D8AA', // Light green 
-      elevation: 4,
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.3,
-      shadowRadius: 4,
->>>>>>> development
     },
     deviceListTitle: {
       fontSize: 16,
       fontWeight: 'bold',
       color: '#FF6D60', // Coral red
       textDecorationLine: 'underline',
-<<<<<<< HEAD
       textDecorationColor: '#F7D060', // Yellow underline
     },
     deviceCount: {
@@ -625,9 +490,6 @@ const getStyles = () =>
     },
     listContent: {
       paddingBottom: 8,
-=======
-      textDecorationColor: '#F7D060', // Yellow 
->>>>>>> development
     },
     deviceItem: {
       flexDirection: 'row',
@@ -686,7 +548,6 @@ const getStyles = () =>
     },
     modalContainer: {
       backgroundColor: 'white',
-<<<<<<< HEAD
       borderRadius: 12,
       maxHeight: '80%',
       borderLeftWidth: 5,
@@ -699,19 +560,10 @@ const getStyles = () =>
       padding: 16,
       borderBottomWidth: 1,
       borderColor: '#eee',
-=======
-      borderRadius: 10,
-      padding: 20,
-      maxHeight: '90%',
-      elevation: 5,
-      borderLeftWidth: 5,
-      borderLeftColor: '#98D8AA', // Light green 
->>>>>>> development
     },
     modalTitle: {
       fontSize: 18,
       fontWeight: 'bold',
-<<<<<<< HEAD
       color: '#FF6D60', // Coral red
       textDecorationLine: 'underline',
       textDecorationColor: '#F7D060', // Yellow underline
@@ -819,18 +671,6 @@ const getStyles = () =>
       borderRadius: 8,
       padding: 12,
       backgroundColor: '#f9f9f9',
-=======
-      marginBottom: 10,
-      color: '#FF6D60', // Coral red
-      textDecorationLine: 'underline',
-      textDecorationColor: '#F7D060', // Yellow 
-    },
-    input: {
-      borderWidth: 1,
-      borderColor: '#F7D060', // Yellow 
-      padding: 8,
-      marginBottom: 10,
->>>>>>> development
     },
     modalButtons: {
       flexDirection: 'row',

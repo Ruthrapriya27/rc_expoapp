@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import { Ionicons, MaterialIcons, FontAwesome } from '@expo/vector-icons';
 
-const UserScreen = ({ navigation }) => {
+const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
   const [showPassword, setShowPassword] = React.useState(false);
@@ -56,9 +56,9 @@ const UserScreen = ({ navigation }) => {
       {/* Password Input */}
       <View style={styles.BoxAboveHeader}>
         <Text style={styles.label}>Enter your password</Text>
-        <TouchableOpacity>
-          <Text style={styles.forgotPassword}>Forgot password?</Text>
-        </TouchableOpacity>
+        <TouchableOpacity onPress={() => navigation.navigate('Forgot Password')}>
+  <Text style={styles.forgotPassword}>Forgot password?</Text>
+</TouchableOpacity>
       </View>
 
       <View style={styles.passwordContainer}>
@@ -100,9 +100,9 @@ const UserScreen = ({ navigation }) => {
       {/* Signup Link */}
       <View style={styles.signupContainer}>
         <Text style={styles.signupLabel}>Don't have an account? </Text>
-        <TouchableOpacity>
-          <Text style={styles.signupLink}>Sign up here</Text>
-        </TouchableOpacity>
+        <TouchableOpacity onPress={() => navigation.navigate('Forgot Password')}>
+    <Text style={styles.forgotPassword}>Forgot password?</Text>
+  </TouchableOpacity>
       </View>
     </View>
   );
@@ -143,7 +143,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     backgroundColor: '#fff',
     borderLeftWidth: 5, 
-    borderLeftColor: '#98D8AA',// Light green l
+    borderLeftColor: '#98D8AA',// Light green 
   },
   inputBox: {
     flex: 1,
@@ -217,4 +217,4 @@ const styles = StyleSheet.create({
   }
 });
 
-export default UserScreen;
+export default LoginScreen;

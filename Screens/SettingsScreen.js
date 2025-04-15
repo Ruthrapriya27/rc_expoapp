@@ -30,7 +30,7 @@ const SettingsScreen = ({ navigation }) => {
       "Are you sure you want to logout?",
       [
         { text: "Cancel", style: "cancel" },
-        { text: "Logout", onPress: () => navigation.replace('Users') }
+        { text: "Logout", onPress: () => navigation.replace('Login') }
       ]
     );
   };
@@ -207,7 +207,6 @@ const styles = StyleSheet.create({
   // header: 
   // {
   //   marginBottom: 20,
-<<<<<<< HEAD
   //  },
   // headerText: 
   // {
@@ -251,51 +250,6 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     fontWeight: '500',
   },
-=======
-  // },
-  headerText: 
-  {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#FF6D60', // Coral red 
-    marginBottom: 5,
-  },
-  sectionContainer: 
-  {
-    backgroundColor: 'white',
-    borderRadius: 12,
-    padding: 15,
-    marginBottom: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    elevation: 3,
-    borderLeftWidth: 4,
-    borderLeftColor: '#98D8AA', // Light green accent border
-  },
-  sectionTitle: 
-  {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#FF6D60', // Coral red for section titles
-    marginBottom: 15,
-    paddingBottom: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F7D060', // Yellow for section title underline
-  },
-  inputContainer: 
-  {
-    marginBottom: 15,
-  },
-  label: 
-  {
-    fontSize: 14,
-    color: '#555',
-    marginBottom: 8,
-    fontWeight: '500',
-  },
->>>>>>> development
   inputBox: 
   {
     height: 50,
