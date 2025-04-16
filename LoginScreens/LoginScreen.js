@@ -100,8 +100,8 @@ const LoginScreen = ({ navigation }) => {
       {/* Signup Link */}
       <View style={styles.signupContainer}>
         <Text style={styles.signupLabel}>Don't have an account? </Text>
-        <TouchableOpacity onPress={() => navigation.navigate('Forgot Password')}>
-    <Text style={styles.forgotPassword}>Forgot password?</Text>
+        <TouchableOpacity onPress={() => navigation.navigate('SignUp')}>
+    <Text style={styles.forgotPassword}>Signup Here</Text>
   </TouchableOpacity>
       </View>
     </View>

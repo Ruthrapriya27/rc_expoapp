@@ -85,12 +85,17 @@ const BluetoothConfigScreen = () => {
         setIsScanning(false);
         return;
       }
+      // setDevices((prev) => {
+      //   const exists = prev.some((d) => d.id === device.id);
+      //   return exists ? prev : [...prev, device];
+      // });
       if (device?.name?.startsWith("SIO-RX-")) {
         setDevices((prev) => {
           const exists = prev.some((d) => d.id === device.id);
           return exists ? prev : [...prev, device];
         });
       }
+
     });
 
     setTimeout(() => 

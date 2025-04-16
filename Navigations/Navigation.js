@@ -32,25 +32,25 @@ const App = () =>
         <Stack.Screen
           name="SignUp"
           component={SignUpScreen}
-          options={{ title: 'New User Registration',headerShown: true}}
+          options={{ title: 'New User Registration',headerShown: false}}
         />
          
          <Stack.Screen
           name="OtpVerification"
           component={OtpScreen}
-          options={{ title: 'OTP',headerShown: true}}
+          options={{ title: 'OTP',headerShown: false}}
         />
          
          <Stack.Screen
           name="Forgot Password"
           component={ForgotPasswordScreen}
-          options={{ title: 'Rest Password',headerShown: true}}
+          options={{ title: 'Reset Password',headerShown: false}}
         />
 
         <Stack.Screen
           name="User Registration"
           component={NewUserRegistrationScreen}
-          options={{ title: 'Create Account',headerShown: true}}
+          options={{ title: 'Create Account',headerShown: false}}
         />
 
         <Stack.Screen
