@@ -97,61 +97,85 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     padding: 24,
-    backgroundColor: '#F3E99F',
+    backgroundColor: '#F9FAFB', // Background
   },
   title: {
     fontSize: 22,
     fontWeight: 'bold',
     textAlign: 'center',
-    color: '#FF6D60',
+    color: '#1A73E8', // Primary Blue
     marginBottom: 16,
   },
   instruction: {
     textAlign: 'center',
     marginBottom: 24,
-    color: '#333',
+    color: '#5F6368', // Secondary Text
+    fontSize: 15,
   },
   label: {
     marginBottom: 8,
-    color: '#333',
+    color: '#5F6368', // Label text
+    fontSize: 14,
+    fontWeight: '500',
   },
   input: {
     height: 50,
-    borderColor: '#F7D060',
+    borderColor: '#E0E0E0', // Soft border
     borderWidth: 1,
-    borderRadius: 8,
-    paddingLeft: 10,
+    borderRadius: 10,
+    paddingLeft: 12,
     marginBottom: 20,
-    backgroundColor: 'white',
+    backgroundColor: '#FFFFFF', // Card
+    fontSize: 16,
+    color: '#1C1C1C', // Primary text
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
   },
   passwordField: {
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#F7D060',
-    borderRadius: 8,
+    borderColor: '#E0E0E0',
+    borderRadius: 10,
     marginBottom: 20,
-    backgroundColor: 'white',
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
   },
   passwordInput: {
     flex: 1,
-    padding: 12,
+    height: 50,
+    fontSize: 16,
+    color: '#1C1C1C',
   },
   eyeIcon: {
     padding: 10,
   },
   resetButton: {
-    backgroundColor: '#FF6D60',
+    backgroundColor: '#FFA000', // Accent Orange (CTA)
     paddingVertical: 14,
-    borderRadius: 8,
+    borderRadius: 10,
     alignItems: 'center',
     marginTop: 16,
+    shadowColor: '#FFA000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+    elevation: 4,
   },
   buttonText: {
-    color: 'white',
+    color: '#FFFFFF',
     fontSize: 16,
     fontWeight: 'bold',
   },
 });
+
 
 export default ForgotPasswordScreen;

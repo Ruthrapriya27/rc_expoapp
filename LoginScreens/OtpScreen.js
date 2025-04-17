@@ -65,13 +65,13 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     padding: 24,
-    backgroundColor: '#F3E99F',
+    backgroundColor: '#F9FAFB', // Updated background
   },
   title: {
     fontSize: 22,
     fontWeight: '600',
     textAlign: 'center',
-    color: '#FF6D60',
+    color: '#1A73E8', // Primary blue
     marginBottom: 16,
   },
   inputContainer: {
@@ -81,29 +81,47 @@ const styles = StyleSheet.create({
   },
   input: {
     height: 50,
-    borderColor: '#F7D060',
+    borderColor: '#E0E0E0', // Soft border
     borderWidth: 1,
-    borderRadius: 8,
+    borderRadius: 10,
     paddingLeft: 10,
     width: 50,
     textAlign: 'center',
+    backgroundColor: '#FFFFFF',
+    color: '#1C1C1C',
+    fontSize: 18,
+    fontWeight: '500',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
+    elevation: 2,
   },
   button: {
-    backgroundColor: '#98D8AA',
+    backgroundColor: '#FFA000', // Accent amber
     paddingVertical: 14,
-    borderRadius: 8,
+    borderRadius: 10,
     alignItems: 'center',
     marginBottom: 12,
+    shadowColor: '#FFA000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+    elevation: 4,
   },
   buttonText: {
-    color: '#FF6D60',
+    color: '#FFFFFF',
     fontSize: 16,
+    fontWeight: 'bold',
   },
   resendText: {
-    color: '#007bff',
+    color: '#1A73E8', // Primary blue
     textAlign: 'center',
     marginTop: 8,
+    fontSize: 14,
+    fontWeight: '500',
   },
 });
+
 
 export default OTPScreen;

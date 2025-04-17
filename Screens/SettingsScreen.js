@@ -189,133 +189,115 @@ const SettingsScreen = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  container: 
-  {
+  container: {
     flex: 1,
-    backgroundColor: '#F3E99F', // Light yellow 
+    backgroundColor: '#F9FAFB', // Background
   },
-  keyboardView: 
-  {
+  keyboardView: {
     flex: 1,
   },
-  scrollContainer: 
-  {
+  scrollContainer: {
     paddingHorizontal: 25,
     paddingVertical: 20,
     paddingBottom: 40,
   },
-  // header: 
-  // {
-  //   marginBottom: 20,
-  //  },
-  // headerText: 
-  // {
-  //   fontSize: 28,
-  //   fontWeight: 'bold',
-  //   color: '#FF6D60', // Coral red 
-  //   marginBottom: 5,
-  // },
-  sectionContainer: 
-  {
-    backgroundColor: 'white',
+  sectionContainer: {
+    backgroundColor: '#FFFFFF', // Card/Modal
     borderRadius: 12,
     padding: 15,
     marginBottom: 20,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.08,
     shadowRadius: 6,
-    elevation: 3,
-    borderLeftWidth: 4,
-    borderLeftColor: '#98D8AA', // Light green accent border
+    elevation: 4,
+    // borderLeftWidth: 4,
+    // borderLeftColor: '#1A73E8', // Primary blue accent
   },
-  sectionTitle: 
-  {
+  sectionTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#FF6D60', // Coral red for section titles
+    color: '#1A73E8', // Primary blue
     marginBottom: 15,
     paddingBottom: 8,
     borderBottomWidth: 1,
-    borderBottomColor: '#F7D060', // Yellow for section title underline
+    borderBottomColor: '#E0E0E0', // Soft border
   },
-  inputContainer: 
-  {
+  inputContainer: {
     marginBottom: 15,
   },
-  label: 
-  {
+  label: {
     fontSize: 14,
-    color: '#555',
+    color: '#5F6368', // Secondary text
     marginBottom: 8,
     fontWeight: '500',
   },
-  inputBox: 
-  {
+  inputBox: {
     height: 50,
     borderWidth: 1,
-    borderColor: '#F7D060', // Yellow border for inputs
+    borderColor: '#E0E0E0', // Border
     borderRadius: 10,
     paddingHorizontal: 15,
     fontSize: 15,
-    color: '#333',
-    backgroundColor: '#fff',
+    color: '#1C1C1C', // Primary text
+    backgroundColor: '#FFFFFF',
   },
-  passwordContainer: 
-  {
+  passwordContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#F7D060', // Yellow border for password inputs
+    borderColor: '#E0E0E0',
     borderRadius: 10,
     paddingHorizontal: 15,
-    backgroundColor: '#fff',
+    backgroundColor: '#FFFFFF',
   },
-  passwordInput: 
-  {
+  passwordInput: {
     flex: 1,
     height: 50,
     fontSize: 15,
-    color: '#333',
+    color: '#1C1C1C',
   },
-  eyeIcon: 
-  {
+  eyeIcon: {
     padding: 10,
   },
-  saveButton: 
-  {
-    backgroundColor: '#98D8AA', // Light green 
+  saveButton: {
+    backgroundColor: '#1A73E8', // Primary blue for main action
     borderRadius: 10,
     marginTop: 10,
     marginBottom: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
-  logoutButton: 
-  {
-    backgroundColor: '#FF6D60', // Coral red 
+  logoutButton: {
+    backgroundColor: '#FFA000', // Accent amber for alerts
     borderRadius: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
-  buttonContent: 
-  {
+  buttonContent: {
     paddingVertical: 15,
     alignItems: 'center',
     justifyContent: 'center',
     flexDirection: 'row',
   },
-  saveButtonText: 
-  {
-    color: '#fff',
+  saveButtonText: {
+    color: '#FFFFFF',
     fontSize: 16,
     fontWeight: 'bold',
   },
-  logoutButtonText: 
-  {
-    color: '#fff',
+  logoutButtonText: {
+    color: '#FFFFFF',
     fontSize: 16,
     fontWeight: 'bold',
     marginLeft: 10,
   },
-  buttonIcon: 
-  {
+  buttonIcon: {
     marginLeft: 10,
   },
 });

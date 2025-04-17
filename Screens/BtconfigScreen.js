@@ -392,12 +392,16 @@ const getStyles = () =>
   StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: '#F3E99F', // Light yellow background
+      backgroundColor: '#F9FAFB', // Soft background
     },
     header: {
       padding: 16,
-      backgroundColor: '#FF6D60', // Coral red header
+      backgroundColor: '#1A73E8', // Primary blue
       elevation: 4,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 4,
     },
     headerTitle: {
       fontSize: 20,
@@ -409,13 +413,20 @@ const getStyles = () =>
       padding: 16,
     },
     scanButton: {
-      backgroundColor: '#FF6D60', // Coral red
+      backgroundColor: '#FFA000', // Accent amber
       padding: 16,
       borderRadius: 8,
       alignItems: 'center',
       justifyContent: 'center',
-      elevation: 2,
+      elevation: 3,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.1,
+      shadowRadius: 3,
       marginBottom: 16,
+    },
+    scanButtonDisabled: {
+      backgroundColor: '#FFE0B2',
     },
     scanButtonText: {
       color: 'white',
@@ -423,42 +434,37 @@ const getStyles = () =>
       fontSize: 16,
     },
     connectedContainer: {
-      backgroundColor: 'white',
+      backgroundColor: '#FFFFFF',
       borderRadius: 8,
       padding: 16,
       marginBottom: 16,
-      elevation: 2,
       borderLeftWidth: 5,
-      borderLeftColor: '#98D8AA', // Light green left border
-    },
-    connectedHeader: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      marginBottom: 8,
+      borderLeftColor: '#1A73E8',
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.08,
+      shadowRadius: 6,
+      elevation: 2,
     },
     connectedTitle: {
       fontSize: 16,
       fontWeight: 'bold',
       marginLeft: 8,
-      color: '#FF6D60', // Coral red
+      color: '#1A73E8',
       textDecorationLine: 'underline',
-      textDecorationColor: '#F7D060', // Yellow underline
-    },
-    connectedDeviceInfo: {
-      marginBottom: 12,
     },
     connectedDeviceName: {
       fontSize: 16,
       fontWeight: '500',
-      color: '#FF6D60', // Coral red
+      color: '#1C1C1C',
     },
     connectedDeviceId: {
       fontSize: 12,
-      color: '#555',
+      color: '#5F6368',
       marginTop: 4,
     },
     disconnectButton: {
-      backgroundColor: '#FF6D60', // Coral red
+      backgroundColor: '#FFA000',
       padding: 10,
       borderRadius: 6,
       alignItems: 'center',
@@ -468,33 +474,23 @@ const getStyles = () =>
       fontWeight: '500',
     },
     deviceListContainer: {
-      flex: 1,
-      backgroundColor: 'white',
+      backgroundColor: '#FFFFFF',
       borderRadius: 8,
-      elevation: 2,
       padding: 16,
       borderLeftWidth: 5,
-      borderLeftColor: '#98D8AA', // Light green left border
-    },
-    listHeader: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      marginBottom: 12,
+      borderLeftColor: '#1A73E8',
+      height: '90%',
+      elevation: 2,
     },
     deviceListTitle: {
       fontSize: 16,
       fontWeight: 'bold',
-      color: '#FF6D60', // Coral red
+      color: '#1A73E8',
       textDecorationLine: 'underline',
-      textDecorationColor: '#F7D060', // Yellow underline
     },
     deviceCount: {
       fontSize: 12,
-      color: '#666',
-    },
-    listContent: {
-      paddingBottom: 8,
+      color: '#5F6368',
     },
     deviceItem: {
       flexDirection: 'row',
@@ -502,48 +498,32 @@ const getStyles = () =>
       paddingVertical: 12,
       paddingHorizontal: 8,
       borderBottomWidth: 1,
-      borderColor: '#eee',
+      borderColor: '#E0E0E0',
     },
     connectedDeviceItem: {
-      backgroundColor: '#e3f2fd',
+      backgroundColor: '#E8F0FE',
     },
     deviceIconContainer: {
       width: 40,
       height: 40,
       borderRadius: 20,
-      backgroundColor: '#e3f2fd',
+      backgroundColor: '#E8F0FE',
       alignItems: 'center',
       justifyContent: 'center',
       marginRight: 12,
     },
-    deviceInfoContainer: {
-      flex: 1,
-    },
     deviceName: {
       fontSize: 16,
       fontWeight: '500',
-      color: '#FF6D60', // Coral red
+      color: '#1A73E8',
     },
     deviceId: {
       fontSize: 12,
-      color: '#888',
-      marginTop: 2,
-    },
-    emptyState: {
-      flex: 1,
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: 40,
+      color: '#5F6368',
     },
     emptyStateText: {
       fontSize: 16,
-      color: '#666',
-      marginTop: 16,
-    },
-    emptyStateSubtext: {
-      fontSize: 14,
-      color: '#999',
-      marginTop: 8,
+      color: '#5F6368',
     },
     modalBackground: {
       flex: 1,
@@ -552,182 +532,57 @@ const getStyles = () =>
       padding: 24,
     },
     modalContainer: {
-      backgroundColor: 'white',
+      backgroundColor: '#FFFFFF',
       borderRadius: 12,
       maxHeight: '80%',
+      paddingBottom: 16,
       borderLeftWidth: 5,
-      borderLeftColor: '#98D8AA', // Light green left border
-    },
-    modalHeader: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      padding: 16,
-      borderBottomWidth: 1,
-      borderColor: '#eee',
+      borderLeftColor: '#1A73E8',
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.15,
+      shadowRadius: 8,
+      elevation: 5,
     },
     modalTitle: {
       fontSize: 18,
       fontWeight: 'bold',
-      color: '#FF6D60', // Coral red
-      textDecorationLine: 'underline',
-      textDecorationColor: '#F7D060', // Yellow underline
-    },
-    modalSubtitle: {
-      fontSize: 14,
-      color: '#666',
-      marginHorizontal: 16,
-      marginTop: 8,
-    },
-    uuidModeSelector: {
-      flexDirection: 'row',
-      marginHorizontal: 16,
-      marginTop: 12,
-      borderWidth: 1,
-      borderColor: '#ddd',
-      borderRadius: 8,
-      overflow: 'hidden',
-    },
-    uuidModeButton: {
-      flex: 1,
-      padding: 12,
-      backgroundColor: '#f5f5f5',
-    },
-    uuidModeButtonActive: {
-      backgroundColor: '#FF6D60', // Coral red
-    },
-    uuidModeButtonText: {
-      textAlign: 'center',
-      color: '#666',
-      fontWeight: '500',
-    },
-    uuidModeButtonTextActive: {
-      color: 'white',
-    },
-    uuidListContainer: {
-      marginTop: 16,
+      color: '#1A73E8',
       paddingHorizontal: 16,
-    },
-    sectionTitle: {
-      fontSize: 14,
-      fontWeight: '500',
-      color: '#FF6D60', // Coral red
-      marginBottom: 8,
-    },
-    uuidScrollView: {
-      maxHeight: 200,
-    },
-    uuidItem: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      padding: 12,
-      borderWidth: 1,
-      borderColor: '#eee',
-      borderRadius: 8,
-      marginBottom: 8,
-    },
-    selectedUuidItem: {
-      borderColor: '#FF6D60', // Coral red
-      backgroundColor: '#f5f5f5', 
-    },
-    uuidSelect: {
-      width: 20,
-      height: 20,
-      borderRadius: 10,
-      borderWidth: 2,
-      borderColor: '#888',
-      marginRight: 12,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    uuidSelected: {
-      width: 10,
-      height: 10,
-      borderRadius: 5,
-      backgroundColor: '#FF6D60', // Coral red
-    },
-    uuidDetails: {
-      flex: 1,
-    },
-    uuidName: {
-      fontWeight: '500',
-      marginBottom: 4,
-      color: '#FF6D60', // Coral red
-    },
-    uuidValue: {
-      fontSize: 12,
-      color: '#666',
-    },
-    customUuidContainer: {
-      marginTop: 16,
-      paddingHorizontal: 16,
-    },
-    inputGroup: {
-      marginBottom: 12,
-    },
-    inputLabel: {
-      fontSize: 14,
-      color: '#FF6D60', // Coral red
-      marginBottom: 4,
     },
     input: {
       borderWidth: 1,
-      borderColor: '#F7D060', // Yellow
+      borderColor: '#E0E0E0',
       borderRadius: 8,
       padding: 12,
-      backgroundColor: '#f9f9f9',
+      backgroundColor: '#FFFFFF',
+      color: '#1C1C1C',
     },
-    modalButtons: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      padding: 16,
-      borderTopWidth: 1,
-      borderColor: '#eee',
+    inputLabel: {
+      fontSize: 14,
+      color: '#5F6368',
+      marginBottom: 4,
     },
     primaryButton: {
-      flex: 1,
-      backgroundColor: '#98D8AA', // Light green
+      backgroundColor: '#1A73E8',
       padding: 14,
       borderRadius: 8,
       alignItems: 'center',
-      marginLeft: 8,
-    },
-    primaryButtonDisabled: {
-      backgroundColor: '#C1E1C1', // Lighter green
     },
     primaryButtonText: {
       color: 'white',
       fontWeight: 'bold',
     },
     secondaryButton: {
-      flex: 1,
-      backgroundColor: '#FF6D60', // Coral red
+      backgroundColor: '#FFA000',
       padding: 14,
       borderRadius: 8,
       alignItems: 'center',
-      marginRight: 8,
     },
     secondaryButtonText: {
       color: 'white',
-      fontWeight: '500',
-    },
-    scanButton: {
-      backgroundColor: '#FF6D60', // Coral red
-      padding: 12,
-      borderRadius: 8,
-      alignItems: 'center',
-      justifyContent: 'center',
-      elevation: 2,
-      marginBottom: 16,
-    },
-    scanButtonDisabled: {
-      backgroundColor: '#FF9E9E', // Lighter 
-    },
-    scanButtonText: {
-      color: 'white',
       fontWeight: 'bold',
-      fontSize: 16,
-    }
+    },
   });
 
 export default BluetoothConfigScreen;

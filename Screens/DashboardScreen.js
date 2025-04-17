@@ -133,7 +133,7 @@ const DashboardScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F3E99F',
+    backgroundColor: '#F9FAFB', // App background
     padding: 16,
   },
   header: {
@@ -145,27 +145,30 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 22,
     fontWeight: '600',
-    color: '#FF6D60',
+    color: '#1C1C1C', // Primary text
   },
   toggleButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 8,
-    paddingHorizontal: 10,
-    backgroundColor: 'rgba(0, 122, 255, 0.1)',
-    borderRadius: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    backgroundColor: 'rgba(26, 115, 232, 0.1)', // Blue translucent
+    borderRadius: 10,
     marginBottom: 10,
     marginTop: -6,
     alignSelf: 'center',
-    minWidth: '60%', 
+    minWidth: '60%',
   },
   toggleText: {
     marginRight: 8,
+    fontSize: 15,
+    color: '#5F6368',
   },
   toggleLabel: {
-    color: '#59981a',
+    color: '#1A73E8', // Primary Blue
     fontWeight: 'bold',
+    fontSize: 15,
   },
   clearButton: {
     padding: 8,
@@ -173,13 +176,13 @@ const styles = StyleSheet.create({
   logsContainer: {
     backgroundColor: '#FFFFFF',
     borderRadius: 12,
-    borderLeftWidth: 4,
-    borderLeftColor: '#98D8AA',
+    // borderLeftWidth: 4,
+    // borderLeftColor: '#1A73E8', // Primary Blue bar
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2},
+    shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.08,
     shadowRadius: 6,
-    elevation: 3,
+    elevation: 4,
     marginBottom: 16,
     overflow: 'hidden',
   },
@@ -192,7 +195,7 @@ const styles = StyleSheet.create({
   emptyText: {
     marginTop: 12,
     fontSize: 16,
-    color: '#8E8E93',
+    color: '#5F6368', // Neutral text
     textAlign: 'center',
   },
   scrollContent: {
@@ -201,18 +204,22 @@ const styles = StyleSheet.create({
   logItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 12,
+    paddingVertical: 14,
     paddingHorizontal: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#F2F2F7',
+    borderBottomColor: '#E0E0E0', // Soft divider
   },
   bullet: {
     marginRight: 12,
+    height: 8,
+    width: 8,
+    borderRadius: 4,
+    backgroundColor: '#FFA000', // Accent bullet
   },
   logText: {
     flex: 1,
     fontSize: 15,
-    color: '#2C2C2E',
+    color: '#1C1C1C',
     lineHeight: 22,
   },
 });

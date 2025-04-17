@@ -113,15 +113,14 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     paddingHorizontal: 30,
-    backgroundColor: '#F3E99F', // Light yellow 
+    backgroundColor: '#F9FAFB', // Light background
   },
   startLine: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#FF6D60', // Coral red
+    color: '#1A73E8', // Primary Blue
     marginBottom: 30,
     textAlign: 'center',
-    textDecorationColor: '#F7D060', // Yellow 
   },
   BoxAboveHeader: {
     flexDirection: 'row',
@@ -130,26 +129,30 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 14,
-    color: '#FF6D60', // Coral red
-    marginBottom: 10,
-    fontWeight: '400',
+    color: '#5F6368', // Secondary Text
+    marginBottom: 8,
+    fontWeight: '500',
   },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#F7D060', // Yellow 
+    borderColor: '#E0E0E0', // Soft border
     borderRadius: 10,
-    marginBottom: 10,
-    backgroundColor: '#fff',
-    borderLeftWidth: 5, 
-    borderLeftColor: '#98D8AA',// Light green 
+    marginBottom: 15,
+    backgroundColor: '#FFFFFF',
+    borderLeftWidth: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2, // Android shadow
   },
   inputBox: {
     flex: 1,
     height: 50,
     fontSize: 16,
-    color: '#000',
+    color: '#1C1C1C', // Primary Text
     paddingLeft: 10,
     paddingRight: 15,
   },
@@ -157,18 +160,23 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#F7D060', // Yellow border
+    borderColor: '#E0E0E0',
     borderRadius: 10,
-    marginBottom: 10,
-    backgroundColor: '#fff',
-    borderLeftWidth: 5, 
-    borderLeftColor: '#98D8AA',// Light green 
+    marginBottom: 15,
+    backgroundColor: '#FFFFFF',
+    borderLeftWidth: 1,
+    // borderLeftColor: '#1A73E8',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
   },
   passwordInput: {
     flex: 1,
     height: 50,
     fontSize: 16,
-    color: '#000',
+    color: '#1C1C1C',
     paddingLeft: 10,
     paddingRight: 15,
   },
@@ -180,20 +188,25 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   forgotPassword: {
-    color: '#FF6D60', // Coral red
+    color: '#1A73E8', // Primary Blue
     fontSize: 14,
-    fontWeight: 'bold',
-    textDecorationLine: 'underline'
+    fontWeight: '500',
+    textDecorationLine: 'underline',
+    textAlign: 'right',
   },
   loginButton: {
-    // backgroundColor: '#98D8AA', // Light green
-  backgroundColor: '#5DB075',
+    backgroundColor: '#FFA000', // Accent Orange
     height: 50,
-    borderRadius: 4,
+    borderRadius: 8,
     justifyContent: 'center',
     alignItems: 'center',
     marginTop: 30,
     marginBottom: 30,
+    shadowColor: '#FFA000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 4,
   },
   loginButtonText: {
     color: '#fff',
@@ -207,14 +220,16 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   signupLabel: {
-    color: '#FF6D60', // Coral red
+    color: '#5F6368', // Secondary Text
+    fontSize: 14,
   },
   signupLink: {
-    color: '#FF6D60', // Coral red
+    color: '#1A73E8', // Primary Blue
     fontSize: 14,
     fontWeight: 'bold',
-    textDecorationLine: 'underline'
-  }
+    marginLeft: 5,
+    textDecorationLine: 'underline',
+  },
 });
 
 export default LoginScreen;

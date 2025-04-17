@@ -134,6 +134,12 @@ const KeyScreen = () => {
       }
     },
     {
+      title: 'Get Device ID Code',
+      action: 'DEV_IDCODE_GET',
+      needsInput: false,
+      onSend: () => JSON.stringify({ cmd: "DEV_IDCODE_GET" })
+    },
+    {
       title: 'Set Timestamp',
       action: 'PROD_TIMESTAMP_SET',
       needsInput: true,
@@ -146,6 +152,12 @@ const KeyScreen = () => {
         const month = parseInt(value.substring(4, 6));
         return JSON.stringify({ cmd: 'PROD_TIMESTAMP_SET', args: [{ year, month }] });
       }
+    },
+    {
+      title: 'Get Production Timestamp',
+      action: 'PROD_TIMESTAMP_GET',
+      needsInput: false,
+      onSend: () => JSON.stringify({ cmd: "PROD_TIMESTAMP_GET" })
     },
     {
       title: 'Set Customer Name',
@@ -166,25 +178,36 @@ const KeyScreen = () => {
       onSend: () => JSON.stringify({ cmd: "CUSTOMER_NAME_GET" })
     },
     {
-      title: 'Set RF Channel',
-      action: 'RF_CHANNEL_SET',
+      title: 'Set Device ID',
+      action: 'DEV_ID_SET',
       needsInput: true,
-      placeholder: 'Select RF Channel',
-      validate: (value) => /^[0-9]+$/.test(value),
-      errorMessage: 'Invalid input. Only numeric values allowed.',
+      placeholder: 'Enter Device ID (e.g., 000000)',
+      validate: (value) => /^\d+$/.test(value) && value.length <= 15,
+      errorMessage: 'Invalid input. Only numbers up to 15 digits allowed.',
       onSend: (value) => {
-        setRfChannel(value);
-        return JSON.stringify({ cmd: "RF_CHANNEL_SET", args: [parseInt(value, 10)] });
+        setDeviceId(value);
+        return JSON.stringify({ cmd: "DEV_ID_SET", args: [value] });
       }
     },
     {
-      title: 'Get RF Channel',
-      action: 'RF_CHANNEL_GET',
+      title: 'Get Device ID',
+      action: 'DEV_ID_GET',
       needsInput: false,
-      onSend: () => JSON.stringify({ cmd: "RF_CHANNEL_GET" })
+      onSend: () => JSON.stringify({ cmd: "DEV_ID_GET" })
+    },
+    {
+      title: 'Get Firmware Version',
+      action: 'FIRMWARE_VERSION_GET',
+      needsInput: false,
+      onSend: () => JSON.stringify({ cmd: "FIRMWARE_VERSION_GET" })
+    },
+    {
+      title: 'Reset Configuration',
+      action: 'RESET',
+      needsInput: false,
+      onSend: () => JSON.stringify({ cmd: "RESET" })
     }
-  ];
-
+  ];  
 
   const rfbuttons = [
     {
@@ -206,57 +229,262 @@ const KeyScreen = () => {
       onSend: () => JSON.stringify({ cmd: "RF_CHANNEL_GET" })
     },
     {
-      title: 'Get Product Name',
-      action: 'DEV_SERIAL_NO_GET',
+      title: 'Get RF Frequency',
+      action: 'RF_FREQ_GET',
       needsInput: false,
-      onSend: () => JSON.stringify({ cmd: "DEV_SERIAL_NO_GET" })
+      onSend: () => JSON.stringify({ cmd: "RF_FREQ_GET" })
     },
     {
-      title: 'Set Device ID Code',
-      action: 'DEV_IDCODE_SET',
+      title: 'Set RF Frequency',
+      action: 'RF_FREQ_SET',
       needsInput: true,
-      placeholder: 'Enter ID Code (e.g., 1234)',
-      validate: (value) => /^\d+$/.test(value) && value.length <= 15,
-      errorMessage: 'Invalid input. Only numbers up to 15 digits allowed.',
-      onSend: (value) => {
-        setDeviceId(value);
-        return JSON.stringify({ cmd: "DEV_IDCODE_SET", args: [value] });
-      }
+      placeholder: 'Enter Frequency (e.g., 433000000)',
+      validate: (value) => /^[0-9]+$/.test(value),
+      errorMessage: 'Invalid input. Only numeric values allowed.',
+      onSend: (value) => JSON.stringify({ cmd: "RF_FREQ_SET", args: [parseInt(value, 10)] })
     },
     {
-      title: 'Set Timestamp',
-      action: 'PROD_TIMESTAMP_SET',
-      needsInput: true,
-      placeholder: 'Select Year and Month',
-      validate: (value) => /^\d{6}$/.test(value),
-      errorMessage: 'Invalid input. Format must be YYYYMM.',
-      onSend: (value) => {
-        setTimestamp(value);
-        const year = parseInt(value.substring(0, 4));
-        const month = parseInt(value.substring(4, 6));
-        return JSON.stringify({ cmd: 'PROD_TIMESTAMP_SET', args: [{ year, month }] });
-      }
-    },
-    {
-      title: 'Set Customer Name',
-      action: 'CUSTOMER_NAME_SET',
-      needsInput: true,
-      placeholder: 'Enter Customer Name (e.g., Innospace)',
-      validate: (value) => /^[a-zA-Z0-9 ]+$/.test(value),
-      errorMessage: 'Invalid input. Only alphanumeric characters and spaces allowed.',
-      onSend: (value) => {
-        setCustomerName(value);
-        return JSON.stringify({ cmd: "CUSTOMER_NAME_SET", args: [value] });
-      }
-    },
-    {
-      title: 'Get Customer Name',
-      action: 'CUSTOMER_NAME_GET',
+      title: 'Get RF Logical Address',
+      action: 'RF_LOGICADDR_GET',
       needsInput: false,
-      onSend: () => JSON.stringify({ cmd: "CUSTOMER_NAME_GET" })
+      onSend: () => JSON.stringify({ cmd: "RF_LOGICADDR_GET" })
     },
+    {
+      title: 'Set RF Logical Address',
+      action: 'RF_LOGICADDR_SET',
+      needsInput: true,
+      placeholder: 'Enter Logical Address (e.g., 1)',
+      validate: (value) => /^[0-9]+$/.test(value),
+      errorMessage: 'Invalid input. Only numeric values allowed.',
+      onSend: (value) => JSON.stringify({ cmd: "RF_LOGICADDR_SET", args: [parseInt(value, 10)] })
+    },
+    {
+      title: 'Get RF Encryption Key',
+      action: 'RF_ENCRYPTKEY_GET',
+      needsInput: false,
+      onSend: () => JSON.stringify({ cmd: "RF_ENCRYPTKEY_GET" })
+    },
+    {
+      title: 'Set RF Encryption Key',
+      action: 'RF_ENCRYPTKEY_SET',
+      needsInput: true,
+      placeholder: 'Enter Encryption Key (e.g., 123456789ABCDEF0)',
+      validate: (value) => /^[0-9A-Fa-f]+$/.test(value),
+      errorMessage: 'Invalid input. Only hexadecimal characters allowed.',
+      onSend: (value) => JSON.stringify({ cmd: "RF_ENCRYPTKEY_SET", args: [value] })
+    },
+    {
+      title: 'Get RF Sync Word',
+      action: 'SYNC_WORD_GET',
+      needsInput: false,
+      onSend: () => JSON.stringify({ cmd: "SYNC_WORD_GET" })
+    },
+    {
+      title: 'Set RF Sync Word',
+      action: 'SYNC_WORD_SET',
+      needsInput: true,
+      placeholder: 'Enter Sync Word (e.g., 0001)',
+      validate: (value) => /^[0-9A-Fa-f]+$/.test(value),
+      errorMessage: 'Invalid input. Only hexadecimal characters allowed.',
+      onSend: (value) => JSON.stringify({ cmd: "SYNC_WORD_SET", args: [value] })
+    },
+    {
+      title: 'Get RF Chip ID',
+      action: 'RF_CHIP_ID_GET',
+      needsInput: false,
+      onSend: () => JSON.stringify({ cmd: "RF_CHIP_ID_GET" })
+    },
+    {
+      title: 'Get RF Baudrate',
+      action: 'RF_BAUDRATE_GET',
+      needsInput: false,
+      onSend: () => JSON.stringify({ cmd: "RF_BAUDRATE_GET" })
+    },
+    {
+      title: 'Set RF Baudrate',
+      action: 'RF_BAUDRATE_SET',
+      needsInput: true,
+      placeholder: 'Enter Baudrate (e.g., 9600)',
+      validate: (value) => /^[0-9]+$/.test(value),
+      errorMessage: 'Invalid input. Only numeric values allowed.',
+      onSend: (value) => JSON.stringify({ cmd: "RF_BAUDRATE_SET", args: [parseInt(value, 10)] })
+    }
   ];
 
+  const irbuttons = [
+    {
+      title: 'Get IR Logical Address',
+      action: 'IR_LOGICADDR_GET',
+      needsInput: false,
+      onSend: () => JSON.stringify({ cmd: "IR_LOGICADDR_GET" })
+    },
+    {
+      title: 'Set IR Logical Address',
+      action: 'IR_LOGICADDR_SET',
+      needsInput: true,
+      placeholder: 'Enter IR Logical Address (e.g., 1)',
+      validate: (value) => /^[0-9]+$/.test(value),
+      errorMessage: 'Invalid input. Only numeric values allowed.',
+      onSend: (value) => JSON.stringify({ cmd: "IR_LOGICADDR_SET", args: [parseInt(value, 10)] })
+    }
+  ];
+  
+  const rlbuttons = [
+    {
+      title: 'Get No. of Relays',
+      action: 'RELAY_COUNT_GET',
+      needsInput: false,
+      onSend: () => JSON.stringify({ cmd: "RELAY_COUNT_GET" })
+    },
+    {
+      title: 'Get No. of Keys',
+      action: 'KEY_COUNT_GET',
+      needsInput: false,
+      onSend: () => JSON.stringify({ cmd: "KEY_COUNT_GET" })
+    },
+    {
+      title: 'Get Momentary Timeout',
+      action: 'MOMENTARY_TIMEOUT_GET',
+      needsInput: false,
+      onSend: () => JSON.stringify({ cmd: "MOMENTARY_TIMEOUT_GET" })
+    },
+    {
+      title: 'Set Momentary Timeout',
+      action: 'MOMENTARY_TIMEOUT_SET',
+      needsInput: true,
+      placeholder: 'Enter Timeout (e.g., 20)',
+      validate: (value) => /^[0-9]+$/.test(value),
+      errorMessage: 'Invalid input. Only numeric values allowed.',
+      onSend: (value) => JSON.stringify({ cmd: "MOMENTARY_TIMEOUT_SET", args: [parseInt(value, 10)] })
+    },
+    {
+      title: 'Get Key Value',
+      action: 'KEY_VALUE_GET',
+      needsInput: true,
+      placeholder: 'Enter Key Index (e.g., 1)',
+      validate: (value) => /^[0-9]+$/.test(value),
+      errorMessage: 'Invalid input. Only numeric values allowed.',
+      onSend: (value) => JSON.stringify({ cmd: "KEY_VALUE_GET", args: [{ idx: parseInt(value, 10) }] })
+    },
+    {
+      title: 'Set Key Value',
+      action: 'KEY_VALUE_SET',
+      needsInput: true,
+      placeholder: 'Enter Key Index and Value (e.g., 1,2)',
+      validate: (value) => /^[0-9]+,[0-9]+$/.test(value),
+      errorMessage: 'Invalid input. Format: index,value (e.g., 1,2)',
+      onSend: (value) => {
+        const [idx, val] = value.split(',').map(Number);
+        return JSON.stringify({ cmd: "KEY_VALUE_SET", args: [{ idx, value: val }] });
+      }
+    },
+    {
+      title: 'Get Mode Value',
+      action: 'MODE_VALUE_GET',
+      needsInput: true,
+      placeholder: 'Enter Mode Index (e.g., 1)',
+      validate: (value) => /^[0-9]+$/.test(value),
+      errorMessage: 'Invalid input. Only numeric values allowed.',
+      onSend: (value) => JSON.stringify({ cmd: "MODE_VALUE_GET", args: [{ idx: parseInt(value, 10) }] })
+    },
+    {
+      title: 'Set Mode Value',
+      action: 'MODE_VALUE_SET',
+      needsInput: true,
+      placeholder: 'Enter Mode Index and Value (e.g., 1,2)',
+      validate: (value) => /^[0-9]+,[0-9]+$/.test(value),
+      errorMessage: 'Invalid input. Format: index,value (e.g., 1,2)',
+      onSend: (value) => {
+        const [idx, val] = value.split(',').map(Number);
+        return JSON.stringify({ cmd: "MODE_VALUE_SET", args: [{ idx, value: val }] });
+      }
+    },
+    {
+      title: 'Get Ontime Delay',
+      action: 'ONTIME_DELAY_GET',
+      needsInput: true,
+      placeholder: 'Enter Delay Index (e.g., 1)',
+      validate: (value) => /^[0-9]+$/.test(value),
+      errorMessage: 'Invalid input. Only numeric values allowed.',
+      onSend: (value) => JSON.stringify({ cmd: "ONTIME_DELAY_GET", args: [{ idx: parseInt(value, 10) }] })
+    },
+    {
+      title: 'Set Ontime Delay',
+      action: 'ONTIME_DELAY_SET',
+      needsInput: true,
+      placeholder: 'Enter Delay Index and Value (e.g., 1,2)',
+      validate: (value) => /^[0-9]+,[0-9]+$/.test(value),
+      errorMessage: 'Invalid input. Format: index,value (e.g., 1,2)',
+      onSend: (value) => {
+        const [idx, val] = value.split(',').map(Number);
+        return JSON.stringify({ cmd: "ONTIME_DELAY_SET", args: [{ idx, value: val }] });
+      }
+    },
+    {
+      title: 'Get Offtime Delay',
+      action: 'OFFTIME_DELAY_GET',
+      needsInput: true,
+      placeholder: 'Enter Delay Index (e.g., 1)',
+      validate: (value) => /^[0-9]+$/.test(value),
+      errorMessage: 'Invalid input. Only numeric values allowed.',
+      onSend: (value) => JSON.stringify({ cmd: "OFFTIME_DELAY_GET", args: [{ idx: parseInt(value, 10) }] })
+    },
+    {
+      title: 'Set Offtime Delay',
+      action: 'OFFTIME_DELAY_SET',
+      needsInput: true,
+      placeholder: 'Enter Delay Index and Value (e.g., 1,2)',
+      validate: (value) => /^[0-9]+,[0-9]+$/.test(value),
+      errorMessage: 'Invalid input. Format: index,value (e.g., 1,2)',
+      onSend: (value) => {
+        const [idx, val] = value.split(',').map(Number);
+        return JSON.stringify({ cmd: "OFFTIME_DELAY_SET", args: [{ idx, value: val }] });
+      }
+    },
+    {
+      title: 'Get Interlock Value',
+      action: 'INTERLOCK_VALUE_GET',
+      needsInput: true,
+      placeholder: 'Enter Interlock Index (e.g., 1)',
+      validate: (value) => /^[0-9]+$/.test(value),
+      errorMessage: 'Invalid input. Only numeric values allowed.',
+      onSend: (value) => JSON.stringify({ cmd: "INTERLOCK_VALUE_GET", args: [{ idx: parseInt(value, 10) }] })
+    },
+    {
+      title: 'Set Interlock Value',
+      action: 'INTERLOCK_VALUE_SET',
+      needsInput: true,
+      placeholder: 'Enter Interlock Index and Value (e.g., 1,2)',
+      validate: (value) => /^[0-9]+,[0-9]+$/.test(value),
+      errorMessage: 'Invalid input. Format: index,value (e.g., 1,2)',
+      onSend: (value) => {
+        const [idx, val] = value.split(',').map(Number);
+        return JSON.stringify({ cmd: "INTERLOCK_VALUE_SET", args: [{ idx, value: val }] });
+      }
+    },
+    {
+      title: 'Get Relay Number',
+      action: 'RELAY_NUMBER_GET',
+      needsInput: true,
+      placeholder: 'Enter Relay Index (e.g., 1)',
+      validate: (value) => /^[0-9]+$/.test(value),
+      errorMessage: 'Invalid input. Only numeric values allowed.',
+      onSend: (value) => JSON.stringify({ cmd: "RELAY_NUMBER_GET", args: [{ idx: parseInt(value, 10) }] })
+    },
+    {
+      title: 'Set Relay Number',
+      action: 'RELAY_NUMBER_SET',
+      needsInput: true,
+      placeholder: 'Enter Relay Index and Value (e.g., 1,2)',
+      validate: (value) => /^[0-9]+,[0-9]+$/.test(value),
+      errorMessage: 'Invalid input. Format: index,value (e.g., 1,2)',
+      onSend: (value) => {
+        const [idx, val] = value.split(',').map(Number);
+        return JSON.stringify({ cmd: "RELAY_NUMBER_SET", args: [{ idx, value: val }] });
+      }
+    }
+  ];
+  
   const handleButtonPress = (buttonConfig) => {
     setCurrentAction(buttonConfig);
     if (buttonConfig.needsInput) {
@@ -289,7 +517,7 @@ const KeyScreen = () => {
               <Text style={styles.topButtonText}>Get Product Name</Text>
             </TouchableOpacity>
           </View>
-          
+  
           <View style={styles.deviceInfoWrapper}>
             {deviceName !== '' && (
               <View style={styles.deviceInfoContainer}>
@@ -300,11 +528,31 @@ const KeyScreen = () => {
             )}
           </View>
         </View>
-
-        {/* Configurations Container */}
-        <View style={styles.configContainer}>
-          <ScrollView style={styles.scrollContainer}>
+  
+        {/* Product Configurations Container */}
+        <View style={styles.productConfigContainer}>
+          <Text style={styles.sectionTitle}>Device Configurations</Text>
+          <ScrollView nestedScrollEnabled style={styles.innerScroll}>
             {buttons.slice(1).map((button, index) => (
+              <View key={button.title}>
+                <TouchableOpacity
+                  style={styles.productConfigItem}
+                  onPress={() => handleButtonPress(button)}
+                >
+                  <Text style={styles.productConfigItemText} numberOfLines={1}>{button.title}</Text>
+                  <Text style={styles.arrow}>›</Text>
+                </TouchableOpacity>
+                {index < buttons.slice(1).length - 1 && <View style={styles.separator} />}
+              </View>
+            ))}
+          </ScrollView>
+        </View>
+  
+        {/* RF Configurations Container */}
+        <View style={styles.configContainer}>
+          <Text style={styles.sectionTitle}>RF Configurations</Text>
+          <ScrollView nestedScrollEnabled style={styles.innerScroll}>
+            {rfbuttons.map((button, index) => (
               <View key={button.title}>
                 <TouchableOpacity
                   style={styles.configItem}
@@ -313,33 +561,52 @@ const KeyScreen = () => {
                   <Text style={styles.configItemText} numberOfLines={1}>{button.title}</Text>
                   <Text style={styles.arrow}>›</Text>
                 </TouchableOpacity>
-                {index < buttons.slice(1).length - 1 && <View style={styles.separator} />}
+                {index < rfbuttons.length - 1 && <View style={styles.separator} />}
               </View>
             ))}
           </ScrollView>
         </View>
-    
-
-        {/* Product Configurations Container */}
-          <View style={styles.productConfigContainer}>
-            <ScrollView style={styles.scrollContainer}>
-              {rfbuttons.map((button, index) => (
-                <View key={button.title}>
-                  <TouchableOpacity
-                    style={styles.productConfigItem}
-                    onPress={() => handleButtonPress(button)}
-                  >
-                    <Text style={styles.productConfigItemText} numberOfLines={1}>{button.title}</Text>
-                    <Text style={styles.arrow}>›</Text>
-                  </TouchableOpacity>
-                  {index < rfbuttons.length - 1 && <View style={styles.separator} />}
-                </View>
-              ))}
-            </ScrollView>
-          </View>
+  
+        {/* IR Configurations Container */}
+        <View style={styles.irConfigContainer}>
+          <Text style={styles.sectionTitle}>IR Configurations</Text>
+          <ScrollView nestedScrollEnabled style={styles.innerScroll}>
+            {irbuttons.map((button, index) => (
+              <View key={button.title}>
+                <TouchableOpacity
+                  style={styles.irConfigItem}
+                  onPress={() => handleButtonPress(button)}
+                >
+                  <Text style={styles.irConfigItemText} numberOfLines={1}>{button.title}</Text>
+                  <Text style={styles.arrow}>›</Text>
+                </TouchableOpacity>
+                {index < irbuttons.length - 1 && <View style={styles.separator} />}
+              </View>
+            ))}
+          </ScrollView>
+        </View>
+  
+        {/* Relay Configurations Container */}
+        <View style={styles.rlConfigContainer}>
+          <Text style={styles.sectionTitle}>Relay Configurations</Text>
+          <ScrollView nestedScrollEnabled style={styles.innerScroll}>
+            {rlbuttons.map((button, index) => (
+              <View key={button.title}>
+                <TouchableOpacity
+                  style={styles.rlConfigItem}
+                  onPress={() => handleButtonPress(button)}
+                >
+                  <Text style={styles.rlConfigItemText} numberOfLines={1}>{button.title}</Text>
+                  <Text style={styles.arrow}>›</Text>
+                </TouchableOpacity>
+                {index < rlbuttons.length - 1 && <View style={styles.separator} />}
+              </View>
+            ))}
+          </ScrollView>
+        </View>
       </ScrollView>
-
-      {/* Modal remains unchanged */}
+  
+      {/* Modal */}
       <Modal
         animationType="slide"
         transparent={true}
@@ -349,7 +616,7 @@ const KeyScreen = () => {
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>{currentAction?.title}</Text>
-
+  
             {currentAction?.title === 'Set Timestamp' ? (
               <>
                 <TouchableOpacity
@@ -401,7 +668,7 @@ const KeyScreen = () => {
                 onChangeText={setInputValue}
               />
             )}
-
+  
             <View style={styles.modalButtonRow}>
               <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.cancelButton}>
                 <Text>Cancel</Text>
@@ -415,6 +682,7 @@ const KeyScreen = () => {
       </Modal>
     </>
   );
+  
 };
 
 
@@ -431,14 +699,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 20,
-    height: 60, // Fixed height for top row
+    height: 60,
   },
   topButtonWrapper: {
-    flex: 0.4, // Takes 40% of row width
+    flex: 0.4,
     paddingRight: 10,
   },
   deviceInfoWrapper: {
-    flex: 0.6, // Takes 60% of row width
+    flex: 0.6,
   },
   topButton: {
     backgroundColor: '#007AFF',
@@ -446,7 +714,6 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     justifyContent: 'center',
     alignItems: 'center',
-    // height: '60px',
     width: 160,
   },
   topButtonText: {
@@ -460,7 +727,6 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     justifyContent: 'center',
     alignItems: 'center',
-    // height: '60px',
     width: 160,
   },
   deviceInfoText: {
@@ -468,18 +734,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     textAlign: 'center',
   },
-  sectionHeader: {
-    paddingVertical: 12,
-    paddingHorizontal: 15,
-    backgroundColor: '#f5f5f5',
-    marginTop: 10,
-  },
-  sectionHeaderText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333'
-  },
-  configContainer: {
+    configContainer: {
     backgroundColor: 'white',
     borderRadius: 10,
     marginBottom: 20,
@@ -488,7 +743,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 3,
     elevation: 2,
-    height: 300, // Height for 6 items
+    height: 300, 
   },
   productConfigContainer: {
     backgroundColor: 'white',
@@ -499,10 +754,36 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 3,
     elevation: 2,
-    height: 500, // Height for 2 items
+    height: 300, 
   },
-  scrollContainer: {
-    flex: 1,
+  irConfigContainer: {
+    backgroundColor: 'white',
+    borderRadius: 10,
+    marginBottom: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2,
+    height: 160, 
+  },
+  rlConfigContainer: {
+    backgroundColor: 'white',
+    borderRadius: 10,
+    marginBottom: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2,
+    height: 300, 
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    padding: 16,
+    paddingBottom: 8,
+    color: '#333',
   },
   configItem: {
     flexDirection: 'row',
@@ -513,6 +794,22 @@ const styles = StyleSheet.create({
     height: 50,
   },
   productConfigItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    height: 50,
+  },
+  irConfigItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    height: 50,
+  },
+  rlConfigItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -532,6 +829,21 @@ const styles = StyleSheet.create({
     flex: 1,
     marginRight: 10,
   },
+  irConfigItemText: {
+    fontSize: 15,
+    color: '#333',
+    flex: 1,
+    marginRight: 10,
+  },
+  rlConfigItemText: {
+    fontSize: 15,
+    color: '#333',
+    flex: 1,
+    marginRight: 10,
+  },
+  innerScroll: {
+    flex: 1,
+  },
   arrow: {
     fontSize: 20,
     color: '#007AFF',
@@ -549,34 +861,34 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.5)'
+    backgroundColor: 'rgba(0,0,0,0.5)',
   },
   modalContent: {
     backgroundColor: '#fff',
     padding: 20,
     width: '80%',
-    borderRadius: 8
+    borderRadius: 8,
   },
   modalTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    marginBottom: 12
+    marginBottom: 12,
   },
   input: {
     borderWidth: 1,
     borderColor: '#ccc',
     padding: 10,
     marginBottom: 12,
-    borderRadius: 5
+    borderRadius: 5,
   },
   picker: {
     height: 50,
     width: '100%',
-    marginBottom: 12
+    marginBottom: 12,
   },
   modalButtonRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between'
+    justifyContent: 'space-between',
   },
   cancelButton: {
     padding: 10,
@@ -584,7 +896,7 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     flex: 1,
     marginRight: 5,
-    alignItems: 'center'
+    alignItems: 'center',
   },
   setButton: {
     padding: 10,
@@ -592,8 +904,9 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     flex: 1,
     marginLeft: 5,
-    alignItems: 'center'
-  }
+    alignItems: 'center',
+  },
 });
+
 
 export default KeyScreen;

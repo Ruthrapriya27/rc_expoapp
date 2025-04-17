@@ -100,50 +100,62 @@ const SignUpScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F3E99F', // Light yellow 
+    backgroundColor: '#F9FAFB', // New background
     padding: 20,
     justifyContent: 'flex-start',
   },
   header: {
     fontSize: 26,
     fontWeight: 'bold',
-    color: '#FF6D60',
+    color: '#1A73E8', // Primary Blue
     alignSelf: 'center',
     marginBottom: 30,
   },
   section: {
     backgroundColor: '#FFFFFF',
-    padding: 20, 
-    borderRadius: 15,  
-    marginBottom: 20,  
-    shadowColor: '#000',  
-    shadowOffset: { width: 0, height: 5 }, 
+    padding: 20,
+    borderRadius: 15,
+    marginBottom: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 5 },
     shadowOpacity: 0.1,
     shadowRadius: 10,
-    elevation: 5, 
-    borderColor: '#F7D060', 
-    borderWidth: 1, 
+    elevation: 5,
+    borderColor: '#E0E0E0', // Soft border
+    borderWidth: 1,
   },
   label: {
     fontSize: 16,
-    color: '#FF6D60',
-    marginBottom: 5, 
+    color: '#5F6368', // Secondary text
+    marginBottom: 5,
+    fontWeight: '500',
   },
   input: {
     height: 45,
     borderWidth: 1,
-    borderColor: '#F7D060',
-    borderRadius: 10, 
+    borderColor: '#E0E0E0',
+    borderRadius: 10,
     marginBottom: 10,
     paddingLeft: 15,
     fontSize: 16,
-    backgroundColor: '#F9F9F9', // Light background for inputs
+    color: '#1C1C1C', // Primary text
+    backgroundColor: '#FFFFFF', // Card-style input
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.03,
+    shadowRadius: 2,
+    elevation: 1,
   },
   otpButton: {
-    backgroundColor: '#FF6D60',
+    backgroundColor: '#FFA000', // Accent Orange
     padding: 12,
-    borderRadius: 5,
+    borderRadius: 8,
     alignItems: 'center',
+    shadowColor: '#FFA000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 4,
   },
   otpButtonText: {
     color: 'white',
@@ -152,35 +164,34 @@ const styles = StyleSheet.create({
   },
   separator: {
     height: 1,
-    backgroundColor: '#FF6D60',
+    backgroundColor: '#E0E0E0',
     marginVertical: 25,
   },
   gmailButton: {
-    backgroundColor: '#98D8AA',
-    borderLeftColor: '#F7D060', 
+    backgroundColor: '#1A73E8', // Primary Blue
     paddingVertical: 12,
     paddingHorizontal: 18,
-    borderRadius: 30, 
+    borderRadius: 30,
     alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'center',
     marginTop: 10,
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    elevation: 3, 
+    shadowColor: '#1A73E8',
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 4,
   },
-  
   gmailButtonText: {
-    color: '#FFFFFF', 
+    color: '#FFFFFF',
     fontSize: 16,
     fontWeight: 'bold',
-    marginLeft: 12, 
+    marginLeft: 12,
   },
   icon: {
-    color: '#FFFFFF', 
-    fontSize: 24, 
-    marginRight: 10, 
+    color: '#FFFFFF',
+    fontSize: 24,
+    marginRight: 10,
   },
   modalOverlay: {
     flex: 1,
@@ -190,16 +201,21 @@ const styles = StyleSheet.create({
   },
   modalBox: {
     width: '80%',
-    backgroundColor: 'white',
+    backgroundColor: '#FFFFFF',
     padding: 20,
-    borderRadius: 10,
-    borderColor: '#F7D060',
-    borderWidth: 2,
+    borderRadius: 12,
+    borderColor: '#E0E0E0',
+    borderWidth: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.2,
+    shadowRadius: 10,
+    elevation: 6,
   },
   modalTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#FF6D60',
+    color: '#1A73E8',
     marginBottom: 15,
     textAlign: 'center',
   },
@@ -213,12 +229,13 @@ const styles = StyleSheet.create({
     width: 16,
     borderRadius: 8,
     borderWidth: 2,
-    borderColor: '#F7D060',
+    borderColor: '#FFA000',
     marginRight: 10,
   },
   optionText: {
     fontSize: 16,
-  }
+    color: '#1C1C1C',
+  },
 });
 
 export default SignUpScreen;

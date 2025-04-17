@@ -1,5 +1,17 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Alert, Modal, ActivityIndicator, StyleSheet } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  Alert,
+  Modal,
+  ActivityIndicator,
+  StyleSheet,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+} from 'react-native';
 
 const NewUserRegistrationScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
@@ -9,8 +21,8 @@ const NewUserRegistrationScreen = ({ navigation }) => {
   const [device, setDevice] = useState('');
   const [version, setVersion] = useState('');
   const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);  // Loading state
-  const [isModalVisible, setIsModalVisible] = useState(false); // Modal visibility
+  const [isLoading, setIsLoading] = useState(false);
+  const [isModalVisible, setIsModalVisible] = useState(false);
 
   const handleRegister = () => {
     if (!email || !mobile || !fullName || !designation || !device || !version) {
@@ -18,106 +30,118 @@ const NewUserRegistrationScreen = ({ navigation }) => {
       return;
     }
 
-    // Simple validation
     if (!/\S+@\S+\.\S+/.test(email)) {
       setError('Please enter a valid email.');
       return;
     }
+
     if (mobile.length !== 10) {
       setError('Mobile number should be 10 digits.');
       return;
     }
 
-    // Show the modal for confirmation
     setIsModalVisible(true);
   };
 
   const handleConfirm = () => {
-    setIsModalVisible(false);  // Close modal
-    setIsLoading(true); // Start loading animation
+    setIsModalVisible(false);
+    setIsLoading(true);
 
     setTimeout(() => {
-      // Simulate network delay for loading animation
-      setIsLoading(false); // Stop loading animation
-      navigation.replace('TabScreen');  // Navigate to TabScreen after loading
-    }, 2000); // Adjust delay as necessary
+      setIsLoading(false);
+      navigation.replace('TabScreen');
+    }, 2000);
   };
 
   const handleCancel = () => {
-    setIsModalVisible(false);  // Close the modal if cancel is clicked
+    setIsModalVisible(false);
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>New User Registration</Text>
-      <View style={styles.formSection}>
-        <Text style={styles.sectionTitle}>Email</Text>
-        <TextInput
-          style={styles.inputLine}
-          value={email}
-          onChangeText={setEmail}
-          keyboardType="email-address"
-          placeholder="Enter email"
-        />
-      </View>
-      <View style={styles.formSection}>
-        <Text style={styles.sectionTitle}>Mobile Number</Text>
-        <TextInput
-          style={styles.inputLine}
-          value={mobile}
-          onChangeText={setMobile}
-          keyboardType="numeric"
-          placeholder="Enter mobile number"
-        />
-      </View>
-      <View style={styles.formSection}>
-        <Text style={styles.sectionTitle}>Full Name</Text>
-        <TextInput
-          style={styles.inputLine}
-          value={fullName}
-          onChangeText={setFullName}
-          placeholder="Enter full name"
-        />
-      </View>
-      <View style={styles.formSection}>
-        <Text style={styles.sectionTitle}>Designation</Text>
-        <TextInput
-          style={styles.inputLine}
-          value={designation}
-          onChangeText={setDesignation}
-          placeholder="Enter designation"
-        />
-      </View>
-      <View style={styles.formSection}>
-        <Text style={styles.sectionTitle}>Device</Text>
-        <TextInput
-          style={styles.inputLine}
-          value={device}
-          onChangeText={setDevice}
-          placeholder="Enter device name"
-        />
-      </View>
-      <View style={styles.formSection}>
-        <Text style={styles.sectionTitle}>Version</Text>
-        <TextInput
-          style={styles.inputLine}
-          value={version}
-          onChangeText={setVersion}
-          placeholder="Enter version"
-        />
-      </View>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        style={{ flex: 1 }}
+      >
+        <ScrollView contentContainerStyle={styles.scrollWrapper} keyboardShouldPersistTaps="handled">
+          <Text style={styles.header}>New User Registration</Text>
+          <View style={styles.formCard}>
+            <View style={styles.formSection}>
+              <Text style={styles.sectionTitle}>Email</Text>
+              <TextInput
+                style={styles.inputBox}
+                value={email}
+                onChangeText={setEmail}
+                keyboardType="email-address"
+                placeholder="Enter email"
+                multiline={true}
+              />
+            </View>
+            <View style={styles.formSection}>
+              <Text style={styles.sectionTitle}>Mobile Number</Text>
+              <TextInput
+                style={styles.inputBox}
+                value={mobile}
+                onChangeText={setMobile}
+                keyboardType="numeric"
+                placeholder="Enter mobile number"
+                multiline={true}
+              />
+            </View>
+            <View style={styles.formSection}>
+              <Text style={styles.sectionTitle}>Full Name</Text>
+              <TextInput
+                style={styles.inputBox}
+                value={fullName}
+                onChangeText={setFullName}
+                placeholder="Enter full name"
+                multiline={true}
+              />
+            </View>
+            <View style={styles.formSection}>
+              <Text style={styles.sectionTitle}>Designation</Text>
+              <TextInput
+                style={styles.inputBox}
+                value={designation}
+                onChangeText={setDesignation}
+                placeholder="Enter designation"
+                multiline={true}
+              />
+            </View>
+            <View style={styles.formSection}>
+              <Text style={styles.sectionTitle}>Device</Text>
+              <TextInput
+                style={styles.inputBox}
+                value={device}
+                onChangeText={setDevice}
+                placeholder="Enter device name"
+                multiline={true}
+              />
+            </View>
+            <View style={styles.formSection}>
+              <Text style={styles.sectionTitle}>Version</Text>
+              <TextInput
+                style={styles.inputBox}
+                value={version}
+                onChangeText={setVersion}
+                placeholder="Enter version"
+                multiline={true}
+              />
+            </View>
 
-      {error && <Text style={styles.errorText}>{error}</Text>}
+            {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
-      <TouchableOpacity style={styles.button} onPress={handleRegister}>
-        <Text style={styles.buttonText}>Register</Text>
-      </TouchableOpacity>
+            <TouchableOpacity style={styles.button} onPress={handleRegister}>
+              <Text style={styles.buttonText}>Register</Text>
+            </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => navigation.replace('Login')}>
-        <Text style={styles.backToLogin}>Back to Login</Text>
-      </TouchableOpacity>
+            <TouchableOpacity onPress={() => navigation.replace('Login')}>
+              <Text style={styles.backToLogin}>Back to Login</Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
 
-      {/* Modal for Confirmation */}
       <Modal
         transparent={true}
         visible={isModalVisible}
@@ -139,10 +163,9 @@ const NewUserRegistrationScreen = ({ navigation }) => {
         </View>
       </Modal>
 
-      {/* Loading Animation */}
       {isLoading && (
         <View style={styles.loadingOverlay}>
-          <ActivityIndicator size="large" color="#FF6D60" />
+          <ActivityIndicator size="large" color="#FFA000" />
         </View>
       )}
     </View>
@@ -152,63 +175,79 @@ const NewUserRegistrationScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
+    backgroundColor: '#F9FAFB',
+  },
+  scrollWrapper: {
     padding: 20,
-    backgroundColor: '#F3E99F',
+    paddingBottom: 40,
   },
   header: {
     fontSize: 22,
     fontWeight: 'bold',
-    color: '#FF6D60',
+    color: '#1A73E8',
     textAlign: 'center',
+    marginBottom: 20,
+  },
+  formCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    elevation: 3,
+  },
+  formSection: {
     marginBottom: 16,
   },
   sectionTitle: {
     fontWeight: 'bold',
     fontSize: 14,
-    color: '#FF6D60',
+    color: '#5F6368',
     marginBottom: 4,
   },
-  formSection: {
-    marginBottom: 12,
-    backgroundColor: 'white',
-    paddingLeft: 10,
-    paddingVertical: 8,
-    borderLeftWidth: 6,
-    borderLeftColor: '#98D8AA',
-    borderRadius: 8,
-  },
-  inputLine: {
-    height: 40,
-    borderBottomColor: '#FF6D60',
-    borderBottomWidth: 1,
-    marginBottom: 8,
-    paddingLeft: 8,
-    paddingVertical: 0,
+  inputBox: {
+    height: 50,
+    borderRadius: 10,
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 12,
+    fontSize: 15,
+    color: '#1C1C1C',
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
   },
   button: {
-    backgroundColor: '#98D8AA',
-    paddingVertical: 12,
-    borderRadius: 8,
+    backgroundColor: '#FFA000',
+    paddingVertical: 14,
+    borderRadius: 10,
     alignItems: 'center',
-    marginBottom: 10,
+    marginTop: 10,
+    marginBottom: 14,
+    shadowColor: '#FFA000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    elevation: 4,
   },
   buttonText: {
-    color: '#FF6D60',
-    fontSize: 14,
+    color: '#FFFFFF',
+    fontSize: 15,
     fontWeight: 'bold',
   },
-  errorText: {
-    color: 'red',
-    textAlign: 'center',
-    marginBottom: 10,
-  },
   backToLogin: {
-    color: '#007bff',
+    color: '#1A73E8',
     textAlign: 'center',
     marginTop: 12,
     textDecorationLine: 'underline',
     fontWeight: 'bold',
+    fontSize: 14,
+  },
+  errorText: {
+    color: '#D32F2F',
+    textAlign: 'center',
+    marginTop: 8,
+    fontSize: 14,
   },
   modalOverlay: {
     flex: 1,
@@ -217,15 +256,22 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   modalContainer: {
-    backgroundColor: 'white',
-    padding: 20,
-    borderRadius: 8,
+    backgroundColor: '#FFFFFF',
+    padding: 24,
+    borderRadius: 12,
     alignItems: 'center',
-    width: '80%',
+    width: '85%',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    elevation: 6,
   },
   modalText: {
     fontSize: 16,
     marginBottom: 20,
+    color: '#1C1C1C',
+    textAlign: 'center',
   },
   modalButtons: {
     flexDirection: 'row',
@@ -233,14 +279,14 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   modalButton: {
-    backgroundColor: '#FF6D60',
-    padding: 10,
-    borderRadius: 5,
-    width: '40%',
+    backgroundColor: '#1A73E8',
+    padding: 12,
+    borderRadius: 8,
+    width: '45%',
     alignItems: 'center',
   },
   modalButtonText: {
-    color: 'white',
+    color: '#FFFFFF',
     fontSize: 14,
     fontWeight: 'bold',
   },
@@ -252,7 +298,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
   },
 });
 
