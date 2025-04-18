@@ -392,15 +392,15 @@ const getStyles = () =>
   StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: '#F9FAFB', // Soft background
+      backgroundColor: '#F9FAFB', // New background color
     },
     header: {
       padding: 16,
       backgroundColor: '#1A73E8', // Primary blue
-      elevation: 4,
+      elevation: 8, // Increased shadow
       shadowColor: '#000',
       shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.1,
+      shadowOpacity: 0.2,
       shadowRadius: 4,
     },
     headerTitle: {
@@ -413,20 +413,17 @@ const getStyles = () =>
       padding: 16,
     },
     scanButton: {
-      backgroundColor: '#FFA000', // Accent amber
+      backgroundColor: '#1A73E8', // Primary blue
       padding: 16,
       borderRadius: 8,
       alignItems: 'center',
       justifyContent: 'center',
-      elevation: 3,
+      elevation: 4,
       shadowColor: '#000',
-      shadowOffset: { width: 0, height: 1 },
-      shadowOpacity: 0.1,
-      shadowRadius: 3,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.25,
+      shadowRadius: 3.84,
       marginBottom: 16,
-    },
-    scanButtonDisabled: {
-      backgroundColor: '#FFE0B2',
     },
     scanButtonText: {
       color: 'white',
@@ -434,63 +431,83 @@ const getStyles = () =>
       fontSize: 16,
     },
     connectedContainer: {
-      backgroundColor: '#FFFFFF',
-      borderRadius: 8,
+      backgroundColor: '#FFFFFF', // White cards
+      borderRadius: 12, // Slightly more rounded
       padding: 16,
       marginBottom: 16,
-      borderLeftWidth: 5,
-      borderLeftColor: '#1A73E8',
+      elevation: 4,
       shadowColor: '#000',
       shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.08,
+      shadowOpacity: 0.1,
       shadowRadius: 6,
-      elevation: 2,
+      borderLeftWidth: 0, // Removed colored border
+    },
+    connectedHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: 8,
     },
     connectedTitle: {
       fontSize: 16,
       fontWeight: 'bold',
       marginLeft: 8,
-      color: '#1A73E8',
-      textDecorationLine: 'underline',
+      color: '#1A73E8', // Primary blue
+      textDecorationLine: 'none', // Removed underline
+    },
+    connectedDeviceInfo: {
+      marginBottom: 12,
     },
     connectedDeviceName: {
       fontSize: 16,
       fontWeight: '500',
-      color: '#1C1C1C',
+      color: '#1C1C1C', // Dark text
     },
     connectedDeviceId: {
       fontSize: 12,
-      color: '#5F6368',
+      color: '#5F6368', // Secondary text
       marginTop: 4,
     },
     disconnectButton: {
-      backgroundColor: '#FFA000',
-      padding: 10,
-      borderRadius: 6,
+      backgroundColor: '#FFA000', // Accent orange
+      padding: 12, // Slightly more padding
+      borderRadius: 8,
       alignItems: 'center',
+      elevation: 2,
     },
     disconnectButtonText: {
       color: 'white',
       fontWeight: '500',
     },
     deviceListContainer: {
-      backgroundColor: '#FFFFFF',
-      borderRadius: 8,
+      flex: 1,
+      backgroundColor: '#FFFFFF', // White cards
+      borderRadius: 12,
+      elevation: 4,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 6,
       padding: 16,
-      borderLeftWidth: 5,
-      borderLeftColor: '#1A73E8',
-      height: '90%',
-      elevation: 2,
+      borderLeftWidth: 0, // Removed colored border
+    },
+    listHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: 12,
     },
     deviceListTitle: {
       fontSize: 16,
       fontWeight: 'bold',
-      color: '#1A73E8',
-      textDecorationLine: 'underline',
+      color: '#1A73E8', // Primary blue
+      textDecorationLine: 'none', // Removed underline
     },
     deviceCount: {
       fontSize: 12,
-      color: '#5F6368',
+      color: '#5F6368', // Secondary text
+    },
+    listContent: {
+      paddingBottom: 8,
     },
     deviceItem: {
       flexDirection: 'row',
@@ -498,32 +515,48 @@ const getStyles = () =>
       paddingVertical: 12,
       paddingHorizontal: 8,
       borderBottomWidth: 1,
-      borderColor: '#E0E0E0',
+      borderColor: '#E0E0E0', // New border color
     },
     connectedDeviceItem: {
-      backgroundColor: '#E8F0FE',
+      backgroundColor: '#E8F0FE', // Light blue highlight
     },
     deviceIconContainer: {
       width: 40,
       height: 40,
       borderRadius: 20,
-      backgroundColor: '#E8F0FE',
+      backgroundColor: '#E8F0FE', // Light blue
       alignItems: 'center',
       justifyContent: 'center',
       marginRight: 12,
     },
+    deviceInfoContainer: {
+      flex: 1,
+    },
     deviceName: {
       fontSize: 16,
       fontWeight: '500',
-      color: '#1A73E8',
+      color: '#1C1C1C', // Dark text
     },
     deviceId: {
       fontSize: 12,
-      color: '#5F6368',
+      color: '#5F6368', // Secondary text
+      marginTop: 2,
+    },
+    emptyState: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: 40,
     },
     emptyStateText: {
       fontSize: 16,
-      color: '#5F6368',
+      color: '#5F6368', // Secondary text
+      marginTop: 16,
+    },
+    emptyStateSubtext: {
+      fontSize: 14,
+      color: '#5F6368', // Secondary text
+      marginTop: 8,
     },
     modalBackground: {
       flex: 1,
@@ -532,57 +565,172 @@ const getStyles = () =>
       padding: 24,
     },
     modalContainer: {
-      backgroundColor: '#FFFFFF',
+      backgroundColor: '#FFFFFF', // White cards
       borderRadius: 12,
       maxHeight: '80%',
-      paddingBottom: 16,
-      borderLeftWidth: 5,
-      borderLeftColor: '#1A73E8',
+      elevation: 8,
       shadowColor: '#000',
       shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.15,
-      shadowRadius: 8,
-      elevation: 5,
+      shadowOpacity: 0.3,
+      shadowRadius: 6,
+    },
+    modalHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      padding: 16,
+      borderBottomWidth: 1,
+      borderColor: '#E0E0E0', // New border color
     },
     modalTitle: {
       fontSize: 18,
       fontWeight: 'bold',
-      color: '#1A73E8',
+      color: '#1A73E8', // Primary blue
+      textDecorationLine: 'none', // Removed underline
+    },
+    modalSubtitle: {
+      fontSize: 14,
+      color: '#5F6368', // Secondary text
+      marginHorizontal: 16,
+      marginTop: 8,
+    },
+    uuidModeSelector: {
+      flexDirection: 'row',
+      marginHorizontal: 16,
+      marginTop: 12,
+      borderWidth: 1,
+      borderColor: '#E0E0E0', // New border color
+      borderRadius: 8,
+      overflow: 'hidden',
+    },
+    uuidModeButton: {
+      flex: 1,
+      padding: 12,
+      backgroundColor: '#F9FAFB', // Background color
+    },
+    uuidModeButtonActive: {
+      backgroundColor: '#1A73E8', // Primary blue
+    },
+    uuidModeButtonText: {
+      textAlign: 'center',
+      color: '#5F6368', // Secondary text
+      fontWeight: '500',
+    },
+    uuidModeButtonTextActive: {
+      color: 'white',
+    },
+    uuidListContainer: {
+      marginTop: 16,
       paddingHorizontal: 16,
     },
-    input: {
-      borderWidth: 1,
-      borderColor: '#E0E0E0',
-      borderRadius: 8,
+    sectionTitle: {
+      fontSize: 14,
+      fontWeight: '500',
+      color: '#1A73E8', // Primary blue
+      marginBottom: 8,
+    },
+    uuidScrollView: {
+      maxHeight: 200,
+    },
+    uuidItem: {
+      flexDirection: 'row',
+      alignItems: 'center',
       padding: 12,
-      backgroundColor: '#FFFFFF',
-      color: '#1C1C1C',
+      borderWidth: 1,
+      borderColor: '#E0E0E0', // New border color
+      borderRadius: 8,
+      marginBottom: 8,
+    },
+    selectedUuidItem: {
+      borderColor: '#1A73E8', // Primary blue
+      backgroundColor: '#E8F0FE', // Light blue highlight
+    },
+    uuidSelect: {
+      width: 20,
+      height: 20,
+      borderRadius: 10,
+      borderWidth: 2,
+      borderColor: '#5F6368', // Secondary text
+      marginRight: 12,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    uuidSelected: {
+      width: 10,
+      height: 10,
+      borderRadius: 5,
+      backgroundColor: '#1A73E8', // Primary blue
+    },
+    uuidDetails: {
+      flex: 1,
+    },
+    uuidName: {
+      fontWeight: '500',
+      marginBottom: 4,
+      color: '#1C1C1C', // Dark text
+    },
+    uuidValue: {
+      fontSize: 12,
+      color: '#5F6368', // Secondary text
+    },
+    customUuidContainer: {
+      marginTop: 16,
+      paddingHorizontal: 16,
+    },
+    inputGroup: {
+      marginBottom: 12,
     },
     inputLabel: {
       fontSize: 14,
-      color: '#5F6368',
+      color: '#1A73E8', // Primary blue
       marginBottom: 4,
     },
+    input: {
+      borderWidth: 1,
+      borderColor: '#E0E0E0', // New border color
+      borderRadius: 8,
+      padding: 12,
+      backgroundColor: '#FFFFFF', // White
+    },
+    modalButtons: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      padding: 16,
+      borderTopWidth: 1,
+      borderColor: '#E0E0E0', // New border color
+    },
     primaryButton: {
-      backgroundColor: '#1A73E8',
+      flex: 1,
+      backgroundColor: '#1A73E8', // Primary blue
       padding: 14,
       borderRadius: 8,
       alignItems: 'center',
+      marginLeft: 8,
+      elevation: 2,
+    },
+    primaryButtonDisabled: {
+      backgroundColor: '#C5D9F8', // Lighter blue
     },
     primaryButtonText: {
       color: 'white',
       fontWeight: 'bold',
     },
     secondaryButton: {
-      backgroundColor: '#FFA000',
+      flex: 1,
+      backgroundColor: '#FFA000', // Accent orange
       padding: 14,
       borderRadius: 8,
       alignItems: 'center',
+      marginRight: 8,
+      elevation: 2,
     },
     secondaryButtonText: {
       color: 'white',
-      fontWeight: 'bold',
+      fontWeight: '500',
+    },
+    scanButtonDisabled: {
+      backgroundColor: '#B8D3FF', // Lighter blue
     },
   });
 
-export default BluetoothConfigScreen;
+  export default BluetoothConfigScreen;

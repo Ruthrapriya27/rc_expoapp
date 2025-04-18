@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { View, Alert, TextInput, Modal, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
+import { View, Alert, TextInput, Modal, Text, TouchableOpacity, StyleSheet, ScrollView ,Pressable} from 'react-native';
 import { BluetoothContext } from '../Context/BluetoothContext';
 import { LogContext } from '../Context/LogContext';
 import { Buffer } from 'buffer';
@@ -17,6 +17,8 @@ const KeyScreen = () => {
   const [deviceName, setDeviceName] = useState('');
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [selectedDate, setSelectedDate] = useState(null);
+  const [inputKeyIndex, setInputKeyIndex] = useState("");
+  const [inputKeyValue, setInputKeyValue] = useState("");
 
   useEffect(() => {
     let subscription;
@@ -329,161 +331,193 @@ const KeyScreen = () => {
     }
   ];
   
-  const rlbuttons = [
-    {
-      title: 'Get No. of Relays',
-      action: 'RELAY_COUNT_GET',
-      needsInput: false,
-      onSend: () => JSON.stringify({ cmd: "RELAY_COUNT_GET" })
-    },
-    {
-      title: 'Get No. of Keys',
-      action: 'KEY_COUNT_GET',
-      needsInput: false,
-      onSend: () => JSON.stringify({ cmd: "KEY_COUNT_GET" })
-    },
-    {
-      title: 'Get Momentary Timeout',
-      action: 'MOMENTARY_TIMEOUT_GET',
-      needsInput: false,
-      onSend: () => JSON.stringify({ cmd: "MOMENTARY_TIMEOUT_GET" })
-    },
-    {
-      title: 'Set Momentary Timeout',
-      action: 'MOMENTARY_TIMEOUT_SET',
-      needsInput: true,
-      placeholder: 'Enter Timeout (e.g., 20)',
-      validate: (value) => /^[0-9]+$/.test(value),
-      errorMessage: 'Invalid input. Only numeric values allowed.',
-      onSend: (value) => JSON.stringify({ cmd: "MOMENTARY_TIMEOUT_SET", args: [parseInt(value, 10)] })
-    },
-    {
-      title: 'Get Key Value',
-      action: 'KEY_VALUE_GET',
-      needsInput: true,
-      placeholder: 'Enter Key Index (e.g., 1)',
-      validate: (value) => /^[0-9]+$/.test(value),
-      errorMessage: 'Invalid input. Only numeric values allowed.',
-      onSend: (value) => JSON.stringify({ cmd: "KEY_VALUE_GET", args: [{ idx: parseInt(value, 10) }] })
-    },
-    {
-      title: 'Set Key Value',
-      action: 'KEY_VALUE_SET',
-      needsInput: true,
-      placeholder: 'Enter Key Index and Value (e.g., 1,2)',
-      validate: (value) => /^[0-9]+,[0-9]+$/.test(value),
-      errorMessage: 'Invalid input. Format: index,value (e.g., 1,2)',
-      onSend: (value) => {
-        const [idx, val] = value.split(',').map(Number);
-        return JSON.stringify({ cmd: "KEY_VALUE_SET", args: [{ idx, value: val }] });
-      }
-    },
-    {
-      title: 'Get Mode Value',
-      action: 'MODE_VALUE_GET',
-      needsInput: true,
-      placeholder: 'Enter Mode Index (e.g., 1)',
-      validate: (value) => /^[0-9]+$/.test(value),
-      errorMessage: 'Invalid input. Only numeric values allowed.',
-      onSend: (value) => JSON.stringify({ cmd: "MODE_VALUE_GET", args: [{ idx: parseInt(value, 10) }] })
-    },
-    {
-      title: 'Set Mode Value',
-      action: 'MODE_VALUE_SET',
-      needsInput: true,
-      placeholder: 'Enter Mode Index and Value (e.g., 1,2)',
-      validate: (value) => /^[0-9]+,[0-9]+$/.test(value),
-      errorMessage: 'Invalid input. Format: index,value (e.g., 1,2)',
-      onSend: (value) => {
-        const [idx, val] = value.split(',').map(Number);
-        return JSON.stringify({ cmd: "MODE_VALUE_SET", args: [{ idx, value: val }] });
-      }
-    },
-    {
-      title: 'Get Ontime Delay',
-      action: 'ONTIME_DELAY_GET',
-      needsInput: true,
-      placeholder: 'Enter Delay Index (e.g., 1)',
-      validate: (value) => /^[0-9]+$/.test(value),
-      errorMessage: 'Invalid input. Only numeric values allowed.',
-      onSend: (value) => JSON.stringify({ cmd: "ONTIME_DELAY_GET", args: [{ idx: parseInt(value, 10) }] })
-    },
-    {
-      title: 'Set Ontime Delay',
-      action: 'ONTIME_DELAY_SET',
-      needsInput: true,
-      placeholder: 'Enter Delay Index and Value (e.g., 1,2)',
-      validate: (value) => /^[0-9]+,[0-9]+$/.test(value),
-      errorMessage: 'Invalid input. Format: index,value (e.g., 1,2)',
-      onSend: (value) => {
-        const [idx, val] = value.split(',').map(Number);
-        return JSON.stringify({ cmd: "ONTIME_DELAY_SET", args: [{ idx, value: val }] });
-      }
-    },
-    {
-      title: 'Get Offtime Delay',
-      action: 'OFFTIME_DELAY_GET',
-      needsInput: true,
-      placeholder: 'Enter Delay Index (e.g., 1)',
-      validate: (value) => /^[0-9]+$/.test(value),
-      errorMessage: 'Invalid input. Only numeric values allowed.',
-      onSend: (value) => JSON.stringify({ cmd: "OFFTIME_DELAY_GET", args: [{ idx: parseInt(value, 10) }] })
-    },
-    {
-      title: 'Set Offtime Delay',
-      action: 'OFFTIME_DELAY_SET',
-      needsInput: true,
-      placeholder: 'Enter Delay Index and Value (e.g., 1,2)',
-      validate: (value) => /^[0-9]+,[0-9]+$/.test(value),
-      errorMessage: 'Invalid input. Format: index,value (e.g., 1,2)',
-      onSend: (value) => {
-        const [idx, val] = value.split(',').map(Number);
-        return JSON.stringify({ cmd: "OFFTIME_DELAY_SET", args: [{ idx, value: val }] });
-      }
-    },
-    {
-      title: 'Get Interlock Value',
-      action: 'INTERLOCK_VALUE_GET',
-      needsInput: true,
-      placeholder: 'Enter Interlock Index (e.g., 1)',
-      validate: (value) => /^[0-9]+$/.test(value),
-      errorMessage: 'Invalid input. Only numeric values allowed.',
-      onSend: (value) => JSON.stringify({ cmd: "INTERLOCK_VALUE_GET", args: [{ idx: parseInt(value, 10) }] })
-    },
-    {
-      title: 'Set Interlock Value',
-      action: 'INTERLOCK_VALUE_SET',
-      needsInput: true,
-      placeholder: 'Enter Interlock Index and Value (e.g., 1,2)',
-      validate: (value) => /^[0-9]+,[0-9]+$/.test(value),
-      errorMessage: 'Invalid input. Format: index,value (e.g., 1,2)',
-      onSend: (value) => {
-        const [idx, val] = value.split(',').map(Number);
-        return JSON.stringify({ cmd: "INTERLOCK_VALUE_SET", args: [{ idx, value: val }] });
-      }
-    },
-    {
-      title: 'Get Relay Number',
-      action: 'RELAY_NUMBER_GET',
-      needsInput: true,
-      placeholder: 'Enter Relay Index (e.g., 1)',
-      validate: (value) => /^[0-9]+$/.test(value),
-      errorMessage: 'Invalid input. Only numeric values allowed.',
-      onSend: (value) => JSON.stringify({ cmd: "RELAY_NUMBER_GET", args: [{ idx: parseInt(value, 10) }] })
-    },
-    {
-      title: 'Set Relay Number',
-      action: 'RELAY_NUMBER_SET',
-      needsInput: true,
-      placeholder: 'Enter Relay Index and Value (e.g., 1,2)',
-      validate: (value) => /^[0-9]+,[0-9]+$/.test(value),
-      errorMessage: 'Invalid input. Format: index,value (e.g., 1,2)',
-      onSend: (value) => {
-        const [idx, val] = value.split(',').map(Number);
-        return JSON.stringify({ cmd: "RELAY_NUMBER_SET", args: [{ idx, value: val }] });
-      }
-    }
+  const modeOptions = [
+    { label: "NO OPERATION", value: 0 },
+    { label: "MOMENTARY", value: 1 },
+    { label: "LATCH", value: 2 },
+    { label: "ONE SHOT", value: 3 },
+    { label: "ON MODE", value: 4 },
+    { label: "OFF MODE", value: 5 },
+    { label: "START KEY FUNCTION", value: 6 },
+    { label: "EMERGENCY OFF", value: 7 },
   ];
+
+   const rlbuttons = [
+  {
+    title: 'Get No. of Relays',
+    action: 'RELAY_COUNT_GET',
+    needsInput: false,
+    onSend: () => JSON.stringify({ cmd: "RELAY_COUNT_GET" })
+  },
+  {
+    title: 'Get No. of Keys',
+    action: 'KEY_COUNT_GET',
+    needsInput: false,
+    onSend: () => JSON.stringify({ cmd: "KEY_COUNT_GET" })
+  },
+  {
+    title: 'Get Momentary Timeout',
+    action: 'MOMENTARY_TIMEOUT_GET',
+    needsInput: false,
+    onSend: () => JSON.stringify({ cmd: "MOMENTARY_TIMEOUT_GET" })
+  },
+  {
+    title: 'Set Momentary Timeout',
+    action: 'MOMENTARY_TIMEOUT_SET',
+    needsInput: true,
+    placeholder: 'Enter Timeout (e.g., 20)',
+    validate: (value) => /^[0-9]+$/.test(value),
+    errorMessage: 'Invalid input. Only numeric values allowed.',
+    onSend: (value) => JSON.stringify({
+      cmd: "MOMENTARY_TIMEOUT_SET",
+      args: [parseInt(value, 10)]
+    })
+  },
+  {
+    title: 'Get Key Value',
+    action: 'KEY_VALUE_GET',
+    needsInput: true,
+    placeholder: 'Enter Key Index (e.g., 1)',
+    validate: (value) => /^[0-9]+$/.test(value),
+    errorMessage: 'Invalid input. Only numeric values allowed.',
+    onSend: (value) => JSON.stringify({
+      cmd: "KEY_VALUE_GET",
+      args: [{ idx: parseInt(value, 10) }]
+    })
+  },
+  {
+    title: 'Set Key Value',
+    action: 'KEY_VALUE_SET',
+    needsInput: true,
+    placeholder: 'Enter Key Index and Value (dropdowns used)',
+    onSend: () => JSON.stringify({
+      cmd: "KEY_VALUE_SET",
+      args: [{ idx: Number(inputKeyIndex), value: Number(inputKeyValue) }]
+    })
+  },
+  {
+    title: 'Get Mode Value',
+    action: 'MODE_VALUE_GET',
+    needsInput: true,
+    placeholder: 'Enter Mode Index (e.g., 1)',
+    validate: (value) => /^[0-9]+$/.test(value),
+    errorMessage: 'Invalid input. Only numeric values allowed.',
+    onSend: () => {
+      console.log("Index:", inputKeyIndex, "Value:", inputKeyValue);
+      return JSON.stringify({
+          cmd: "MODE_VALUE_SET",
+          args: [{
+              idx: Number(inputKeyIndex),
+              value: Number(inputKeyValue)
+          }]
+      })
+  }
+  },
+  {
+    title: 'Set Mode Value',
+    action: 'MODE_VALUE_SET',
+    needsInput: true,
+    placeholder: 'Enter Mode Index and Mode (dropdowns used)',
+    onSend: () => {
+      console.log("Current values:", inputKeyIndex, inputKeyValue);
+      return JSON.stringify({
+          cmd: "MODE_VALUE_SET",
+          args: [{
+              idx: Number(inputKeyIndex),
+              value: Number(inputKeyValue)
+          }]
+      });
+  }
+},
+  {
+    title: 'Get Ontime Delay',
+    action: 'ONTIME_DELAY_GET',
+    needsInput: true,
+    placeholder: 'Enter Delay Index (e.g., 1)',
+    validate: (value) => /^[0-9]+$/.test(value),
+    errorMessage: 'Invalid input. Only numeric values allowed.',
+    onSend: (value) => JSON.stringify({
+      cmd: "ONTIME_DELAY_GET",
+      args: [{ idx: parseInt(value, 10) }]
+    })
+  },
+  {
+    title: 'Set Ontime Delay',
+    action: 'ONTIME_DELAY_SET',
+    needsInput: true,
+    placeholder: 'Enter Ontime Delay Index and Value (dropdowns used)',
+    onSend: () => JSON.stringify({
+      cmd: "ONTIME_DELAY_SET",
+      args: [{ idx: Number(inputKeyIndex), value: Number(inputKeyValue) }]
+    })
+  },
+  {
+    title: 'Get Offtime Delay',
+    action: 'OFFTIME_DELAY_GET',
+    needsInput: true,
+    placeholder: 'Enter Delay Index (e.g., 1)',
+    validate: (value) => /^[0-9]+$/.test(value),
+    errorMessage: 'Invalid input. Only numeric values allowed.',
+    onSend: (value) => JSON.stringify({
+      cmd: "OFFTIME_DELAY_GET",
+      args: [{ idx: parseInt(value, 10) }]
+    })
+  },
+  {
+    title: 'Set Offtime Delay',
+    action: 'OFFTIME_DELAY_SET',
+    needsInput: true,
+    placeholder: 'Enter Offtime Delay Index and Value (dropdowns used)',
+    onSend: () => JSON.stringify({
+      cmd: "OFFTIME_DELAY_SET",
+      args: [{ idx: Number(inputKeyIndex), value: Number(inputKeyValue) }]
+    })
+  },
+  {
+    title: 'Get Interlock Value',
+    action: 'INTERLOCK_VALUE_GET',
+    needsInput: true,
+    placeholder: 'Enter Interlock Index (e.g., 1)',
+    validate: (value) => /^[0-9]+$/.test(value),
+    errorMessage: 'Invalid input. Only numeric values allowed.',
+    onSend: (value) => JSON.stringify({
+      cmd: "INTERLOCK_VALUE_GET",
+      args: [{ idx: parseInt(value, 10) }]
+    })
+  },
+  {
+    title: 'Set Interlock Value',
+    action: 'INTERLOCK_VALUE_SET',
+    needsInput: true,
+    placeholder: 'Enter Interlock Index and Value (dropdowns used)',
+    onSend: () => JSON.stringify({
+      cmd: "INTERLOCK_VALUE_SET",
+      args: [{ idx: Number(inputKeyIndex), value: Number(inputKeyValue) }]
+    })
+  },
+  {
+    title: 'Get Relay Number',
+    action: 'RELAY_NUMBER_GET',
+    needsInput: true,
+    placeholder: 'Enter Relay Index (e.g., 1)',
+    validate: (value) => /^[0-9]+$/.test(value),
+    errorMessage: 'Invalid input. Only numeric values allowed.',
+    onSend: (value) => JSON.stringify({
+      cmd: "RELAY_NUMBER_GET",
+      args: [{ idx: parseInt(value, 10) }]
+    })
+  },
+  {
+    title: 'Set Relay Number',
+    action: 'RELAY_NUMBER_SET',
+    needsInput: true,
+    placeholder: 'Enter Relay Index and Value (dropdowns used)',
+    onSend: () => JSON.stringify({
+      cmd: "RELAY_NUMBER_SET",
+      args: [{ idx: Number(inputKeyIndex), value: Number(inputKeyValue) }]
+    })
+  }
+];
   
   const handleButtonPress = (buttonConfig) => {
     setCurrentAction(buttonConfig);
@@ -605,84 +639,375 @@ const KeyScreen = () => {
           </ScrollView>
         </View>
       </ScrollView>
-  
-      {/* Modal */}
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={modalVisible}
-        onRequestClose={() => setModalVisible(false)}
-      >
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>{currentAction?.title}</Text>
-  
-            {currentAction?.title === 'Set Timestamp' ? (
-              <>
-                <TouchableOpacity
-                  onPress={() => setShowDatePicker(true)}
-                  style={styles.input}
-                >
-                  <Text>
-                    {selectedDate
-                      ? `${selectedDate.getFullYear()}${String(selectedDate.getMonth() + 1).padStart(2, '0')}`
-                      : 'Pick Year and Month'}
-                  </Text>
-                </TouchableOpacity>
-                {showDatePicker && (
-                  <DateTimePicker
-                    value={selectedDate || new Date()}
-                    mode="date"
-                    display="calendar"
-                    onChange={(event, selected) => {
-                      setShowDatePicker(false);
-                      if (selected) {
-                        setSelectedDate(selected);
-                        const y = selected.getFullYear();
-                        const m = selected.getMonth() + 1;
-                        setInputValue(`${y}${m < 10 ? '0' + m : m}`);
-                      }
-                    }}
-                    minimumDate={new Date(2000, 0, 1)}
-                    maximumDate={new Date(2099, 11, 31)}
-                  />
-                )}
-              </>
-            ) : currentAction?.title === 'Set RF Channel' ? (
-              <Picker
-                selectedValue={inputValue}
-                onValueChange={(itemValue) => setInputValue(itemValue)}
-                style={styles.picker}
-              >
-                <Picker.Item label="Select RF Channel" value="" />
-                <Picker.Item label="1" value="1" />
-                <Picker.Item label="2" value="2" />
-                <Picker.Item label="3" value="3" />
-                <Picker.Item label="4" value="4" />
-              </Picker>
-            ) : (
-              <TextInput
-                style={styles.input}
-                placeholder={currentAction?.placeholder}
-                value={inputValue}
-                onChangeText={setInputValue}
-              />
-            )}
-  
-            <View style={styles.modalButtonRow}>
-              <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.cancelButton}>
-                <Text>Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={handleSend} style={styles.setButton}>
-                <Text>Set Value</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
+
+{/* Modal */}
+<Modal
+  animationType="slide"
+  transparent={true}
+  visible={modalVisible}
+  onRequestClose={() => setModalVisible(false)}
+>
+  <View style={styles.modalContainer}>
+    <View style={styles.modalContent}>
+      <Text style={styles.modalTitle}>{currentAction?.title}</Text>
+
+      {currentAction?.title === 'Set Timestamp' ? (
+        <>
+          <TouchableOpacity
+            onPress={() => setShowDatePicker(true)}
+            style={styles.input}
+          >
+            <Text>
+              {selectedDate
+                ? `${selectedDate.getFullYear()}${String(selectedDate.getMonth() + 1).padStart(2, '0')}`
+                : 'Pick Year and Month'}
+            </Text>
+          </TouchableOpacity>
+          {showDatePicker && (
+            <DateTimePicker
+              value={selectedDate || new Date()}
+              mode="date"
+              display="calendar"
+              onChange={(event, selected) => {
+                setShowDatePicker(false);
+                if (selected) {
+                  setSelectedDate(selected);
+                  const y = selected.getFullYear();
+                  const m = selected.getMonth() + 1;
+                  setInputValue(`${y}${m < 10 ? '0' + m : m}`);
+                }
+              }}
+              minimumDate={new Date(2000, 0, 1)}
+              maximumDate={new Date(2099, 11, 31)}
+            />
+          )}
+        </>
+      ) : currentAction?.title === 'Set RF Channel' ? (
+        <Picker
+          selectedValue={inputValue}
+          onValueChange={(itemValue) => setInputValue(itemValue)}
+          style={styles.picker}
+          itemStyle={styles.pickerItem}
+          dropdownIconColor="#888"
+        >
+          <Picker.Item label="-- Select --" value="" />
+          {[1, 2, 3, 4].map((ch) => (
+            <Picker.Item key={ch} label={`${ch}`} value={`${ch}`} />
+          ))}
+        </Picker>
+      ) : currentAction?.title === 'Get Key Value' ? (
+        <View style={styles.input}>
+          <Text>Enter Key Index</Text>
+          <Picker
+            selectedValue={inputValue}
+            onValueChange={(itemValue) => setInputValue(itemValue)}
+            style={styles.picker}
+            itemStyle={styles.pickerItem}
+            dropdownIconColor="#888"
+          >
+            <Picker.Item label="-- Select --" value="" />
+            {[1, 2, 3, 4, 5].map((i) => (
+              <Picker.Item key={i} label={`${i}`} value={`${i}`} />
+            ))}
+          </Picker>
         </View>
-      </Modal>
+      ) : currentAction?.title === 'Set Key Value' ? (
+        <>
+          <View style={styles.input}>
+            <Text>Enter Key Index</Text>
+            <Picker
+              selectedValue={inputKeyIndex}
+              onValueChange={(itemValue) => setInputKeyIndex(itemValue)}
+              style={styles.picker}
+              itemStyle={styles.pickerItem}
+              dropdownIconColor="#888"
+            >
+              <Picker.Item label="-- Select --" value="" />
+              {[1, 2, 3, 4, 5].map((i) => (
+                <Picker.Item key={i} label={`${i}`} value={`${i}`} />
+              ))}
+            </Picker>
+          </View>
+          <TextInput
+            style={styles.input}
+            placeholder="Enter Key Value (e.g., 2)"
+            value={inputKeyValue}
+            onChangeText={setInputKeyValue}
+            keyboardType="numeric"
+          />
+        </>
+      ) : currentAction?.title === 'Get Mode Value' ? (
+        <View style={styles.input}>
+          <Text>Enter Mode Index</Text>
+          <Picker
+            selectedValue={inputValue}
+            onValueChange={(itemValue) => setInputValue(itemValue)}
+            style={styles.picker}
+            itemStyle={styles.pickerItem}
+            dropdownIconColor="#888"
+          >
+            <Picker.Item label="-- Select --" value="" />
+            {[1, 2, 3, 4, 5].map((i) => (
+              <Picker.Item key={i} label={`${i}`} value={`${i}`} />
+            ))}
+          </Picker>
+        </View>
+      ) : currentAction?.title === 'Set Mode Value' ? (
+        <>
+            <View style={styles.input}>
+                <Text>Enter Mode Index</Text>
+                <Picker
+                    selectedValue={inputKeyIndex}
+                    onValueChange={(itemValue) => setInputKeyIndex(itemValue)}
+                    style={styles.picker}
+                    itemStyle={styles.pickerItem}
+                    dropdownIconColor="#888"
+                >
+                    <Picker.Item label="-- Select --" value="" />
+                    {[1, 2, 3, 4, 5].map((i) => (
+                        <Picker.Item key={i} label={`${i}`} value={`${i}`} />
+                    ))}
+                </Picker>
+            </View>
+            <View style={styles.input}>
+                <Text>Enter Mode</Text>
+                <Picker
+                    selectedValue={inputKeyValue}
+                    onValueChange={(itemValue) => setInputKeyValue(itemValue)}
+                    style={styles.picker}
+                    itemStyle={styles.pickerItem}
+                    dropdownIconColor="#888"
+                >
+                    <Picker.Item label="-- Select --" value="" />
+                    {modeOptions.map((option) => (
+                        <Picker.Item 
+                            key={option.value} 
+                            label={option.label} 
+                            value={option.value.toString()} 
+                        />
+                    ))}
+                </Picker>
+            </View>
+        </>
+    ) : currentAction?.title?.includes('Ontime Delay') && currentAction?.title?.includes('Set') ? (
+        <>
+          <View style={styles.input}>
+            <Text>Enter Ontime Delay Index</Text>
+            <Picker
+              selectedValue={inputKeyIndex}
+              onValueChange={(itemValue) => setInputKeyIndex(itemValue)}
+              style={styles.picker}
+              itemStyle={styles.pickerItem}
+              dropdownIconColor="#888"
+            >
+              <Picker.Item label="-- Select --" value="" />
+              {[1, 2, 3, 4, 5].map((i) => (
+                <Picker.Item key={i} label={`${i}`} value={`${i}`} />
+              ))}
+            </Picker>
+          </View>
+          <View style={styles.input}>
+            <Text>Set Ontime Delay Value</Text>
+            <Picker
+              selectedValue={inputKeyValue}
+              onValueChange={(itemValue) => setInputKeyValue(itemValue)}
+              style={styles.picker}
+              itemStyle={styles.pickerItem}
+              dropdownIconColor="#888"
+            >
+              <Picker.Item label="-- Select --" value="" />
+              {[0, 1, 2, 3, 4, 5].map((v) => (
+                <Picker.Item key={v} label={`${v}`} value={`${v}`} />
+              ))}
+            </Picker>
+          </View>
+        </>
+      ) : currentAction?.title?.includes('Ontime Delay') && currentAction?.title?.includes('Get') ? (
+        <View style={styles.input}>
+          <Text>Enter Ontime Delay Index</Text>
+          <Picker
+            selectedValue={inputValue}
+            onValueChange={(itemValue) => setInputValue(itemValue)}
+            style={styles.picker}
+            itemStyle={styles.pickerItem}
+            dropdownIconColor="#888"
+          >
+            <Picker.Item label="-- Select --" value="" />
+            {[1, 2, 3, 4, 5].map((i) => (
+              <Picker.Item key={i} label={`${i}`} value={`${i}`} />
+            ))}
+          </Picker>
+        </View>
+      ) : currentAction?.title?.includes('Offtime Delay') && currentAction?.title?.includes('Set') ? (
+        <>
+          <View style={styles.input}>
+            <Text>Enter Offtime Delay Index</Text>
+            <Picker
+              selectedValue={inputKeyIndex}
+              onValueChange={(itemValue) => setInputKeyIndex(itemValue)}
+              style={styles.picker}
+              itemStyle={styles.pickerItem}
+              dropdownIconColor="#888"
+            >
+              <Picker.Item label="-- Select --" value="" />
+              {[1, 2, 3, 4, 5].map((i) => (
+                <Picker.Item key={i} label={`${i}`} value={`${i}`} />
+              ))}
+            </Picker>
+          </View>
+          <View style={styles.input}>
+            <Text>Set Offtime Delay Value</Text>
+            <Picker
+              selectedValue={inputKeyValue}
+              onValueChange={(itemValue) => setInputKeyValue(itemValue)}
+              style={styles.picker}
+              itemStyle={styles.pickerItem}
+              dropdownIconColor="#888"
+            >
+              <Picker.Item label="-- Select --" value="" />
+              {[0, 1, 2, 3, 4, 5].map((v) => (
+                <Picker.Item key={v} label={`${v}`} value={`${v}`} />
+              ))}
+            </Picker>
+          </View>
+        </>
+      ) : currentAction?.title?.includes('Offtime Delay') && currentAction?.title?.includes('Get') ? (
+        <View style={styles.input}>
+          <Text>Enter Offtime Delay Index</Text>
+          <Picker
+            selectedValue={inputValue}
+            onValueChange={(itemValue) => setInputValue(itemValue)}
+            style={styles.picker}
+            itemStyle={styles.pickerItem}
+            dropdownIconColor="#888"
+          >
+            <Picker.Item label="-- Select --" value="" />
+            {[1, 2, 3, 4, 5].map((i) => (
+              <Picker.Item key={i} label={`${i}`} value={`${i}`} />
+            ))}
+          </Picker>
+        </View>
+      ) : currentAction?.title === 'Get Interlock Value' ? (
+        <View style={styles.input}>
+          <Text>Enter Interlock Index</Text>
+          <Picker
+            selectedValue={inputValue}
+            onValueChange={(itemValue) => setInputValue(itemValue)}
+            style={styles.picker}
+            itemStyle={styles.pickerItem}
+            dropdownIconColor="#888"
+          >
+            <Picker.Item label="-- Select --" value="" />
+            {[1, 2, 3, 4, 5].map((i) => (
+              <Picker.Item key={i} label={`${i}`} value={`${i}`} />
+            ))}
+          </Picker>
+        </View>
+      ) : currentAction?.title === 'Set Interlock Value' ? (
+        <>
+          <View style={styles.input}>
+            <Text>Enter Interlock Index</Text>
+            <Picker
+              selectedValue={inputKeyIndex}
+              onValueChange={(itemValue) => setInputKeyIndex(itemValue)}
+              style={styles.picker}
+              itemStyle={styles.pickerItem}
+              dropdownIconColor="#888"
+            >
+              <Picker.Item label="-- Select --" value="" />
+              {[1, 2, 3, 4, 5].map((i) => (
+                <Picker.Item key={i} label={`${i}`} value={`${i}`} />
+              ))}
+            </Picker>
+          </View>
+          <View style={styles.input}>
+            <Text>Set Interlock Value</Text>
+            <Picker
+              selectedValue={inputKeyValue}
+              onValueChange={(itemValue) => setInputKeyValue(itemValue)}
+              style={styles.picker}
+              itemStyle={styles.pickerItem}
+              dropdownIconColor="#888"
+            >
+              <Picker.Item label="-- Select --" value="" />
+              {[0, 1, 2, 3, 4, 5].map((v) => (
+                <Picker.Item key={v} label={`${v}`} value={`${v}`} />
+              ))}
+            </Picker>
+          </View>
+        </>
+      ) : currentAction?.title === 'Get Relay Number' ? (
+        <View style={styles.input}>
+          <Text>Enter Relay Index</Text>
+          <Picker
+            selectedValue={inputValue}
+            onValueChange={(itemValue) => setInputValue(itemValue)}
+            style={styles.picker}
+            itemStyle={styles.pickerItem}
+            dropdownIconColor="#888"
+          >
+            <Picker.Item label="-- Select --" value="" />
+            {[1, 2, 3, 4, 5].map((i) => (
+              <Picker.Item key={i} label={`${i}`} value={`${i}`} />
+            ))}
+          </Picker>
+        </View>
+      ) : currentAction?.title === 'Set Relay Number' ? (
+        <>
+          <View style={styles.input}>
+            <Text>Enter Relay Index</Text>
+            <Picker
+              selectedValue={inputKeyIndex}
+              onValueChange={(itemValue) => setInputKeyIndex(itemValue)}
+              style={styles.picker}
+              itemStyle={styles.pickerItem}
+              dropdownIconColor="#888"
+            >
+              <Picker.Item label="-- Select --" value="" />
+              {[1, 2, 3, 4, 5].map((i) => (
+                <Picker.Item key={i} label={`${i}`} value={`${i}`} />
+              ))}
+            </Picker>
+          </View>
+          <View style={styles.input}>
+            <Text>Set Relay Value</Text>
+            <Picker
+              selectedValue={inputKeyValue}
+              onValueChange={(itemValue) => setInputKeyValue(itemValue)}
+              style={styles.picker}
+              itemStyle={styles.pickerItem}
+              dropdownIconColor="#888"
+            >
+              <Picker.Item label="-- Select --" value="" />
+              {[0, 1, 2, 3, 4, 5].map((v) => (
+                <Picker.Item key={v} label={`${v}`} value={`${v}`} />
+              ))}
+            </Picker>
+          </View>
+        </>
+      ) : (
+        <TextInput
+          style={styles.input}
+          placeholder={currentAction?.placeholder}
+          value={inputValue}
+          onChangeText={setInputValue}
+        />
+      )}
+
+      <View style={styles.modalButtonRow}>
+        <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.cancelButton}>
+          <Text>Cancel</Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={handleSend} style={styles.setButton}>
+          <Text>Set Value</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  </View>
+</Modal>
+
     </>
   );
-  
 };
 
 
@@ -882,9 +1207,36 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   picker: {
+    borderColor: '#E0E0E0',
+    backgroundColor: '#FFFFFF',
+    zIndex: 1000,
     height: 50,
     width: '100%',
-    marginBottom: 12,
+    justifyContent: 'center',
+  },
+  
+  pickerItem: {
+    textAlign: 'center',
+    color: '#1C1C1C',
+    fontSize: 16,
+    borderBottomColor: '#E0E0E0',
+    borderBottomWidth: 1,
+    paddingVertical: 10,
+  },
+  dropdownContainer: {
+    borderColor: '#E0E0E0',
+    backgroundColor: '#FFFFFF',
+    zIndex: 1000,
+  },
+  dropdownItemStyle: {
+    borderBottomColor: '#E0E0E0',
+    borderBottomWidth: 1,
+  },
+  dropdownLabelStyle: {
+    color: '#1C1C1C',
+  },
+  dropdownSelectedItemStyle: {
+    backgroundColor: '#E3F2FD', // faded light blue
   },
   modalButtonRow: {
     flexDirection: 'row',
@@ -905,6 +1257,36 @@ const styles = StyleSheet.create({
     flex: 1,
     marginLeft: 5,
     alignItems: 'center',
+  },
+  placeholderStyle: {
+    fontSize: 16,
+  },
+  selectedTextStyle: {
+    fontSize: 16,
+  },
+  iconStyle: {
+    width: 20,
+    height: 20,
+  },
+  inputSearchStyle: {
+    height: 40,
+    fontSize: 16,
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+  modalContent: {
+    backgroundColor: 'white',
+    borderRadius: 10,
+    padding: 20,
+    width: '90%',
+    maxHeight: '90%',
+  },
+  scrollContent: {
+    paddingBottom: 40,
   },
 });
 

@@ -26,6 +26,12 @@
       "eas": {
         "projectId": "ae9892ae-f751-4125-8c5f-9ee0c02b4ba8"
       }
+    },
+    "ios": {
+      "bundleIdentifier": "com.innospace.rcapp",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     }
   }
 }

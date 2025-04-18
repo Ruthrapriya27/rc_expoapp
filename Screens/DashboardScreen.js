@@ -36,8 +36,11 @@ const DashboardScreen = () => {
     </View>
   );
 
-  const renderSettingItem = ({ item }) => (
-    <View style={styles.logItem}>
+  const renderSettingItem = ({ item, index }) => (
+    <View style={[
+      styles.logItem,
+      index === settingsData.length - 1 && { borderBottomWidth: 0 } // Remove border on last item
+    ]}>
       <Ionicons name="ellipse" size={8} color="#007AFF" style={styles.bullet} />
       <Text style={styles.logText}>{item.key}: {item.value || 'N/A'}</Text>
     </View>
@@ -52,7 +55,7 @@ const DashboardScreen = () => {
 
   const containerHeight = animation.interpolate({
     inputRange: [0, 1],
-    outputRange: [0, 300] // Adjust this value based on your content height
+    outputRange: [0, 298] // Adjust this value based on your content height
   });
 
   const rotateArrow = animation.interpolate({
@@ -69,7 +72,7 @@ const DashboardScreen = () => {
       <View style={styles.logsContainer}>
         <FlatList
           data={settingsData}
-          renderItem={renderSettingItem}
+          renderItem={({ item, index }) => renderSettingItem({ item, index })}
           keyExtractor={(item) => item.key}
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
@@ -133,7 +136,7 @@ const DashboardScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9FAFB', // App background
+    backgroundColor: '#F9FAFB',
     padding: 16,
   },
   header: {
@@ -145,7 +148,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 22,
     fontWeight: '600',
-    color: '#1C1C1C', // Primary text
+    color: '#1C1C1C',
   },
   toggleButton: {
     flexDirection: 'row',
@@ -153,7 +156,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: 10,
     paddingHorizontal: 12,
-    backgroundColor: 'rgba(26, 115, 232, 0.1)', // Blue translucent
+    backgroundColor: 'rgba(26, 115, 232, 0.1)',
     borderRadius: 10,
     marginBottom: 10,
     marginTop: -6,
@@ -166,7 +169,7 @@ const styles = StyleSheet.create({
     color: '#5F6368',
   },
   toggleLabel: {
-    color: '#1A73E8', // Primary Blue
+    color: '#1A73E8',
     fontWeight: 'bold',
     fontSize: 15,
   },
@@ -176,8 +179,6 @@ const styles = StyleSheet.create({
   logsContainer: {
     backgroundColor: '#FFFFFF',
     borderRadius: 12,
-    // borderLeftWidth: 4,
-    // borderLeftColor: '#1A73E8', // Primary Blue bar
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.08,
@@ -195,7 +196,7 @@ const styles = StyleSheet.create({
   emptyText: {
     marginTop: 12,
     fontSize: 16,
-    color: '#5F6368', // Neutral text
+    color: '#5F6368',
     textAlign: 'center',
   },
   scrollContent: {
@@ -207,14 +208,14 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     paddingHorizontal: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#E0E0E0', // Soft divider
+    borderBottomColor: '#E0E0E0',
   },
   bullet: {
     marginRight: 12,
     height: 8,
     width: 8,
     borderRadius: 4,
-    backgroundColor: '#FFA000', // Accent bullet
+    backgroundColor: '#FFA000',
   },
   logText: {
     flex: 1,
