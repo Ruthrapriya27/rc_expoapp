@@ -295,7 +295,7 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: 'bold',
-    marginLeft: 10,
+    justifyContent: 'center',
   },
   buttonIcon: {
     marginLeft: 10,
