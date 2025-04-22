@@ -5,7 +5,7 @@
   import { Buffer } from 'buffer';
   import DateTimePicker from '@react-native-community/datetimepicker';
   import { Picker } from '@react-native-picker/picker';
-
+  
   const KeyScreen = () => {
 
     //USE STATES 
@@ -21,6 +21,8 @@
     const [selectedDate, setSelectedDate] = useState(null);
     const [inputKeyIndex, setInputKeyIndex] = useState("");
     const [inputKeyValue, setInputKeyValue] = useState("");
+    const [index, setIndex] = useState('');
+     const [value, setValue] = useState('');
   
     //RESPONSE READ AND LABEL MAP FOR OUTPUT RESPONSE VALUE
     useEffect(() => {
@@ -97,8 +99,8 @@
 
                   Alert.alert(
                     'Status',
-                    `Description: ${description}\nAction: ${action}\nMessage: ${message}\nData: ${dataOutput}`
-                  );
+                    `\u200B\nDescription: ${description}\n\u200B\nAction: ${action}\n\u200B\nMessage: ${message}\n\u200B\nData: ${dataOutput}`
+                  );                                  
                 } catch (decodeError) {
                   Alert.alert('Decode Error', decodeError.message);
                 }
@@ -128,6 +130,15 @@
     );
     console.log('Command sent successfully:', jsonCommand);
     addLog(`Command sent successfully: ${jsonCommand}`);
+    Alert.alert('Command sent successfully:', jsonCommand);
+    // Alert.alert(
+    //   'Success', 
+    //   `Command sent successfully: ${jsonCommand}`,
+    //   [
+    //      { text: 'OK' }
+    //   ],
+    //   { cancelable: true }  
+    // );
   } catch (error) {
     console.log('Error sending command:', error.message);
     addLog(`Error sending command: ${error.message}`);
@@ -141,6 +152,24 @@
         action: 'DEV_SERIAL_NO_GET',
         needsInput: false,
         onSend: () => JSON.stringify({ cmd: "DEV_SERIAL_NO_GET" })
+      },
+      {
+        title: 'Set Device ID',
+        action: 'DEV_ID_SET',
+        needsInput: true,
+        placeholder: 'Enter Device ID (e.g., 000000)',
+        validate: (value) => /^\d+$/.test(value) && value.length <= 15,
+        errorMessage: 'Invalid input. Only numbers up to 15 digits allowed.',
+        onSend: (value) => {
+          setDeviceId(value);
+          return JSON.stringify({ cmd: "DEV_ID_SET", args: [value] });
+        }
+      },
+      {
+        title: 'Get Device ID',
+        action: 'DEV_ID_GET',
+        needsInput: false,
+        onSend: () => JSON.stringify({ cmd: "DEV_ID_GET" })
       },
       {
         title: 'Set Device ID Code',
@@ -164,7 +193,7 @@
         title: 'Set Production Timestamp',
         action: 'PROD_TIMESTAMP_SET',
         needsInput: true,
-        placeholder: 'Select Year and Month',
+        placeholder: 'Pick Year and Month',
         validate: (value) => /^\d{6}$/.test(value),
         errorMessage: 'Invalid input. Format must be YYYYMM.',
         onSend: (value) => {
@@ -198,24 +227,7 @@
         needsInput: false,
         onSend: () => JSON.stringify({ cmd: "CUSTOMER_NAME_GET" })
       },
-      {
-        title: 'Set Device ID',
-        action: 'DEV_ID_SET',
-        needsInput: true,
-        placeholder: 'Enter Device ID (e.g., 000000)',
-        validate: (value) => /^\d+$/.test(value) && value.length <= 15,
-        errorMessage: 'Invalid input. Only numbers up to 15 digits allowed.',
-        onSend: (value) => {
-          setDeviceId(value);
-          return JSON.stringify({ cmd: "DEV_ID_SET", args: [value] });
-        }
-      },
-      {
-        title: 'Get Device ID',
-        action: 'DEV_ID_GET',
-        needsInput: false,
-        onSend: () => JSON.stringify({ cmd: "DEV_ID_GET" })
-      },
+      
       {
         title: 'Get Device Type',
         action: 'DEV_TYPE_GET',
@@ -339,7 +351,7 @@
         onSend: () => JSON.stringify({ cmd: "RF_BAUDRATE_GET" })
       }
     ];
-
+    
     const rfirbuttons = [
       {
         title: 'Set IR Logical Address',
@@ -411,22 +423,16 @@
         args: [{ idx: parseInt(value, 10) }]
       })
     },
-    // {
-    //   title: 'Set Mode Value',
-    //   action: 'MODE_VALUE_SET',
-    //   needsInput: true,
-    //   placeholder: 'Enter Mode Index and Mode (dropdowns used)',
-    //   onSend: () => {
-    //     console.log("Current values:", inputKeyIndex, inputKeyValue);
-    //     return JSON.stringify({
-    //         cmd: "MODE_VALUE_SET",
-    //         args: [{
-    //             idx: Number(inputKeyIndex),
-    //             value: Number(inputKeyValue)
-    //         }]
-    //     });
-    // }
-    // },
+    {
+      title: 'Set Mode Value',
+      action: 'MODE_VALUE_SET',
+      needsInput: true,
+      placeholder: 'Enter Mode Index and Mode Value',
+      onSend: ({ index, value }) => JSON.stringify({
+        cmd: "MODE_VALUE_SET",
+        args: [{ idx: Number(index), value: Number(value) }]
+      })
+    },
     {
       title: 'Get Mode Value',
       action: 'MODE_VALUE_GET',
@@ -435,12 +441,10 @@
       validate: (value) => /^[0-9]+$/.test(value),
       errorMessage: 'Invalid input. Only numeric values allowed.',
       onSend: () => {
-        console.log("Index:", inputKeyIndex, "Value:", inputKeyValue);
         return JSON.stringify({
             cmd: "MODE_VALUE_SET",
             args: [{
-                idx: Number(inputKeyIndex),
-                value: Number(inputKeyValue)
+                idx: Number(inputKeyIndex)
             }]
         })
     }
@@ -538,19 +542,20 @@
   //LRM3 BUTTONS CONFIGURATIONS 
   const lrmrlbuttons = [
     {
+      title: 'Set Relay Timeout',
+      action: 'RELAY_TIMEOUT_SET',
+      needsInput: true,
+      placeholder: 'Enter Timeout Value (1-65535)',
+      validate: (value) => /^[0-9]+$/.test(value) && value >= 1 && value <= 65535,
+      errorMessage: 'Invalid input. Enter a number between 1-65535.',
+      onSend: (value) => JSON.stringify({ cmd: "RELAY_TIMEOUT_SET", args: [parseInt(value, 10)] })
+     
+    },
+    {
       title: 'Get Relay Timeout',
       action: 'RELAY_TIMEOUT_GET',
       needsInput: false,
       onSend: () => JSON.stringify({ cmd: "RELAY_TIMEOUT_GET" })
-    },
-    {
-      title: 'Set Relay Timeout',
-      action: 'RELAY_TIMEOUT_SET',
-      needsInput: true,
-      placeholder: 'Enter Timeout (1-65535)',
-      validate: (value) => /^[0-9]+$/.test(value) && value >= 1 && value <= 65535,
-      errorMessage: 'Invalid input. Enter a number between 1-65535.',
-      onSend: (value) => JSON.stringify({ cmd: "RELAY_TIMEOUT_SET", args: [parseInt(value, 10)] })
     }
   ];
 
@@ -561,26 +566,26 @@
         needsInput: false,
         onSend: () => JSON.stringify({ cmd: "RF_DEV_TYPE_GET" })
       }, 
+      {
+        title: 'Get RF Firmware Version',
+        action: 'RF_FIRMWARE_VERSION_GET',
+        needsInput: false,
+        onSend: () => JSON.stringify({ cmd: "RF_FIRMWARE_VERSION_GET" })
+      },
+      {
+        title: 'Set RF Bandwidth',
+        action: 'RF_BANDWIDTH_SET',
+        needsInput: true,
+        placeholder: 'Enter Bandwidth value (0-10)',
+        validate: (value) => /^[0-9]+$/.test(value) && value >= 0 && value <= 10,
+        errorMessage: 'Invalid input. Enter a number between 0-10.',
+        onSend: (value) => JSON.stringify({ cmd: "RF_BANDWIDTH_SET", args: [parseInt(value, 10)] })
+      },
     {
       title: 'Get RF Bandwidth',
       action: 'RF_BANDWIDTH_GET',
       needsInput: false,
       onSend: () => JSON.stringify({ cmd: "RF_BANDWIDTH_GET" })
-    },
-    {
-      title: 'Set RF Bandwidth',
-      action: 'RF_BANDWIDTH_SET',
-      needsInput: true,
-      placeholder: 'Enter Bandwidth value (0-10)',
-      validate: (value) => /^[0-9]+$/.test(value) && value >= 0 && value <= 10,
-      errorMessage: 'Invalid input. Enter a number between 0-10.',
-      onSend: (value) => JSON.stringify({ cmd: "RF_BANDWIDTH_SET", args: [parseInt(value, 10)] })
-    },
-    {
-      title: 'Get Spread Factor',
-      action: 'SPREAD_FACTOR_GET',
-      needsInput: false,
-      onSend: () => JSON.stringify({ cmd: "SPREAD_FACTOR_GET" })
     },
     {
       title: 'Set Spread Factor',
@@ -592,10 +597,10 @@
       onSend: (value) => JSON.stringify({ cmd: "SPREAD_FACTOR_SET", args: [parseInt(value, 10)] })
     },
     {
-      title: 'Get Code Rate',
-      action: 'CODE_RATE_GET',
+      title: 'Get Spread Factor',
+      action: 'SPREAD_FACTOR_GET',
       needsInput: false,
-      onSend: () => JSON.stringify({ cmd: "CODE_RATE_GET" })
+      onSend: () => JSON.stringify({ cmd: "SPREAD_FACTOR_GET" })
     },
     {
       title: 'Set Code Rate',
@@ -607,10 +612,10 @@
       onSend: (value) => JSON.stringify({ cmd: "CODE_RATE_SET", args: [parseInt(value, 10)] })
     },
     {
-      title: 'Get RF Transmission Power',
-      action: 'RF_TRANSMISSION_POWER_GET',
+      title: 'Get Code Rate',
+      action: 'CODE_RATE_GET',
       needsInput: false,
-      onSend: () => JSON.stringify({ cmd: "RF_TRANSMISSION_POWER_GET" })
+      onSend: () => JSON.stringify({ cmd: "CODE_RATE_GET" })
     },
     {
       title: 'Set RF Transmission Power',
@@ -622,25 +627,25 @@
       onSend: (value) => JSON.stringify({ cmd: "RF_TRANSMISSION_POWER_SET", args: [parseInt(value, 10)] })
     },
     {
-      title: 'Get RF Sync Word',
-      action: 'SYNC_WORD_GET',
+      title: 'Get RF Transmission Power',
+      action: 'RF_TRANSMISSION_POWER_GET',
       needsInput: false,
-      onSend: () => JSON.stringify({ cmd: "SYNC_WORD_GET" })
+      onSend: () => JSON.stringify({ cmd: "RF_TRANSMISSION_POWER_GET" })
     },
     {
       title: 'Set RF Sync Word',
       action: 'SYNC_WORD_SET',
       needsInput: true,
-      placeholder: 'Enter Sync Word (e.g.0000)',
+      placeholder: 'Enter Sync Word (e.g.0001)',
       validate: (value) => /^[0-9]{4}$/.test(value) && parseInt(value, 10) >= 1 && parseInt(value, 10) <= 65535,
       errorMessage: 'Invalid input. Enter 4 digits between 0001-65535.',
       onSend: (value) => JSON.stringify({ cmd: "SYNC_WORD_SET", args: [value] })
     },
     {
-      title: 'Get RF Frequency',
-      action: 'RF_FREQ_GET',
+      title: 'Get RF Sync Word',
+      action: 'SYNC_WORD_GET',
       needsInput: false,
-      onSend: () => JSON.stringify({ cmd: "RF_FREQ_GET" })
+      onSend: () => JSON.stringify({ cmd: "SYNC_WORD_GET" })
     },
     {
       title: 'Set RF Frequency',
@@ -652,10 +657,10 @@
       onSend: (value) => JSON.stringify({ cmd: "RF_FREQ_SET", args: [parseInt(value, 10)] })
     },
     {
-      title: 'Get Logical Address',
-      action: 'RF_LOGICADDR_GET',
+      title: 'Get RF Frequency',
+      action: 'RF_FREQ_GET',
       needsInput: false,
-      onSend: () => JSON.stringify({ cmd: "RF_LOGICADDR_GET" })
+      onSend: () => JSON.stringify({ cmd: "RF_FREQ_GET" })
     },
     {
       title: 'Set Logical Address',
@@ -667,10 +672,10 @@
       onSend: (value) => JSON.stringify({ cmd: "RF_LOGICADDR_SET", args: [parseInt(value, 10)] })
     },
     {
-      title: 'Get Preamble Length',
-      action: 'PREAMBLE_LENGTH_GET',
+      title: 'Get Logical Address',
+      action: 'RF_LOGICADDR_GET',
       needsInput: false,
-      onSend: () => JSON.stringify({ cmd: "PREAMBLE_LENGTH_GET" })
+      onSend: () => JSON.stringify({ cmd: "RF_LOGICADDR_GET" })
     },
     {
       title: 'Set Preamble Length',
@@ -682,10 +687,10 @@
       onSend: (value) => JSON.stringify({ cmd: "PREAMBLE_LENGTH_SET", args: [parseInt(value, 10)] })
     },
     {
-      title: 'Get Payload Length',
-      action: 'PAYLOAD_LENGTH_GET',
+      title: 'Get Preamble Length',
+      action: 'PREAMBLE_LENGTH_GET',
       needsInput: false,
-      onSend: () => JSON.stringify({ cmd: "PAYLOAD_LENGTH_GET" })
+      onSend: () => JSON.stringify({ cmd: "PREAMBLE_LENGTH_GET" })
     },
     {
       title: 'Set Payload Length',
@@ -697,10 +702,10 @@
       onSend: (value) => JSON.stringify({ cmd: "PAYLOAD_LENGTH_SET", args: [parseInt(value, 10)] })
     },
     {
-      title: 'Get CRC Control',
-      action: 'CRC_CONTROL_GET',
+      title: 'Get Payload Length',
+      action: 'PAYLOAD_LENGTH_GET',
       needsInput: false,
-      onSend: () => JSON.stringify({ cmd: "CRC_CONTROL_GET" })
+      onSend: () => JSON.stringify({ cmd: "PAYLOAD_LENGTH_GET" })
     },
     {
       title: 'Set CRC Control',
@@ -712,16 +717,10 @@
       onSend: (value) => JSON.stringify({ cmd: "CRC_CONTROL_SET", args: [parseInt(value, 10)] })
     },
     {
-      title: 'Get RF Firmware Version',
-      action: 'RF_FIRMWARE_VERSION_GET',
+      title: 'Get CRC Control',
+      action: 'CRC_CONTROL_GET',
       needsInput: false,
-      onSend: () => JSON.stringify({ cmd: "RF_FIRMWARE_VERSION_GET" })
-    },
-    {
-      title: 'Get RF Relay Timeout',
-      action: 'RF_RELAY_TIMEOUT_GET',
-      needsInput: false,
-      onSend: () => JSON.stringify({ cmd: "RF_RELAY_TIMEOUT_GET" })
+      onSend: () => JSON.stringify({ cmd: "CRC_CONTROL_GET" })
     },
     {
       title: 'Set RF Relay Timeout',
@@ -731,6 +730,12 @@
       validate: (value) => /^[0-9]+$/.test(value) && value >= 1 && value <= 65535,
       errorMessage: 'Invalid input. Enter a number between 1-65535.',
       onSend: (value) => JSON.stringify({ cmd: "RF_RELAY_TIMEOUT_SET", args: [parseInt(value, 10)] })
+    },
+    {
+      title: 'Get RF Relay Timeout',
+      action: 'RF_RELAY_TIMEOUT_GET',
+      needsInput: false,
+      onSend: () => JSON.stringify({ cmd: "RF_RELAY_TIMEOUT_GET" })
     },
     {
       title: 'RF Reset',
@@ -877,7 +882,7 @@
                 </ScrollView>
               </View>
             </>
-          )} 
+       )}   
     
           {deviceName === "LRM3" && (
             <>
@@ -923,7 +928,7 @@
                 </ScrollView>
               </View>
             </>
-          )}
+           )}  
         </ScrollView>
 
   {/* MODAL */}
@@ -939,7 +944,7 @@
 
 
         {/*----------- Modal of CButtons -----------*/}
-        {currentAction?.title === 'Set Timestamp' ? (
+        {currentAction?.title === 'Set Production Timestamp' ? (
           <>
             <TouchableOpacity
               onPress={() => setShowDatePicker(true)}
@@ -1042,41 +1047,51 @@
                 <Picker.Item key={i} label={`${i}`} value={`${i}`} />
               ))}
             </Picker>
-          </View>
+                </View>
         ) : currentAction?.title === 'Set Mode Value' ? (
           <>
             <View style={styles.input}>
-              <Text>Enter Mode Index</Text>
+              <Text>Select Mode Index</Text>
               <Picker
-                selectedValue={inputKeyIndex}
-                onValueChange={(itemValue) => setInputKeyIndex(itemValue)}
+                selectedValue={index}
+                onValueChange={(itemValue) => {
+                  console.log('Selected index:', itemValue);
+                  setIndex(itemValue);
+                }}
                 style={styles.picker}
-                itemStyle={styles.pickerItem}
-                dropdownIconColor="#888"
               >
-                <Picker.Item label="-- Select --" value="" />
-                {[1, 2, 3, 4, 5].map((i) => (
-                  <Picker.Item key={i} label={`${i}`} value={`${i}`} />
-                ))}
+                {/* <Picker.Item label="-- Select --"/> */}
+                <Picker.Item label="1" value={1} />
+                <Picker.Item label="2" value={2} />
+                <Picker.Item label="3" value={3} />
+                <Picker.Item label="4" value={4} />
+                <Picker.Item label="5" value={5} />
               </Picker>
             </View>
+        
             <View style={styles.input}>
-              <Text>Enter Mode</Text>
+              <Text>Select Mode</Text>
               <Picker
-                selectedValue={inputKeyValue}
-                onValueChange={(itemValue) => setInputKeyValue(itemValue)}
+                selectedValue={value}
+                onValueChange={(itemValue) => {
+                  console.log('Selected value:', itemValue);
+                  setValue(itemValue);
+                }}
                 style={styles.picker}
-                itemStyle={styles.pickerItem}
-                dropdownIconColor="#888"
               >
-                <Picker.Item label="-- Select --" value="" />
-                {modeOptions.map((option) => (
-                  <Picker.Item key={option.value} label={option.label} value={option.value} />
-                ))}
+                <Picker.Item label="-- Select --" /> 
+                <Picker.Item label="NO OPERATION" value={0} />
+                <Picker.Item label="MOMENTARY" value={1} />
+                <Picker.Item label="LATCH" value={2} />
+                <Picker.Item label="ONE SHOT" value={3} />
+                <Picker.Item label="ON MODE" value={4} />
+                <Picker.Item label="OFF MODE" value={5} />
+                <Picker.Item label="START KEY FUNCTION" value={6} />
+                <Picker.Item label="EMERGENCY OFF" value={7} />
               </Picker>
             </View>
           </>
-        ) : currentAction?.title?.includes('Ontime Delay') && currentAction?.title?.includes('Set') ? (
+      ) : currentAction?.title?.includes('Ontime Delay') && currentAction?.title?.includes('Set') ? (
           <>
             <View style={styles.input}>
               <Text>Enter Ontime Delay Index</Text>
@@ -1279,9 +1294,11 @@
           <View style={styles.input}>
             <Text>Select RF Bandwidth</Text>
             <Picker
+              selectedValue={inputValue}
               onValueChange={(itemValue) => setInputValue(itemValue)}
               style={styles.picker}
             >
+              <Picker.Item label="-- Select --" value="" />
               <Picker.Item label="7.8 kHz" value={0} />
               <Picker.Item label="10.4 kHz" value={8} />
               <Picker.Item label="15.6 kHz" value={1} />
@@ -1298,9 +1315,11 @@
           <View style={styles.input}>
             <Text>Select Spread Factor</Text>
             <Picker
+              selectedValue={inputValue}
               onValueChange={(itemValue) => setInputValue(itemValue)}
               style={styles.picker}
             >
+              <Picker.Item label="-- Select --" value="" />
               <Picker.Item label="5" value={5} />
               <Picker.Item label="6" value={6} />
               <Picker.Item label="7" value={7} />
@@ -1315,9 +1334,11 @@
           <View style={styles.input}>
             <Text>Select Code Rate</Text>
             <Picker
+              selectedValue={inputValue}
               onValueChange={(itemValue) => setInputValue(itemValue)}
               style={styles.picker}
             >
+              <Picker.Item label="-- Select --" value="" />
               <Picker.Item label="4/5" value={1} />
               <Picker.Item label="4/6" value={2} />
               <Picker.Item label="4/7" value={3} />
@@ -1328,11 +1349,13 @@
           <View style={styles.input}>
             <Text>Select CRC Control</Text>
             <Picker
+            selectedValue={inputValue}
               onValueChange={(itemValue) => setInputValue(itemValue)}
               style={styles.picker}
             >
-              <Picker.Item label="Disable" value={0} />
+              <Picker.Item label="-- Select --" value="" />
               <Picker.Item label="Enable" value={1} />
+              <Picker.Item label="Disable" value={0} />
             </Picker>
           </View>
         ) : (
