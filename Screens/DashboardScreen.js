@@ -47,7 +47,7 @@ const DashboardScreen = () => {
   );
 
   const settingsData = [
-    { key: 'Device ID', value: deviceId || 'N/A' },
+    { key: 'Device ID Code', value: deviceId || 'N/A' },
     { key: 'Customer Name', value: customerName || 'N/A' },
     { key: 'Timestamp', value: timestamp || 'N/A' },
     { key: 'RF Channel', value: rfChannel || 'N/A' },
@@ -184,7 +184,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.08,
     shadowRadius: 6,
     elevation: 4,
-    marginBottom: 16,
+    marginBottom: 15,
     overflow: 'hidden',
   },
   emptyState: {

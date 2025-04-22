@@ -5,7 +5,12 @@
   import { Buffer } from 'buffer';
   import DateTimePicker from '@react-native-community/datetimepicker';
   import { Picker } from '@react-native-picker/picker';
+  import { LayoutAnimation, Platform, UIManager } from 'react-native';
   
+  // Enable LayoutAnimation on Android
+  if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+    UIManager.setLayoutAnimationEnabledExperimental(true);
+  }
   const KeyScreen = () => {
 
     //USE STATES 
@@ -15,6 +20,7 @@
     const [modalVisible, setModalVisible] = useState(false);
     const [inputValue, setInputValue] = useState('');
     const [currentAction, setCurrentAction] = useState(null);
+    const [currentButton, setCurrentButton] = useState(null);
     const [serialNumber, setSerialNumber] = useState('');
     const [deviceName, setDeviceName] = useState('');
     const [showDatePicker, setShowDatePicker] = useState(false);
@@ -22,7 +28,14 @@
     const [inputKeyIndex, setInputKeyIndex] = useState("");
     const [inputKeyValue, setInputKeyValue] = useState("");
     const [index, setIndex] = useState('');
-     const [value, setValue] = useState('');
+    const [value, setValue] = useState('');
+    const [btCollapsed, setBtCollapsed] = useState(true);
+
+    
+    const toggleBtNameConfig = () => {
+      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+      setBtCollapsed(!btCollapsed);
+    };
   
     //RESPONSE READ AND LABEL MAP FOR OUTPUT RESPONSE VALUE
     useEffect(() => {
@@ -43,7 +56,12 @@
                   try {
                     parsed = JSON.parse(decoded);
 
-                    if (parsed.rsp === "RF_FIRMWARE_VERSION_GET" && parsed.err === 0 && parsed.data?.[0]) {
+                    if 
+                    (
+                      (parsed.rsp === "RF_FIRMWARE_VERSION_GET" || parsed.rsp === "FIRMWARE_VERSION_GET") &&
+                      parsed.err === 0 && parsed.data?.[0]
+                    ) 
+                    {
                       parsed.data[0] = parsed.data[0].toString().split('').join('.');
                     }
 
@@ -52,24 +70,34 @@
                       const deviceType = parsed.data[0];
                       parsed.data[0] = deviceType === 1 ? "Transmitter" : "Receiver";
                     }
-                    if (parsed.rsp === "DEV_SERIAL_NO_GET" && parsed.err === 0 && parsed.data && parsed.data.length > 0) {
-                      const serialNumber = parsed.data[0];
-                      setSerialNumber(serialNumber);
-
-                      if (serialNumber.length >= 7) {
-                        const char5 = serialNumber.charAt(5);
-                        const char6 = serialNumber.charAt(6);
-
-                        if (char5 === 'G' && char6 === 'R') {
-                          setDeviceName("GRAB");
-                        } else if (char5 === 'I' && char6 === 'R') {
-                          setDeviceName("IR/RF");
-                        } else if (char5 === 'L' && char6 === '3') {
-                          setDeviceName("LRM3");
-                        } else {
-                          setDeviceName("UNKNOWN");
+                    if (parsed.rsp === "RF_RELAY_TIMEOUT_SET" && parsed.err === 0 && parsed.data?.[0]) {
+                      const timeoutValue = parsed.data[0] * 10;
+                      parsed.data[0] = `${timeoutValue} ms`;
+                    }
+                    if (parsed.rsp === "DEV_SERIAL_NO_GET") {
+                      if (parsed.err === 0 && parsed.data && parsed.data.length > 0) {
+                        const serialNumber = parsed.data[0];
+                        setSerialNumber(serialNumber);
+                    
+                        if (serialNumber.length >= 7) {
+                          const char5 = serialNumber.charAt(5);
+                          const char6 = serialNumber.charAt(6);
+                    
+                          if (char5 === 'G' && char6 === 'R') {
+                            setDeviceName("GRAB");
+                          } else if (char5 === 'I' && char6 === 'R') {
+                            setDeviceName("IR/RF");
+                          } else if (char5 === 'L' && char6 === '3') {
+                            setDeviceName("LRM3");
+                          } else {
+                            setDeviceName("UNKNOWN");
+                          }
                         }
+                      else {
+                        setDeviceName("No product connected");
                       }
+                    }
+
                     }
                   } catch (jsonError) {
                     Alert.alert('JSON Parse Error', jsonError.message);
@@ -111,39 +139,61 @@
       };
 
       //RESPONSE FROM DEVICE
-      monitorResponse();
-      return () => subscription?.remove();
-    }, [connectedDevice, serviceUUID, readUUID, addLog]);
+        monitorResponse();
+        return () => subscription?.remove();
+      }, [connectedDevice, serviceUUID, readUUID, addLog]);
 
-    const sendCommand = async (jsonCommand) => {
-  if (!connectedDevice || !serviceUUID || !writeUUID || !readUUID) {
-    console.log('Error: Bluetooth service/characteristics are not set');
-    return;
-  }
+      const sendCommand = async (jsonCommand) => {
+    if (!connectedDevice || !serviceUUID || !writeUUID || !readUUID) {
+      console.log('Error: Bluetooth service/characteristics are not set');
+      return;
+    }
 
-  try {
-    const base64Command = Buffer.from(jsonCommand).toString('base64');
-    await connectedDevice.writeCharacteristicWithoutResponseForService(
-      serviceUUID, 
-      writeUUID, 
-      base64Command
-    );
-    console.log('Command sent successfully:', jsonCommand);
-    addLog(`Command sent successfully: ${jsonCommand}`);
-    Alert.alert('Command sent successfully:', jsonCommand);
-    // Alert.alert(
-    //   'Success', 
-    //   `Command sent successfully: ${jsonCommand}`,
-    //   [
-    //      { text: 'OK' }
-    //   ],
-    //   { cancelable: true }  
-    // );
-  } catch (error) {
-    console.log('Error sending command:', error.message);
-    addLog(`Error sending command: ${error.message}`);
-  }
-};
+    try {
+      const base64Command = Buffer.from(jsonCommand).toString('base64');
+      await connectedDevice.writeCharacteristicWithoutResponseForService(
+        serviceUUID, 
+        writeUUID, 
+        base64Command
+      );
+      console.log('Command sent successfully:', jsonCommand);
+      addLog(`Command sent successfully: ${jsonCommand}`);
+      Alert.alert('Command sent successfully:', jsonCommand);
+      // Alert.alert(
+      //   'Success', 
+      //   `Command sent successfully: ${jsonCommand}`,
+      //   [
+      //      { text: 'OK' }
+      //   ],
+      //   { cancelable: true }  
+      // );
+    } catch (error) {
+      console.log('Error sending command:', error.message);
+      addLog(`Error sending command: ${error.message}`);
+    }
+  };
+
+   //BLUETOOTH NAME BUTTON CONFIGURATIONS 
+   const nbuttons = [
+    {
+      title: 'Set Device ID',
+      action: 'DEV_ID_SET',
+      needsInput: true,
+      placeholder: 'Enter Device ID (e.g., 000000)',
+      validate: (value) => /^\d+$/.test(value) && value.length == 6,
+      errorMessage: 'Invalid input. Only numbers up to 15 digits allowed.',
+      onSend: (value) => {
+        setDeviceId(value);
+        return JSON.stringify({ cmd: "DEV_ID_SET", args: [value] });
+      }
+    },
+    {
+      title: 'Get Device ID',
+      action: 'DEV_ID_GET',
+      needsInput: false,
+      onSend: () => JSON.stringify({ cmd: "DEV_ID_GET" })
+    }
+  ];
 
     //COMMON BUTTONS CONFIGURATIONS
     const cbuttons = [
@@ -152,24 +202,6 @@
         action: 'DEV_SERIAL_NO_GET',
         needsInput: false,
         onSend: () => JSON.stringify({ cmd: "DEV_SERIAL_NO_GET" })
-      },
-      {
-        title: 'Set Device ID',
-        action: 'DEV_ID_SET',
-        needsInput: true,
-        placeholder: 'Enter Device ID (e.g., 000000)',
-        validate: (value) => /^\d+$/.test(value) && value.length <= 15,
-        errorMessage: 'Invalid input. Only numbers up to 15 digits allowed.',
-        onSend: (value) => {
-          setDeviceId(value);
-          return JSON.stringify({ cmd: "DEV_ID_SET", args: [value] });
-        }
-      },
-      {
-        title: 'Get Device ID',
-        action: 'DEV_ID_GET',
-        needsInput: false,
-        onSend: () => JSON.stringify({ cmd: "DEV_ID_GET" })
       },
       {
         title: 'Set Device ID Code',
@@ -770,166 +802,198 @@
       setModalVisible(false);
     };
 
-    //CONTAINERS FOR BUTTONS
+  // CONTAINERS FOR BUTTONS
     return (
-      <>
-        <ScrollView style={styles.mainContainer} contentContainerStyle={styles.contentContainer}>
-          {/* Top Row Container */}
-          <View style={styles.topRowContainer}>
-            <View style={styles.topButtonWrapper}>
-              <TouchableOpacity
-                style={styles.topButton}
-                onPress={() => handleButtonPress(cbuttons[0])}
-              >
-                <Text style={styles.topButtonText}>Get Product Name</Text>
-              </TouchableOpacity>
+  <>
+    <ScrollView style={styles.mainContainer} contentContainerStyle={styles.contentContainer}>
+      {/* Top Row Container */}
+      <View style={styles.topRowContainer}>
+        <View style={styles.topButtonWrapper}>
+          <TouchableOpacity
+            style={styles.topButton}
+            onPress={() => handleButtonPress(cbuttons[0])}
+          >
+            <Text style={styles.topButtonText}>Get Product Name</Text>
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.deviceInfoWrapper}>
+          {deviceName !== '' && (
+            <View style={styles.deviceInfoContainer}>
+              <Text style={styles.deviceInfoText} numberOfLines={1}>
+                {deviceName}
+              </Text>
             </View>
-    
-            <View style={styles.deviceInfoWrapper}>
-              {deviceName !== '' && (
-                <View style={styles.deviceInfoContainer}>
-                  <Text style={styles.deviceInfoText} numberOfLines={1}>
-                    {deviceName}
-                  </Text>
-                </View>
-              )}
-            </View>
+          )}
+        </View>
+      </View>
+
+      {/* Bluetooth Configuration Name Container */}
+
+            <View style={styles.btNameConfigContainer}>
+        <TouchableOpacity
+          onPress={toggleBtNameConfig}
+          style={styles.btNameConfigItem}
+          activeOpacity={0.8}
+        >
+          <Text style={styles.btNameConfigItemText}>Bluetooth Name Configuration</Text>
+          <Text style={styles.btNameConfigArrow}>{btCollapsed ? '▾' : '▴'}</Text>
+        </TouchableOpacity>
+
+        {!btCollapsed && (
+          <View>
+            {nbuttons.map((button, index) => (
+              <View key={button.title}>
+                <TouchableOpacity
+                  style={styles.btNameConfigItem}
+                  onPress={() => handleButtonPress(button)}
+                >
+                  <Text style={styles.btNameConfigItemText}>{button.title}</Text>
+                  <Text style={styles.btNameConfigArrow}>›</Text>
+                </TouchableOpacity>
+                {index < nbuttons.length - 1 && <View style={styles.btNameConfigSeparator} />}
+              </View>
+            ))}
           </View>
-    
-          {/* GENERAL Configurations Container */}
-          <View style={styles.productConfigContainer}>
-            <Text style={styles.sectionTitle}>Device Configurations</Text>
+        )}
+      </View>
+
+
+
+      {/* GENERAL Configurations Container */}
+      <View style={styles.commonConfigContainer}>
+        <Text style={styles.sectionTitle}>Device Configurations</Text>
+        <ScrollView nestedScrollEnabled style={styles.innerScroll}>
+          {cbuttons.slice(1).map((button, index) => (
+            <View key={button.title}>
+              <TouchableOpacity
+                style={styles.commonConfigItem}
+                onPress={() => handleButtonPress(button)}
+              >
+                <Text style={styles.commonConfigItemText} numberOfLines={1}>
+                  {button.title}
+                </Text>
+                <Text style={styles.arrow}>›</Text>
+              </TouchableOpacity>
+              {index < cbuttons.slice(1).length - 1 && <View style={styles.separator} />}
+            </View>
+          ))}
+        </ScrollView>
+      </View>
+
+      {deviceName === 'IR/RF' && (
+        <>
+          {/* RF PRODUCTION Configurations Container */}
+          <View style={styles.rfConfigContainer}>
+            <Text style={styles.sectionTitle}>RF Configurations</Text>
             <ScrollView nestedScrollEnabled style={styles.innerScroll}>
-              {cbuttons.slice(1).map((button, index) => (
+              {rfbuttons.map((button, index) => (
                 <View key={button.title}>
                   <TouchableOpacity
-                    style={styles.productConfigItem}
+                    style={styles.rfConfigItem}
                     onPress={() => handleButtonPress(button)}
                   >
-                    <Text style={styles.productConfigItemText} numberOfLines={1}>
+                    <Text style={styles.rfConfigItemText} numberOfLines={1}>
                       {button.title}
                     </Text>
                     <Text style={styles.arrow}>›</Text>
                   </TouchableOpacity>
-                  {index < cbuttons.slice(1).length - 1 && <View style={styles.separator} />}
+                  {index < rfbuttons.length - 1 && <View style={styles.separator} />}
                 </View>
               ))}
             </ScrollView>
           </View>
-    
-           {deviceName === "IR/RF" && ( 
-            <>
-              {/* RF PRODUCTION Configurations Container */}
-              <View style={styles.configContainer}>
-                <Text style={styles.sectionTitle}>RF Configurations</Text>
-                <ScrollView nestedScrollEnabled style={styles.innerScroll}>
-                  {rfbuttons.map((button, index) => (
-                    <View key={button.title}>
-                      <TouchableOpacity
-                        style={styles.configItem}
-                        onPress={() => handleButtonPress(button)}
-                      >
-                        <Text style={styles.configItemText} numberOfLines={1}>
-                          {button.title}
-                        </Text>
-                        <Text style={styles.arrow}>›</Text>
-                      </TouchableOpacity>
-                      {index < rfbuttons.length - 1 && <View style={styles.separator} />}
-                    </View>
-                  ))}
-                </ScrollView>
-              </View>
-    
-              {/* RF PRODUCT IR Configurations Container */}
-              <View style={styles.irConfigContainer}>
-                <Text style={styles.sectionTitle}>IR Configurations</Text>
-                <ScrollView nestedScrollEnabled style={styles.innerScroll}>
-                  {rfirbuttons.map((button, index) => (
-                    <View key={button.title}>
-                      <TouchableOpacity
-                        style={styles.irConfigItem}
-                        onPress={() => handleButtonPress(button)}
-                      >
-                        <Text style={styles.irConfigItemText} numberOfLines={1}>
-                          {button.title}
-                        </Text>
-                        <Text style={styles.arrow}>›</Text>
-                      </TouchableOpacity>
-                      {index < rfirbuttons.length - 1 && <View style={styles.separator} />}
-                    </View>
-                  ))}
-                </ScrollView>
-              </View>
-    
-              {/* RF PRODUCT Relay Configurations Container */}
-              <View style={styles.rlConfigContainer}>
-                <Text style={styles.sectionTitle}>RF Relay Configurations</Text>
-                <ScrollView nestedScrollEnabled style={styles.innerScroll}>
-                  {rfrlbuttons.map((button, index) => (
-                    <View key={button.title}>
-                      <TouchableOpacity
-                        style={styles.rlConfigItem}
-                        onPress={() => handleButtonPress(button)}
-                      >
-                        <Text style={styles.rlConfigItemText} numberOfLines={1}>
-                          {button.title}
-                        </Text>
-                        <Text style={styles.arrow}>›</Text>
-                      </TouchableOpacity>
-                      {index < rfrlbuttons.length - 1 && <View style={styles.separator} />}
-                    </View>
-                  ))}
-                </ScrollView>
-              </View>
-            </>
-       )}   
-    
-          {deviceName === "LRM3" && (
-            <>
-              {/* LRM3 PRODUCT RELAY CONFIGURATION Container */}
-              <View style={styles.lrm3RlConfigContainer}>
-                <Text style={styles.sectionTitle}>LRM3 Relay Configuration</Text>
-                <ScrollView nestedScrollEnabled style={styles.innerScroll}>
-                  {lrmrlbuttons.map((button, index) => (
-                    <View key={button.title}>
-                      <TouchableOpacity
-                        style={styles.rlConfigItem}
-                        onPress={() => handleButtonPress(button)}
-                      >
-                        <Text style={styles.rlConfigItemText} numberOfLines={1}>
-                          {button.title}
-                        </Text>
-                        <Text style={styles.arrow}>›</Text>
-                      </TouchableOpacity>
-                      {index < lrmrlbuttons.length - 1 && <View style={styles.separator} />}
-                    </View>
-                  ))}
-                </ScrollView>
-              </View>
-    
-              {/* LRM3 RF CONFIGURATION Container */}
-              <View style={styles.lrm3RfConfigContainer}>
-                <Text style={styles.sectionTitle}>LRM3 RF Configuration</Text>
-                <ScrollView nestedScrollEnabled style={styles.innerScroll}>
-                  {lrmrfbuttons.map((button, index) => (
-                    <View key={button.title}>
-                      <TouchableOpacity
-                        style={styles.configItem}
-                        onPress={() => handleButtonPress(button)}
-                      >
-                        <Text style={styles.configItemText} numberOfLines={1}>
-                          {button.title}
-                        </Text>
-                        <Text style={styles.arrow}>›</Text>
-                      </TouchableOpacity>
-                      {index < lrmrfbuttons.length - 1 && <View style={styles.separator} />}
-                    </View>
-                  ))}
-                </ScrollView>
-              </View>
-            </>
-           )}  
-        </ScrollView>
+
+          {/* RF PRODUCT IR Configurations Container */}
+          <View style={styles.rfIrConfigContainer}>
+            <Text style={styles.sectionTitle}>IR Configurations</Text>
+            <ScrollView nestedScrollEnabled style={styles.innerScroll}>
+              {rfirbuttons.map((button, index) => (
+                <View key={button.title}>
+                  <TouchableOpacity
+                    style={styles.rfIrConfigItem}
+                    onPress={() => handleButtonPress(button)}
+                  >
+                    <Text style={styles.rfIrConfigItemText} numberOfLines={1}>
+                      {button.title}
+                    </Text>
+                    <Text style={styles.arrow}>›</Text>
+                  </TouchableOpacity>
+                  {index < rfirbuttons.length - 1 && <View style={styles.separator} />}
+                </View>
+              ))}
+            </ScrollView>
+          </View>
+
+          {/* RF PRODUCT Relay Configurations Container */}
+          <View style={styles.rfRelayConfigContainer}>
+            <Text style={styles.sectionTitle}>RF Relay Configurations</Text>
+            <ScrollView nestedScrollEnabled style={styles.innerScroll}>
+              {rfrlbuttons.map((button, index) => (
+                <View key={button.title}>
+                  <TouchableOpacity
+                    style={styles.rfRelayConfigItem}
+                    onPress={() => handleButtonPress(button)}
+                  >
+                    <Text style={styles.rfRelayConfigItemText} numberOfLines={1}>
+                      {button.title}
+                    </Text>
+                    <Text style={styles.arrow}>›</Text>
+                  </TouchableOpacity>
+                  {index < rfrlbuttons.length - 1 && <View style={styles.separator} />}
+                </View>
+              ))}
+            </ScrollView>
+          </View>
+        </>
+      )}
+
+      {deviceName === 'LRM3' && (
+        <>
+          {/* LRM3 PRODUCT RELAY CONFIGURATION Container */}
+          <View style={styles.lrm3RelayConfigContainer}>
+            <Text style={styles.sectionTitle}>LRM3 Relay Configuration</Text>
+            <ScrollView nestedScrollEnabled style={styles.innerScroll}>
+              {lrmrlbuttons.map((button, index) => (
+                <View key={button.title}>
+                  <TouchableOpacity
+                    style={styles.lrm3RelayConfigItem}
+                    onPress={() => handleButtonPress(button)}
+                  >
+                    <Text style={styles.lrm3RelayConfigItemText} numberOfLines={1}>
+                      {button.title}
+                    </Text>
+                    <Text style={styles.arrow}>›</Text>
+                  </TouchableOpacity>
+                  {index < lrmrlbuttons.length - 1 && <View style={styles.separator} />}
+                </View>
+              ))}
+            </ScrollView>
+          </View>
+
+          {/* LRM3 RF CONFIGURATION Container */}
+          <View style={styles.lrm3ConfigContainer}>
+            <Text style={styles.sectionTitle}>LRM3 RF Configuration</Text>
+            <ScrollView nestedScrollEnabled style={styles.innerScroll}>
+              {lrmrfbuttons.map((button, index) => (
+                <View key={button.title}>
+                  <TouchableOpacity
+                    style={styles.lrm3ConfigItem}
+                    onPress={() => handleButtonPress(button)}
+                  >
+                    <Text style={styles.lrm3ConfigItemText} numberOfLines={1}>
+                      {button.title}
+                    </Text>
+                    <Text style={styles.arrow}>›</Text>
+                  </TouchableOpacity>
+                  {index < lrmrfbuttons.length - 1 && <View style={styles.separator} />}
+                </View>
+              ))}
+            </ScrollView>
+          </View>
+        </>
+      )}
+    </ScrollView>
 
   {/* MODAL */}
   <Modal
@@ -941,6 +1005,7 @@
     <View style={styles.modalContainer}>
       <View style={styles.modalContent}>
         <Text style={styles.modalTitle}>{currentAction?.title}</Text>
+        <Text style={styles.modalTitleText}>{currentAction?.placeholder}</Text>
 
 
         {/*----------- Modal of CButtons -----------*/}
@@ -953,7 +1018,7 @@
               <Text>
                 {selectedDate
                   ? `${selectedDate.getFullYear()}${String(selectedDate.getMonth() + 1).padStart(2, '0')}`
-                  : 'Pick Year and Month'}
+                  : ''}
               </Text>
             </TouchableOpacity>
             {showDatePicker && (
@@ -1361,7 +1426,7 @@
         ) : (
           <TextInput
             style={styles.input}
-            placeholder={currentAction?.placeholder}
+            // placeholder={currentAction?.placeholder}
             value={inputValue}
             onChangeText={setInputValue}
           />
@@ -1385,345 +1450,372 @@
       };
 
   //STYLES
-    const styles = StyleSheet.create({
-      mainContainer: {
-        flex: 1,
-        backgroundColor: '#f5f5f5',
-      },
-      contentContainer: {
-        padding: 16,
-        paddingBottom: 40,
-      },
-      topRowContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: 20,
-        height: 60,
-      },
-      topButtonWrapper: {
-        flex: 0.4,
-        paddingRight: 10,
-      },
-      deviceInfoWrapper: {
-        flex: 0.6,
-      },
-      topButton: {
-        backgroundColor: '#007AFF',
-        paddingVertical: 10,
-        borderRadius: 8,
-        justifyContent: 'center',
-        alignItems: 'center',
-        width: 160,
-      },
-      topButtonText: {
-        color: 'white',
-        fontSize: 14,
-        fontWeight: '600',
-      },
-      deviceInfoContainer: {
-        backgroundColor: '#F28C28',
-        paddingVertical: 14,         
-        paddingHorizontal: 16,       
-        borderRadius: 16,            
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.12,
-        shadowRadius: 5,
-        elevation: 5,                
-        maxWidth: '95%',             
-        alignSelf: 'flex-end',
-        marginTop: 4,    
-      },
-      deviceInfoText: {
-        fontSize: 16,                
-        fontWeight: 'bold',
-        color: '#000',
-      },   
-        configContainer: {
-        backgroundColor: 'white',
-        borderRadius: 10,
-        marginBottom: 20,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.1,
-        shadowRadius: 3,
-        elevation: 2,
-        height: 300, 
-      },
-      productConfigContainer: {
-        backgroundColor: 'white',
-        borderRadius: 10,
-        marginBottom: 20,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.1,
-        shadowRadius: 3,
-        elevation: 2,
-        height: 300, 
-      },
-      irConfigContainer: {
-        backgroundColor: 'white',
-        borderRadius: 10,
-        marginBottom: 20,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.1,
-        shadowRadius: 3,
-        elevation: 2,
-        height: 160, 
-      },
-      rlConfigContainer: {
-        backgroundColor: 'white',
-        borderRadius: 10,
-        marginBottom: 20,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.1,
-        shadowRadius: 3,
-        elevation: 2,
-        height: 300, 
-      },
-      sectionTitle: {
-        fontSize: 16,
-        fontWeight: 'bold',
-        padding: 16,
-        paddingBottom: 8,
-        color: '#333',
-      },
-      configItem: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingVertical: 12,
-        paddingHorizontal: 16,
-        height: 50,
-      },
-      productConfigItem: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingVertical: 10,
-        paddingHorizontal: 16,
-        height: 50,
-      },
-      irConfigItem: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingVertical: 10,
-        paddingHorizontal: 16,
-        height: 50,
-      },
-      rlConfigItem: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingVertical: 12,
-        paddingHorizontal: 16,
-        height: 50,
-      },
-      configItemText: {
-        fontSize: 15,
-        color: '#333',
-        flex: 1,
-        marginRight: 10,
-      },
-      productConfigItemText: {
-        fontSize: 15,
-        color: '#333',
-        flex: 1,
-        marginRight: 10,
-      },
-      irConfigItemText: {
-        fontSize: 15,
-        color: '#333',
-        flex: 1,
-        marginRight: 10,
-      },
-      rlConfigItemText: {
-        fontSize: 15,
-        color: '#333',
-        flex: 1,
-        marginRight: 10,
-      },
-      lrm3RlConfigContainer: {
-        backgroundColor: 'white',
-        borderRadius: 10,
-        marginBottom: 20,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.1,
-        shadowRadius: 3,
-        elevation: 2,
-        height: 160, 
-      },
-      lrm3RfConfigContainer: 
-      {
-        backgroundColor: 'white',
-        borderRadius: 10,
-        marginBottom: 20,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.1,
-        shadowRadius: 3,
-        elevation: 2,
-        height: 300, 
-      },
-      lrm3RlConfigItem: 
-      {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingVertical: 12,
-        paddingHorizontal: 16,
-        height: 50,
-      },
-      
-      lrm3RfConfigItem: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingVertical: 12,
-        paddingHorizontal: 16,
-        height: 50,
-      },
+  const styles = StyleSheet.create({
+    // Common Layout & Sections
+    mainContainer: {
+      flex: 1,
+      backgroundColor: '#f5f5f5',
+    },
+    contentContainer: {
+      padding: 16,
+      paddingBottom: 40,
+    },
+    innerScroll: {
+      flex: 1,
+    },
+    scrollContent: {
+      paddingBottom: 40,
+    },
+    sectionTitle: {
+      fontSize: 16,
+      fontWeight: 'bold',
+      padding: 16,
+      paddingBottom: 8,
+      color: '#333',
+    },
+    separator: {
+      height: 1,
+      backgroundColor: '#E0E0E0',
+      marginHorizontal: 4,
+    },
+    arrow: {
+      fontSize: 20,
+      color: '#5F6368',
+    },
+  
+    // Top Section
+    topRowContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: 20,
+      height: 60,
+    },
+    topButtonWrapper: {
+      flex: 0.4,
+      paddingRight: 10,
+    },
+    deviceInfoWrapper: {
+      flex: 0.6,
+    },
+    topButton: {
+      backgroundColor: '#007AFF',
+      paddingVertical: 10,
+      borderRadius: 8,
+      justifyContent: 'center',
+      alignItems: 'center',
+      width: 160,
+    },
+    topButtonText: {
+      color: 'white',
+      fontSize: 14,
+      fontWeight: '600',
+    },
+    deviceInfoContainer: {
+      backgroundColor: '#F28C28',
+      paddingVertical: 14,
+      paddingHorizontal: 16,
+      borderRadius: 16,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.12,
+      shadowRadius: 5,
+      elevation: 5,
+      maxWidth: '95%',
+      alignSelf: 'flex-end',
+      marginTop: 4,
+    },
+    deviceInfoText: {
+      fontSize: 16,
+      fontWeight: 'bold',
+      color: '#000',
+    },
+  
+    //Modal Container 
 
-      lrm3RlConfigItemText: {
-        fontSize: 15,
-        color: '#333',
-        flex: 1,
-        marginRight: 10,
-      },
-      lrm3RfConfigItemText: 
-      {
-        fontSize: 15,
-        color: '#333',
-        flex: 1,
-        marginRight: 10,
-      },
-      innerScroll: {
-        flex: 1,
-      },
-      arrow: {
-        fontSize: 20,
-        color: '#007AFF',
-        fontWeight: 'bold',
-        width: 20,
-        textAlign: 'right',
-      },
-      separator: {
-        height: 1,
-        backgroundColor: '#e5e5ea',
-        marginLeft: 16,
-        marginRight: 16,
-      },
-      modalContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: 'rgba(0,0,0,0.5)',
-      },
-      modalContent: {
-        backgroundColor: '#fff',
-        padding: 20,
-        width: '80%',
-        borderRadius: 8,
-      },
-      modalTitle: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        marginBottom: 12,
-      },
-      input: {
-        borderWidth: 1,
-        borderColor: '#ccc',
-        padding: 10,
-        marginBottom: 12,
-        borderRadius: 5,
-      },
-      picker: {
-        borderColor: '#E0E0E0',
-        backgroundColor: '#FFFFFF',
-        zIndex: 1000,
-        height: 50,
-        width: '100%',
-        justifyContent: 'center',
-      },
-      
-      pickerItem: {
-        textAlign: 'center',
-        color: '#1C1C1C',
-        fontSize: 16,
-        borderBottomColor: '#E0E0E0',
-        borderBottomWidth: 1,
-        paddingVertical: 10,
-      },
-      dropdownContainer: {
-        borderColor: '#E0E0E0',
-        backgroundColor: '#FFFFFF',
-        zIndex: 1000,
-      },
-      dropdownItemStyle: {
-        borderBottomColor: '#E0E0E0',
-        borderBottomWidth: 1,
-      },
-      dropdownLabelStyle: {
-        color: '#1C1C1C',
-      },
-      dropdownSelectedItemStyle: {
-        backgroundColor: '#E3F2FD', // faded light blue
-      },
-      modalButtonRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-      },
-      cancelButton: {
-        padding: 10,
-        backgroundColor: '#e5e5e5',
-        borderRadius: 5,
-        flex: 1,
-        marginRight: 5,
-        alignItems: 'center',
-      },
-      setButton: {
-        padding: 10,
-        backgroundColor: '#007AFF',
-        borderRadius: 5,
-        flex: 1,
-        marginLeft: 5,
-        alignItems: 'center',
-      },
-      placeholderStyle: {
-        fontSize: 16,
-      },
-      selectedTextStyle: {
-        fontSize: 16,
-      },
-      iconStyle: {
-        width: 20,
-        height: 20,
-      },
-      inputSearchStyle: {
-        height: 40,
-        fontSize: 16,
-      },
-      modalContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: 'rgba(0,0,0,0.5)',
-      },
-      modalContent: {
-        backgroundColor: 'white',
-        borderRadius: 10,
-        padding: 20,
-        width: '90%',
-        maxHeight: '90%',
-      },
-      scrollContent: {
-        paddingBottom: 40,
-      },
-    });
+    modalContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: 'rgba(0,0,0,0.5)',
+    },
+    modalContent: {
+      backgroundColor: 'white',
+      borderRadius: 10,
+      padding: 20,
+      width: '90%',
+      maxHeight: '90%',
+    },
+    modalTitle: {
+      fontSize: 18,
+      fontWeight: 'bold',
+      marginBottom: 12,
+    },
+    modalTitleText: {
+      fontSize: 14,
+      marginBottom: 12,
+    },
+    input: {
+      borderWidth: 1,
+      borderColor: '#ccc',
+      padding: 10,
+      marginBottom: 12,
+      borderRadius: 5,
+    },
+    modalButtonRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+    },
+    cancelButton: {
+      padding: 10,
+      backgroundColor: '#e5e5e5',
+      borderRadius: 5,
+      flex: 1,
+      marginRight: 5,
+      alignItems: 'center',
+    },
+    setButton: {
+      padding: 10,
+      backgroundColor: '#007AFF',
+      borderRadius: 5,
+      flex: 1,
+      marginLeft: 5,
+      alignItems: 'center',
+    },
+    placeholderStyle: {
+      fontSize: 16,
+    },
+    selectedTextStyle: {
+      fontSize: 16,
+    },
+    iconStyle: {
+      width: 20,
+      height: 20,
+    },
+    inputSearchStyle: {
+      height: 40,
+      fontSize: 16,
+    },
+    picker: {
+      borderColor: '#E0E0E0',
+      backgroundColor: '#FFFFFF',
+      zIndex: 1000,
+      height: 50,
+      width: '100%',
+      justifyContent: 'center',
+    },
+    pickerItem: {
+      textAlign: 'center',
+      color: '#1C1C1C',
+      fontSize: 16,
+      borderBottomColor: '#E0E0E0',
+      borderBottomWidth: 1,
+      paddingVertical: 10,
+    },
 
+    // RF Config
+    rfConfigContainer: {
+      backgroundColor: 'white',
+      borderRadius: 10,
+      marginBottom: 20,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.1,
+      shadowRadius: 3,
+      elevation: 2,
+      height: 300,
+    },
+    rfConfigItem: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      paddingVertical: 12,
+      paddingHorizontal: 16,
+      height: 50,
+    },
+    rfConfigItemText: {
+      fontSize: 15,
+      color: '#333',
+      flex: 1,
+      marginRight: 10,
+    },
+  
+    // RF Relay Config
+    rfRelayConfigContainer: {
+      backgroundColor: 'white',
+      borderRadius: 10,
+      marginBottom: 20,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.1,
+      shadowRadius: 3,
+      elevation: 2,
+      height: 300,
+    },
+    rfRelayConfigItem: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      paddingVertical: 12,
+      paddingHorizontal: 16,
+      height: 50,
+    },
+    rfRelayConfigItemText: {
+      fontSize: 15,
+      color: '#333',
+      flex: 1,
+      marginRight: 10,
+    },
+  
+    // RF IR Config
+    rfIrConfigContainer: {
+      backgroundColor: 'white',
+      borderRadius: 10,
+      marginBottom: 20,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.1,
+      shadowRadius: 3,
+      elevation: 2,
+      height: 160,
+    },
+    rfIrConfigItem: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      paddingVertical: 10,
+      paddingHorizontal: 16,
+      height: 50,
+    },
+    rfIrConfigItemText: {
+      fontSize: 15,
+      color: '#333',
+      flex: 1,
+      marginRight: 10,
+    },
+  
+    // LRM3 Relay Config
+    lrm3RelayConfigContainer: {
+      backgroundColor: 'white',
+      borderRadius: 10,
+      marginBottom: 20,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.1,
+      shadowRadius: 3,
+      elevation: 2,
+      height: 160,
+    },
+    lrm3RelayConfigItem: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      paddingVertical: 12,
+      paddingHorizontal: 16,
+      height: 50,
+    },
+    lrm3RelayConfigItemText: {
+      fontSize: 15,
+      color: '#333',
+      flex: 1,
+      marginRight: 10,
+    },
+  
+    // LRM3 RF Config
+    lrm3ConfigContainer: {
+      backgroundColor: 'white',
+      borderRadius: 10,
+      marginBottom: 20,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.1,
+      shadowRadius: 3,
+      elevation: 2,
+      height: 300,
+    },
+    lrm3ConfigItem: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      paddingVertical: 12,
+      paddingHorizontal: 16,
+      height: 50,
+    },
+    lrm3ConfigItemText: {
+      fontSize: 15,
+      color: '#333',
+      flex: 1,
+      marginRight: 10,
+    },
+  
+    // Common Config
+    commonConfigContainer: {
+      backgroundColor: 'white',
+      borderRadius: 10,
+      marginBottom: 20,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.1,
+      shadowRadius: 3,
+      elevation: 2,
+      height: 300,
+    },
+    commonConfigItem: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      paddingVertical: 12,
+      paddingHorizontal: 16,
+      height: 50,
+    },
+    commonConfigItemText: {
+      fontSize: 15,
+      color: '#333',
+      flex: 1,
+      marginRight: 10,
+    },
+  
+    // Bluetooth Name config
+    btNameConfigContainer: {
+      backgroundColor: 'white',
+      borderRadius: 10,
+      marginBottom: 20,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.1,
+      shadowRadius: 3,
+      elevation: 2,
+    },
+    
+    btNameConfigItem: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      paddingVertical: 12,
+      paddingHorizontal: 16,
+      height: 50,
+    },
+    
+    btNameConfigItemText: {
+      fontSize: 15,
+      color: '#333',
+      flex: 1,
+      marginRight: 10,
+    },
+    
+    btNameConfigArrow: {
+      fontSize: 18,
+      color: '#5F6368',
+    },
+    
+    btNameConfigSeparator: {
+      height: 1,
+      backgroundColor: '#E0E0E0',
+      marginHorizontal: 16,
+    },
+    scrollContent: {
+      paddingBottom: 40,
+    },
+  });
+  
 
   export default KeyScreen;

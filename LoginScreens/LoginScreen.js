@@ -14,15 +14,15 @@ const LoginScreen = ({ navigation }) => {
   const [password, setPassword] = React.useState('');
   const [showPassword, setShowPassword] = React.useState(false);
 
-  // const handleLogin = () => navigation.navigate('TabScreen');
+  const handleLogin = () => navigation.navigate('TabScreen');
   
-  const handleLogin = () => {
-    if (email === 'admin@gmail.com' && password === 'admin') {
-      navigation.navigate('TabScreen'); 
-    } else {
-      Alert.alert('Error', 'Invalid credentials');
-    }
-  };
+  // const handleLogin = () => {
+  //   if (email === 'admin' && password === 'admin') {
+  //     navigation.navigate('TabScreen'); 
+  //   } else {
+  //     Alert.alert('Error', 'Invalid credentials');
+  //   }
+  // };
 
   return (
     <View style={styles.container}>
