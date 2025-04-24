@@ -13,7 +13,7 @@ import {
   Alert,
   StyleSheet,
   ActivityIndicator,
-  Image
+
 } from 'react-native';
 import { BleManager, State } from 'react-native-ble-plx';
 import { BluetoothContext } from '../Context/BluetoothContext';
@@ -327,38 +327,48 @@ const BluetoothConfigScreen = () => {
               </View>
             )}
 
-            {uuidMode === 'custom' && (
-              <View style={styles.customUuidContainer}>
-                <Text style={styles.sectionTitle}>Enter Custom UUIDs</Text>
-                <View style={styles.inputGroup}>
-                  <Text style={styles.inputLabel}>Service UUID</Text>
-                  <TextInput
-                    style={styles.input}
-                    placeholder="0000xxxx-0000-1000-8000-00805f9b34fb"
-                    value={customUUIDs.service}
-                    onChangeText={(text) => setCustomUUIDs({ ...customUUIDs, service: text })}
-                  />
-                </View>
-                <View style={styles.inputGroup}>
-                  <Text style={styles.inputLabel}>Read Characteristic UUID (Optional)</Text>
-                  <TextInput
-                    style={styles.input}
-                    placeholder="0000xxxx-0000-1000-8000-00805f9b34fb"
-                    value={customUUIDs.read}
-                    onChangeText={(text) => setCustomUUIDs({ ...customUUIDs, read: text })}
-                  />
-                </View>
-                <View style={styles.inputGroup}>
-                  <Text style={styles.inputLabel}>Write Characteristic UUID</Text>
-                  <TextInput
-                    style={styles.input}
-                    placeholder="0000xxxx-0000-1000-8000-00805f9b34fb"
-                    value={customUUIDs.write}
-                    onChangeText={(text) => setCustomUUIDs({ ...customUUIDs, write: text })}
-                  />
-                </View>
-              </View>
-            )}
+          {uuidMode === 'custom' && (
+                    <ScrollView
+                      style={styles.scrollWrapper}
+                      contentContainerStyle={styles.scrollContent}
+                      keyboardShouldPersistTaps="handled"
+                    >
+                      <View style={styles.customUuidContainer}>
+                        <Text style={styles.sectionTitle}>Enter Custom UUIDs</Text>
+
+                        <View style={styles.inputGroup}>
+                          <Text style={styles.inputLabel}>Service UUID</Text>
+                          <TextInput
+                            style={styles.input}
+                            placeholder="0000xxxx-0000-1000-8000-00805f9b34fb"
+                            value={customUUIDs.service}
+                            onChangeText={(text) => setCustomUUIDs({ ...customUUIDs, service: text })}
+                          />
+                        </View>
+
+                        <View style={styles.inputGroup}>
+                          <Text style={styles.inputLabel}>Read Characteristic UUID (Optional)</Text>
+                          <TextInput
+                            style={styles.input}
+                            placeholder="0000xxxx-0000-1000-8000-00805f9b34fb"
+                            value={customUUIDs.read}
+                            onChangeText={(text) => setCustomUUIDs({ ...customUUIDs, read: text })}
+                          />
+                        </View>
+
+                        <View style={styles.inputGroup}>
+                          <Text style={styles.inputLabel}>Write Characteristic UUID</Text>
+                          <TextInput
+                            style={styles.input}
+                            placeholder="0000xxxx-0000-1000-8000-00805f9b34fb"
+                            value={customUUIDs.write}
+                            onChangeText={(text) => setCustomUUIDs({ ...customUUIDs, write: text })}
+                          />
+                        </View>
+                      </View>
+                    </ScrollView>
+                  )}
+
 
             <View style={styles.modalButtons}>
               <TouchableOpacity 
@@ -392,12 +402,12 @@ const getStyles = () =>
   StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: '#F9FAFB', // New background color
+      backgroundColor: '#F9FAFB', 
     },
     header: {
       padding: 16,
-      backgroundColor: '#1A73E8', // Primary blue
-      elevation: 8, // Increased shadow
+      backgroundColor: '#1A73E8', 
+      elevation: 8, 
       shadowColor: '#000',
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.2,
@@ -413,7 +423,7 @@ const getStyles = () =>
       padding: 16,
     },
     scanButton: {
-      backgroundColor: '#1A73E8', // Primary blue
+      backgroundColor: '#1A73E8', 
       padding: 16,
       borderRadius: 8,
       alignItems: 'center',
@@ -431,8 +441,8 @@ const getStyles = () =>
       fontSize: 16,
     },
     connectedContainer: {
-      backgroundColor: '#FFFFFF', // White cards
-      borderRadius: 12, // Slightly more rounded
+      backgroundColor: '#FFFFFF', 
+      borderRadius: 12, 
       padding: 16,
       marginBottom: 16,
       elevation: 4,
@@ -440,7 +450,7 @@ const getStyles = () =>
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.1,
       shadowRadius: 6,
-      borderLeftWidth: 0, // Removed colored border
+      borderLeftWidth: 0, 
     },
     connectedHeader: {
       flexDirection: 'row',
@@ -451,8 +461,8 @@ const getStyles = () =>
       fontSize: 16,
       fontWeight: 'bold',
       marginLeft: 8,
-      color: '#1A73E8', // Primary blue
-      textDecorationLine: 'none', // Removed underline
+      color: '#1A73E8', 
+      textDecorationLine: 'none', 
     },
     connectedDeviceInfo: {
       marginBottom: 12,
@@ -460,16 +470,16 @@ const getStyles = () =>
     connectedDeviceName: {
       fontSize: 16,
       fontWeight: '500',
-      color: '#1C1C1C', // Dark text
+      color: '#1C1C1C', 
     },
     connectedDeviceId: {
       fontSize: 12,
-      color: '#5F6368', // Secondary text
+      color: '#5F6368', 
       marginTop: 4,
     },
     disconnectButton: {
-      backgroundColor: '#FFA000', // Accent orange
-      padding: 12, // Slightly more padding
+      backgroundColor: '#FFA000', 
+      padding: 12, 
       borderRadius: 8,
       alignItems: 'center',
       elevation: 2,
@@ -480,7 +490,7 @@ const getStyles = () =>
     },
     deviceListContainer: {
       flex: 1,
-      backgroundColor: '#FFFFFF', // White cards
+      backgroundColor: '#FFFFFF', 
       borderRadius: 12,
       elevation: 4,
       shadowColor: '#000',
@@ -488,7 +498,7 @@ const getStyles = () =>
       shadowOpacity: 0.1,
       shadowRadius: 6,
       padding: 16,
-      borderLeftWidth: 0, // Removed colored border
+      borderLeftWidth: 0, 
     },
     listHeader: {
       flexDirection: 'row',
@@ -499,12 +509,12 @@ const getStyles = () =>
     deviceListTitle: {
       fontSize: 16,
       fontWeight: 'bold',
-      color: '#1A73E8', // Primary blue
-      textDecorationLine: 'none', // Removed underline
+      color: '#1A73E8',
+      textDecorationLine: 'none',
     },
     deviceCount: {
       fontSize: 12,
-      color: '#5F6368', // Secondary text
+      color: '#5F6368', 
     },
     listContent: {
       paddingBottom: 8,
@@ -515,16 +525,16 @@ const getStyles = () =>
       paddingVertical: 12,
       paddingHorizontal: 8,
       borderBottomWidth: 1,
-      borderColor: '#E0E0E0', // New border color
+      borderColor: '#E0E0E0', 
     },
     connectedDeviceItem: {
-      backgroundColor: '#E8F0FE', // Light blue highlight
+      backgroundColor: '#E8F0FE', 
     },
     deviceIconContainer: {
       width: 40,
       height: 40,
       borderRadius: 20,
-      backgroundColor: '#E8F0FE', // Light blue
+      backgroundColor: '#E8F0FE', 
       alignItems: 'center',
       justifyContent: 'center',
       marginRight: 12,
@@ -535,11 +545,11 @@ const getStyles = () =>
     deviceName: {
       fontSize: 16,
       fontWeight: '500',
-      color: '#1C1C1C', // Dark text
+      color: '#1C1C1C',
     },
     deviceId: {
       fontSize: 12,
-      color: '#5F6368', // Secondary text
+      color: '#5F6368',
       marginTop: 2,
     },
     emptyState: {
@@ -550,12 +560,12 @@ const getStyles = () =>
     },
     emptyStateText: {
       fontSize: 16,
-      color: '#5F6368', // Secondary text
+      color: '#5F6368', 
       marginTop: 16,
     },
     emptyStateSubtext: {
       fontSize: 14,
-      color: '#5F6368', // Secondary text
+      color: '#5F6368', 
       marginTop: 8,
     },
     modalBackground: {
@@ -565,7 +575,7 @@ const getStyles = () =>
       padding: 24,
     },
     modalContainer: {
-      backgroundColor: '#FFFFFF', // White cards
+      backgroundColor: '#FFFFFF',
       borderRadius: 12,
       maxHeight: '80%',
       elevation: 8,
@@ -573,6 +583,7 @@ const getStyles = () =>
       shadowOffset: { width: 0, height: 4 },
       shadowOpacity: 0.3,
       shadowRadius: 6,
+      overflow: 'hidden',
     },
     modalHeader: {
       flexDirection: 'row',
@@ -580,17 +591,17 @@ const getStyles = () =>
       alignItems: 'center',
       padding: 16,
       borderBottomWidth: 1,
-      borderColor: '#E0E0E0', // New border color
+      borderColor: '#E0E0E0', 
     },
     modalTitle: {
       fontSize: 18,
       fontWeight: 'bold',
-      color: '#1A73E8', // Primary blue
-      textDecorationLine: 'none', // Removed underline
+      color: '#1A73E8', 
+      textDecorationLine: 'none', 
     },
     modalSubtitle: {
       fontSize: 14,
-      color: '#5F6368', // Secondary text
+      color: '#5F6368', 
       marginHorizontal: 16,
       marginTop: 8,
     },
@@ -599,21 +610,21 @@ const getStyles = () =>
       marginHorizontal: 16,
       marginTop: 12,
       borderWidth: 1,
-      borderColor: '#E0E0E0', // New border color
+      borderColor: '#E0E0E0', 
       borderRadius: 8,
       overflow: 'hidden',
     },
     uuidModeButton: {
       flex: 1,
       padding: 12,
-      backgroundColor: '#F9FAFB', // Background color
+      backgroundColor: '#F9FAFB', 
     },
     uuidModeButtonActive: {
-      backgroundColor: '#1A73E8', // Primary blue
+      backgroundColor: '#1A73E8', 
     },
     uuidModeButtonText: {
       textAlign: 'center',
-      color: '#5F6368', // Secondary text
+      color: '#5F6368', 
       fontWeight: '500',
     },
     uuidModeButtonTextActive: {
@@ -626,7 +637,7 @@ const getStyles = () =>
     sectionTitle: {
       fontSize: 14,
       fontWeight: '500',
-      color: '#1A73E8', // Primary blue
+      color: '#1A73E8',
       marginBottom: 8,
     },
     uuidScrollView: {
@@ -637,20 +648,20 @@ const getStyles = () =>
       alignItems: 'center',
       padding: 12,
       borderWidth: 1,
-      borderColor: '#E0E0E0', // New border color
+      borderColor: '#E0E0E0', 
       borderRadius: 8,
       marginBottom: 8,
     },
     selectedUuidItem: {
-      borderColor: '#1A73E8', // Primary blue
-      backgroundColor: '#E8F0FE', // Light blue highlight
+      borderColor: '#1A73E8',
+      backgroundColor: '#E8F0FE', 
     },
     uuidSelect: {
       width: 20,
       height: 20,
       borderRadius: 10,
       borderWidth: 2,
-      borderColor: '#5F6368', // Secondary text
+      borderColor: '#5F6368', 
       marginRight: 12,
       alignItems: 'center',
       justifyContent: 'center',
@@ -659,7 +670,7 @@ const getStyles = () =>
       width: 10,
       height: 10,
       borderRadius: 5,
-      backgroundColor: '#1A73E8', // Primary blue
+      backgroundColor: '#1A73E8', 
     },
     uuidDetails: {
       flex: 1,
@@ -667,11 +678,11 @@ const getStyles = () =>
     uuidName: {
       fontWeight: '500',
       marginBottom: 4,
-      color: '#1C1C1C', // Dark text
+      color: '#1C1C1C', 
     },
     uuidValue: {
       fontSize: 12,
-      color: '#5F6368', // Secondary text
+      color: '#5F6368', 
     },
     customUuidContainer: {
       marginTop: 16,
@@ -682,26 +693,26 @@ const getStyles = () =>
     },
     inputLabel: {
       fontSize: 14,
-      color: '#1A73E8', // Primary blue
+      color: '#1A73E8', 
       marginBottom: 4,
     },
     input: {
       borderWidth: 1,
-      borderColor: '#E0E0E0', // New border color
+      borderColor: '#E0E0E0', 
       borderRadius: 8,
       padding: 12,
-      backgroundColor: '#FFFFFF', // White
+      backgroundColor: '#FFFFFF', 
     },
     modalButtons: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       padding: 16,
       borderTopWidth: 1,
-      borderColor: '#E0E0E0', // New border color
+      borderColor: '#E0E0E0', 
     },
     primaryButton: {
       flex: 1,
-      backgroundColor: '#1A73E8', // Primary blue
+      backgroundColor: '#1A73E8', 
       padding: 14,
       borderRadius: 8,
       alignItems: 'center',
@@ -709,7 +720,7 @@ const getStyles = () =>
       elevation: 2,
     },
     primaryButtonDisabled: {
-      backgroundColor: '#C5D9F8', // Lighter blue
+      backgroundColor: '#C5D9F8', 
     },
     primaryButtonText: {
       color: 'white',
@@ -717,7 +728,7 @@ const getStyles = () =>
     },
     secondaryButton: {
       flex: 1,
-      backgroundColor: '#FFA000', // Accent orange
+      backgroundColor: '#FFA000', 
       padding: 14,
       borderRadius: 8,
       alignItems: 'center',
@@ -729,7 +740,13 @@ const getStyles = () =>
       fontWeight: '500',
     },
     scanButtonDisabled: {
-      backgroundColor: '#B8D3FF', // Lighter blue
+      backgroundColor: '#B8D3FF', 
+    },
+    scrollWrapper: {
+      maxHeight: 300, 
+    },
+    scrollContent: {
+      paddingBottom: 16,
     },
   });
 

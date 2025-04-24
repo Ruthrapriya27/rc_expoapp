@@ -23,6 +23,7 @@ const NewUserRegistrationScreen = ({ navigation }) => {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  
 
   const handleRegister = () => {
     if (!email || !mobile || !fullName || !designation || !device || !version) {

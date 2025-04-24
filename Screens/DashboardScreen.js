@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { LogContext } from '../Context/LogContext';
 
 const DashboardScreen = () => {
-  const { logs, clearLogs, deviceId, customerName, timestamp, rfChannel } = useContext(LogContext);
+  const { logs, clearLogs, deviceId, customerName, timestamp, rfChannel, deviceID } = useContext(LogContext);
   const [areLogsExpanded, setAreLogsExpanded] = useState(false);
   const [animation] = useState(new Animated.Value(0));
 
@@ -51,6 +51,7 @@ const DashboardScreen = () => {
     { key: 'Customer Name', value: customerName || 'N/A' },
     { key: 'Timestamp', value: timestamp || 'N/A' },
     { key: 'RF Channel', value: rfChannel || 'N/A' },
+    { key: 'Device ID', value: deviceID || 'N/A' }
   ];
 
   const containerHeight = animation.interpolate({
