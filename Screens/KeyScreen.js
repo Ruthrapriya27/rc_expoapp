@@ -15,7 +15,7 @@ const KeyScreen = () => {
 
   //USE STATES 
   const { connectedDevice, serviceUUID, writeUUID, readUUID } = useContext(BluetoothContext);
-  const { addLog, setDeviceId, setCustomerName, setRfChannel, setTimestamp } = useContext(LogContext);
+  const { addLog, setDeviceIdcode, setCustomerName, setRfChannel, setTimestamp, setDeviceId } = useContext(LogContext);
 
   const [modalVisible, setModalVisible] = useState(false);
   const [inputValue, setInputValue] = useState('');
@@ -170,15 +170,21 @@ const KeyScreen = () => {
     );
     console.log('Command sent successfully:', jsonCommand);
     addLog(`Command sent successfully: ${jsonCommand}`);
-    Alert.alert('Command sent successfully:', jsonCommand);
-    // Alert.alert(
-    //   'Success', 
-    //   `Command sent successfully: ${jsonCommand}`,
-    //   [
-    //      { text: 'OK' }
-    //   ],
-    //   { cancelable: true }  
-    // );
+    // Alert.alert('Command sent successfully:', jsonCommand);
+    Alert.alert(
+      'Command sent successfully',
+      jsonCommand,
+      [
+        {
+          text: 'OK',
+          onPress: () => console.log('Alert closed'),
+        },
+      ],
+      { cancelable: false } 
+    );
+    setTimeout(() => {
+      console.log('Closing alert after 7 seconds');
+    }, 7000); 
   } catch (error) {
     console.log('Error sending command:', error.message);
     addLog(`Error sending command: ${error.message}`);
@@ -191,7 +197,7 @@ const KeyScreen = () => {
     title: 'Set Device ID',
     action: 'DEV_ID_SET',
     needsInput: true,
-    placeholder: 'Enter Device ID (e.g., 000000)',
+    placeholder: 'Enter Device ID (max 6 digits, e.g., 000000)',
     validate: (value) => /^\d+$/.test(value) && value.length == 6,
     errorMessage: 'Invalid input. Only numbers up to 15 digits allowed.',
     onSend: (value) => {
@@ -206,6 +212,16 @@ const KeyScreen = () => {
     onSend: () => JSON.stringify({ cmd: "DEV_ID_GET" })
   }
 ];
+
+//GET SERIAL NO.
+const cbutton = [
+  {
+    title: 'Get Product Name',
+    action: 'DEV_SERIAL_NO_GET',
+    needsInput: false,
+    onSend: () => JSON.stringify({ cmd: "DEV_SERIAL_NO_GET" })
+  }
+]
 
   //COMMON BUTTONS CONFIGURATIONS
   const cbuttons = [
@@ -223,7 +239,7 @@ const KeyScreen = () => {
       validate: (value) => /^\d+$/.test(value) && value.length <= 15,
       errorMessage: 'Invalid input. Only numbers up to 15 digits allowed.',
       onSend: (value) => {
-        setDeviceId(value);
+        setDeviceIdcode(value);
         return JSON.stringify({ cmd: "DEV_IDCODE_SET", args: [value] });
       }
     },
@@ -285,28 +301,12 @@ const KeyScreen = () => {
       onSend: () => JSON.stringify({ cmd: "FIRMWARE_VERSION_GET" })
     },
     {
-      title: 'Reset Configuration',
-      action: 'RESET',
-      needsInput: false,
-      onSend: () => new Promise((resolve) => {
-        Alert.alert(
-          'Confirm Reset',
-          'Are you sure you want to reset all configurations?',
-          [
-            {
-              text: 'Cancel',
-              style: 'cancel',
-              onPress: () => resolve(null) // Don't send command if canceled
-            },
-            {
-              text: 'OK',
-              onPress: () => resolve(JSON.stringify({ cmd: "RESET" }))
-            }
-          ]
-        );
-      })
+        title: 'Reset Configuration',
+        action: 'RESET',
+        needsInput: false,
+        onSend: () => JSON.stringify({ cmd: "RESET" })
     }
-  ];  
+    ];
 
   //RF BUTTONS CONFIGURATIONS 
   const rfbuttons = [
@@ -801,23 +801,7 @@ const lrmrlbuttons = [
     title: 'RF Reset',
     action: 'RF_RESET',
     needsInput: false,
-    onSend: () => new Promise((resolve) => {
-      Alert.alert(
-        'Confirm RF Reset',
-        'Are you sure you want to reset RF configurations?',
-        [
-          {
-            text: 'Cancel',
-            style: 'cancel',
-            onPress: () => resolve(null) 
-          },
-          {
-            text: 'OK',
-            onPress: () => resolve(JSON.stringify({ cmd: "RESET" }))
-          }
-        ]
-      );
-    })
+    onSend: () => JSON.stringify({ cmd: "RF_RESET" })
   }
 ];
 
@@ -829,6 +813,48 @@ const handleButtonPress = (buttonConfig) => {
   setInputValue('');
   setInputKeyIndex('');
   setInputKeyValue('');
+
+  // if (buttonConfig.action === 'RESET') {
+  //   Alert.alert(
+  //     'Confirm Reset',
+  //     'Are you sure you want to reset the configuration?',
+  //     [
+  //       {
+  //         text: 'Cancel',
+  //         style: 'cancel',
+  //       },
+  //       {
+  //         text: 'OK',
+  //         onPress: () => {
+  //           sendCommand(buttonConfig.onSend());
+  //         },
+  //       },
+  //     ],
+  //     { cancelable: false }
+  //   );
+  //   return;
+  // }
+
+  if (buttonConfig.action === 'RESET' || buttonConfig.action === 'RF_RESET') {
+    Alert.alert(
+      'Confirm Reset',
+      'Are you sure you want to reset the configuration?',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'OK',
+          onPress: () => {
+            sendCommand(buttonConfig.onSend());
+          },
+        },
+      ],
+      { cancelable: false }
+    );
+    return;
+  }
   
   if (buttonConfig.needsInput) {
     setModalVisible(true);
@@ -855,7 +881,7 @@ const handleButtonPress = (buttonConfig) => {
       <View style={styles.topButtonWrapper}>
         <TouchableOpacity
           style={styles.topButton}
-          onPress={() => handleButtonPress(cbuttons[0])}
+          onPress={() => handleButtonPress(cbutton[0])}
         >
           <Text style={styles.topButtonText}>Get Product Name</Text>
         </TouchableOpacity>

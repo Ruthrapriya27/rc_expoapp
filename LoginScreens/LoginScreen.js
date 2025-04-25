@@ -15,24 +15,24 @@ const LoginScreen = ({ navigation }) => {
   const [showPassword, setShowPassword] = React.useState(false);
   // const [error, setError] = useState('');
 
-  const handleLogin = () => navigation.navigate('TabScreen');
+  // const handleLogin = () => navigation.navigate('TabScreen');
 
-  // const handleLogin = () => {
-  //   if (email === 'admin' && password === 'admin') {
-  //     navigation.navigate('TabScreen'); 
-  //   } else {
-  //     Alert.alert('Error', 'Invalid credentials');
-  //   }
-  // };
+  const handleLogin = () => {
+    if (email === 'admin' && password === 'admin') {
+      navigation.navigate('TabScreen'); 
+    } else {
+      Alert.alert('Error', 'Invalid credentials');
+    }
+  };
 
-  // const handlePasswordChange = (text) => {
-  //   setPassword(text);
-  //   if (text.length < 8) {
-  //     setError('Password must be at least 8 characters');
-  //   } else {
-  //     setError('');
-  //   }
-  // };
+  const handlePasswordChange = (text) => {
+    setPassword(text);
+    if (text.length < 8) {
+      setError('Password must be at least 8 characters');
+    } else {
+      setError('');
+    }
+  };
 
   return (
     <View style={styles.container}>

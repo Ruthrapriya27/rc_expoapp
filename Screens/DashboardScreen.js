@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { LogContext } from '../Context/LogContext';
 
 const DashboardScreen = () => {
-  const { logs, clearLogs, deviceId, customerName, timestamp, rfChannel, deviceID } = useContext(LogContext);
+  const { logs, clearLogs, deviceIdcode, customerName, timestamp, deviceID } = useContext(LogContext);
   const [areLogsExpanded, setAreLogsExpanded] = useState(false);
   const [animation] = useState(new Animated.Value(0));
 
@@ -47,11 +47,10 @@ const DashboardScreen = () => {
   );
 
   const settingsData = [
-    { key: 'Device ID Code', value: deviceId || 'N/A' },
+    { key: 'Bluetooth Device ID', value: deviceID ? `SIO-RX-${deviceID}` : ''},
+    { key: 'Device ID Code', value: deviceIdcode || 'N/A' },
     { key: 'Customer Name', value: customerName || 'N/A' },
-    { key: 'Timestamp', value: timestamp || 'N/A' },
-    { key: 'RF Channel', value: rfChannel || 'N/A' },
-    { key: 'Device ID', value: deviceID || 'N/A' }
+    { key: 'Timestamp', value: timestamp || 'N/A' }
   ];
 
   const containerHeight = animation.interpolate({
