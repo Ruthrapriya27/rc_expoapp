@@ -9,12 +9,14 @@ import SignUpScreen from '../LoginScreens/SignUpScreen.js';
 import OtpScreen from '../LoginScreens/OtpScreen';
 import NewUserRegistrationScreen from '../LoginScreens/NewUserRegistrationScreen';
 import ForgotPasswordScreen from '../LoginScreens/ForgetPasswordScreen.js';
+import ConfigSumScreen from '../Screens/ConfigSumScreen.js';
 
 const Stack = createStackNavigator();
 
 const App = () => 
   {
   return (
+    
     <NavigationContainer>
       <Stack.Navigator
 
@@ -63,6 +65,12 @@ const App = () =>
           name="Dashboard"
           component={DashboardScreen}
           options={{ title: 'Dashboard' }}
+        />
+
+        <Stack.Screen 
+          name="Config Summary" 
+          component={ConfigSumScreen} 
+          options={{ title: 'Configuration Summary' }}
         />
  
       </Stack.Navigator>

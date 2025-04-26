@@ -6,6 +6,7 @@ import { Buffer } from 'buffer';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Picker } from '@react-native-picker/picker';
 import { LayoutAnimation, Platform, UIManager } from 'react-native';
+import { MaterialIcons } from '@expo/vector-icons';
 
 // Enable LayoutAnimation on Android
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
