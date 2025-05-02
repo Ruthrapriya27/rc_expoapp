@@ -9,7 +9,7 @@ import SettingsScreen from '../Screens/SettingsScreen';
 import { MaterialIcons } from '@expo/vector-icons';
 
 const Tab = createBottomTabNavigator();
-
+      
 export default function TabScreen() {
   return (
     <Tab.Navigator

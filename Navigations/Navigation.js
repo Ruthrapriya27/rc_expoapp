@@ -10,6 +10,7 @@ import OtpScreen from '../LoginScreens/OtpScreen';
 import NewUserRegistrationScreen from '../LoginScreens/NewUserRegistrationScreen';
 import ForgotPasswordScreen from '../LoginScreens/ForgetPasswordScreen.js';
 import ConfigSumScreen from '../Screens/ConfigSumScreen.js';
+import WelcomeScreen from '../Screens/WelcomeScreen.js'
 
 const Stack = createStackNavigator();
 
@@ -25,6 +26,12 @@ const App = () =>
           headerTitleAlign: 'center' 
         }}
       > 
+       <Stack.Screen
+          name="Welcome Screen"
+          component={WelcomeScreen}
+          options={{ title: 'Welcome to Innospace',headerShown: false}}
+        /> 
+
         <Stack.Screen
           name="Login"
           component={LoginScreen}
