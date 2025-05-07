@@ -1,12 +1,17 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState ,useEffect } from 'react';
 import { View, Text, FlatList, StyleSheet, Alert, TouchableOpacity, Animated, Easing } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LogContext } from '../Context/LogContext';
+import { BluetoothContext } from '../Context/BluetoothContext';
 
 const DashboardScreen = () => {
-  const { logs, clearLogs, deviceIdcode, customerName, timestamp, deviceID } = useContext(LogContext);
+  const { logs, clearLogs, deviceIdcode, customerName, timestamp, deviceID }  = useContext(LogContext);
   const [areLogsExpanded, setAreLogsExpanded] = useState(false);
   const [animation] = useState(new Animated.Value(0));
+  const { connectedDevice } = useContext(BluetoothContext);
+
+  useEffect(() => {
+  }, [connectedDevice]);
 
   const toggleLogs = () => {
     Animated.timing(animation, {
@@ -39,20 +44,18 @@ const DashboardScreen = () => {
   const renderSettingItem = ({ item, index }) => (
     <View style={[
       styles.logItem,
-      index === settingsData.length - 1 && { borderBottomWidth: 0 } // Remove border on last item
+      index === settingsData.length - 1 && { borderBottomWidth: 0 } 
     ]}>
       <Ionicons name="ellipse" size={8} color="#007AFF" style={styles.bullet} />
       <Text style={styles.logText}>{item.key}: {item.value || 'N/A'}</Text>
     </View>
   );
-
   const settingsData = [
-    { key: 'Bluetooth Device ID', value: deviceID ? `SIO-RX-${deviceID}` : ''},
+    { key: 'Bluetooth Device ID', value: connectedDevice?.name || 'No device connected' }, 
     { key: 'Device ID Code', value: deviceIdcode || 'N/A' },
     { key: 'Customer Name', value: customerName || 'N/A' },
-    { key: 'Timestamp', value: timestamp || 'N/A' }
+    { key: 'Timestamp', value: timestamp || 'N/A' },
   ];
-
   const containerHeight = animation.interpolate({
     inputRange: [0, 1],
     outputRange: [0, 298] // Adjust this value based on your content height

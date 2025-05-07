@@ -5,7 +5,8 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
-  Alert
+  Modal,
+  Pressable
 } from 'react-native';
 import { Ionicons, MaterialIcons, FontAwesome } from '@expo/vector-icons';
 
@@ -13,26 +14,118 @@ const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
   const [showPassword, setShowPassword] = React.useState(false);
-  // const [error, setError] = useState('');
+  const [alertVisible, setAlertVisible] = React.useState(false);
+  const [alertMessage, setAlertMessage] = React.useState('');
+  const [emailError, setEmailError] = React.useState('');
+  const [passwordError, setPasswordError] = React.useState('');
+  const [emailTouched, setEmailTouched] = React.useState(false);
+  const [passwordTouched, setPasswordTouched] = React.useState(false);
 
-  const handleLogin = () => navigation.navigate('TabScreen');
-
-  // const handleLogin = () => {
-  //   if (email === 'admin' && password === 'admin') {
-  //     navigation.navigate('TabScreen'); 
-  //   } else {
-  //     Alert.alert('Error', 'Invalid credentials');
-  //   }
-  // };
-
-  const handlePasswordChange = (text) => {
-    setPassword(text);
-    if (text.length < 8) {
-      setError('Password must be at least 8 characters');
-    } else {
-      setError('');
-    }
+  const validateEmail = (email) => {
+    const re = /^[^\s@]+@gmail\.com$/;
+    return re.test(email);
   };
+
+  const PasswordRequirements = () => {
+    return (
+      <View style={passwordStyles.container}>
+        <Text style={passwordStyles.title}>Your password must contain:</Text>
+
+        <View style={passwordStyles.requirement}>
+          <FontAwesome name="check" size={16} color="#4CAF50" />
+          <Text style={passwordStyles.text}>At least 8 characters</Text>
+        </View>
+
+        <View style={passwordStyles.requirement}>
+          <FontAwesome name="check" size={16} color="#4CAF50" />
+          <Text style={passwordStyles.text}>Required:</Text>
+        </View>
+
+        <View style={passwordStyles.subRequirement}>
+          <FontAwesome name="circle" size={8} color="#000" style={passwordStyles.bullet} />
+          <Text style={passwordStyles.text}>Lower case letters (a-z)</Text>
+        </View>
+
+        <View style={passwordStyles.subRequirement}>
+          <FontAwesome name="circle" size={8} color="#000" style={passwordStyles.bullet} />
+          <Text style={passwordStyles.text}>Upper case letters (A-Z)</Text>
+        </View>
+
+        <View style={passwordStyles.subRequirement}>
+          <FontAwesome name="circle" size={8} color="#000" style={passwordStyles.bullet} />
+          <Text style={passwordStyles.text}>Numbers (0-9)</Text>
+        </View>
+
+        <View style={passwordStyles.subRequirement}>
+          <FontAwesome name="circle" size={8} color="#000" style={passwordStyles.bullet} />
+          <Text style={passwordStyles.text}>Special characters (ex. !@#$%^&*)</Text>
+        </View>
+      </View>
+    );
+  };
+
+  const validatePassword = (password) => {
+    if (password.length < 8) return false;
+
+    const hasLower = /[a-z]/.test(password);
+    const hasUpper = /[A-Z]/.test(password);
+    const hasNumber = /\d/.test(password);
+    const hasSpecial = /[@$!%*#?&]/.test(password);
+
+    return hasLower && hasUpper && hasNumber && hasSpecial;
+};
+
+  const showAlert = (message) => {
+    setAlertMessage(message);
+    setAlertVisible(true);
+  };
+
+  const handleLogin = () => {
+    // Mark both fields as touched
+    setEmailTouched(true);
+    setPasswordTouched(true);
+    
+    // Reset errors
+    setEmailError('');
+    setPasswordError('');
+
+    let shouldShowPasswordAlert = false;
+    let hasValidationError = false;
+
+    // Email validation
+    if (!email) {
+        setEmailError('Please enter your email address');
+        hasValidationError = true;
+    } else if (!validateEmail(email)) {
+        setEmailError('Please enter a valid email address');
+        hasValidationError = true;
+    }
+
+    // Password validation
+    if (!password) {
+        setPasswordError('Please enter your password');
+        hasValidationError = true;
+    } else if (!validatePassword(password)) {
+        shouldShowPasswordAlert = true;
+        hasValidationError = true; // Add this line
+    }
+
+    // Show password alert if password is invalid
+    if (shouldShowPasswordAlert) {
+        showAlert('Please enter a valid password');
+        return; // Add this line to prevent further checks
+    }
+
+    // Return if we have any other validation errors
+    if (hasValidationError) return;
+
+    // Credentials check
+    if (email === 'admin@gmail.com' && password === 'Admin@123') {
+        navigation.navigate('TabScreen');
+    } else {
+        showAlert('User Doesnt Exist.Please try again.');
+    }
+};
 
   return (
     <View style={styles.container}>
@@ -40,50 +133,52 @@ const LoginScreen = ({ navigation }) => {
         <Text style={styles.startLine}>Welcome to Innospace</Text>
       </View>
 
-      {/* Email Input */}
       <View style={styles.BoxAboveHeader}>
         <Text style={styles.label}>Enter your email</Text>
       </View>
 
       <View style={styles.inputContainer}>
-        <MaterialIcons
-          name="email"
-          size={20}
-          color="grey"
-          style={styles.inputIcon}
-        />
+        <MaterialIcons name="email" size={20} color="grey" style={styles.inputIcon} />
         <TextInput
           style={styles.inputBox}
           placeholder="yourname@gmail.com"
           placeholderTextColor="grey"
           value={email}
-          onChangeText={setEmail}
+          onChangeText={(text) => {
+            setEmail(text);
+            setEmailTouched(true);
+            setEmailError('');
+          }}
           keyboardType="email-address"
           autoCapitalize="none"
         />
       </View>
+      {emailError !== '' && emailTouched && (
+        <View style={styles.errorContainer}>
+          <Ionicons name="warning" size={16} color="red" />
+          <Text style={styles.errorText}>{emailError}</Text>
+        </View>
+      )}
 
-      {/* Password Input */}
       <View style={styles.BoxAboveHeader}>
         <Text style={styles.label}>Enter your password</Text>
         <TouchableOpacity onPress={() => navigation.navigate('Forgot Password')}>
-  <Text style={styles.forgotPassword}>Forgot password?</Text>
-</TouchableOpacity>
+          <Text style={styles.forgotPassword}>Forgot password?</Text>
+        </TouchableOpacity>
       </View>
 
       <View style={styles.passwordContainer}>
-        <FontAwesome
-          name="key"
-          size={18}
-          color="grey"
-          style={styles.inputIcon}
-        />
+        <FontAwesome name="key" size={18} color="grey" style={styles.inputIcon} />
         <TextInput
           style={styles.passwordInput}
           placeholder="Enter your password"
           placeholderTextColor="grey"
           value={password}
-          onChangeText={setPassword}
+          onChangeText={(text) => {
+            setPassword(text);
+            setPasswordTouched(true);
+            setPasswordError('');
+          }}
           secureTextEntry={!showPassword}
           autoCapitalize="none"
         />
@@ -91,29 +186,46 @@ const LoginScreen = ({ navigation }) => {
           style={styles.eyeIcon}
           onPress={() => setShowPassword(!showPassword)}
         >
-          <Ionicons
-            name={showPassword ? 'eye-off' : 'eye'}
-            size={24}
-            color="grey"
-          />
+          <Ionicons name={showPassword ? 'eye-off' : 'eye'} size={24} color="grey" />
         </TouchableOpacity>
       </View>
+      {passwordError !== '' && passwordTouched && (
+        <View style={styles.errorContainer}>
+          <Ionicons name="warning" size={16} color="red" />
+          <Text style={styles.errorText}>{passwordError}</Text>
+        </View>
+      )}
 
-      {/* Login Button */}
-      <TouchableOpacity
-        style={styles.loginButton}
-        onPress={handleLogin} 
-      >
+      <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
         <Text style={styles.loginButtonText}>Login</Text>
       </TouchableOpacity>
 
-      {/* Signup Link */}
       <View style={styles.signupContainer}>
         <Text style={styles.signupLabel}>Don't have an account? </Text>
         <TouchableOpacity onPress={() => navigation.navigate('SignUp')}>
-    <Text style={styles.forgotPassword}>Signup Here</Text>
-  </TouchableOpacity>
+          <Text style={styles.forgotPassword}>Signup Here</Text>
+        </TouchableOpacity>
       </View>
+
+      <Modal
+        animationType="fade"
+        transparent
+        visible={alertVisible}
+        onRequestClose={() => setAlertVisible(false)}
+      >
+        <View style={styles.alertModalOverlay}>
+          <View style={styles.alertModalContainer}>
+            <Text style={styles.alertModalText}>{alertMessage}</Text>
+            {alertMessage === 'Please enter a valid password' && <PasswordRequirements />}
+            <Pressable
+              style={styles.alertModalButton}
+              onPress={() => setAlertVisible(false)}
+            >
+              <Text style={styles.alertModalButtonText}>OK</Text>
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -123,12 +235,12 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     paddingHorizontal: 30,
-    backgroundColor: '#F9FAFB', // Light background
+    backgroundColor: '#F9FAFB',
   },
   startLine: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#1A73E8', // Primary Blue
+    color: '#1A73E8',
     marginBottom: 30,
     textAlign: 'center',
   },
@@ -139,7 +251,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 14,
-    color: '#5F6368', // Secondary Text
+    color: '#000',
     marginBottom: 8,
     fontWeight: '500',
   },
@@ -147,22 +259,21 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#E0E0E0', // Soft border
+    borderColor: '#E0E0E0',
     borderRadius: 10,
     marginBottom: 15,
     backgroundColor: '#FFFFFF',
-    borderLeftWidth: 1,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
     shadowRadius: 4,
-    elevation: 2, // Android shadow
+    elevation: 2,
   },
   inputBox: {
     flex: 1,
     height: 50,
     fontSize: 16,
-    color: '#1C1C1C', // Primary Text
+    color: '#1C1C1C',
     paddingLeft: 10,
     paddingRight: 15,
   },
@@ -172,10 +283,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#E0E0E0',
     borderRadius: 10,
-    marginBottom: 15,
+    marginBottom: 5,
     backgroundColor: '#FFFFFF',
-    borderLeftWidth: 1,
-    // borderLeftColor: '#1A73E8',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
@@ -198,14 +307,14 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   forgotPassword: {
-    color: '#1A73E8', // Primary Blue
+    color: '#1A73E8',
     fontSize: 14,
     fontWeight: '500',
     textDecorationLine: 'underline',
     textAlign: 'right',
   },
   loginButton: {
-    backgroundColor: '#FFA000', // Accent Orange
+    backgroundColor: '#FFA000',
     height: 50,
     borderRadius: 8,
     justifyContent: 'center',
@@ -230,15 +339,88 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   signupLabel: {
-    color: '#5F6368', // Secondary Text
+    color: '#5F6368',
     fontSize: 14,
   },
-  signupLink: {
-    color: '#1A73E8', // Primary Blue
-    fontSize: 14,
-    fontWeight: 'bold',
+  errorContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 2,
+    marginBottom: 8,
     marginLeft: 5,
-    textDecorationLine: 'underline',
+  },
+  errorText: {
+    color: 'red',
+    fontSize: 13,
+    marginLeft: 5,
+  },
+  alertModalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.75)',
+  },
+  alertModalContainer: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 13,
+    width: '85%',
+    maxWidth: 360,
+    overflow: 'hidden',
+    alignItems: 'center',
+    marginHorizontal: 16,
+  },
+  alertModalText: {
+    fontSize: 16,
+    textAlign: 'center',
+    paddingHorizontal: 24,
+    paddingTop: 20,
+    paddingBottom: 10,
+    color: '#000',
+    fontWeight: '400',
+    lineHeight: 24,
+  },
+  alertModalButton: {
+    borderTopWidth: 0.5,
+    borderTopColor: '#DBDBDB',
+    width: '100%',
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  alertModalButtonText: {
+    color: '#007AFF',
+    fontSize: 17,
+    fontWeight: '600',
+  },
+});
+
+const passwordStyles = StyleSheet.create({
+  container: {
+    width: '100%',
+    paddingHorizontal: 16,
+    alignSelf: 'center',
+  },
+  title: {
+    fontWeight: 'bold',
+    marginBottom: 5,
+    fontSize: 16,
+  },
+  requirement: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 2,
+  },
+  subRequirement: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginLeft: 20,
+    marginVertical: 2,
+  },
+  text: {
+    marginLeft: 10,
+    fontSize: 14,
+  },
+  bullet: {
+    marginRight: 10,
   },
 });
 

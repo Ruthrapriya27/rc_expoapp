@@ -14,7 +14,7 @@ const WelcomeScreen = ({ navigation }) => (
   <View style={styles.container}>
     {/* Top wave image section */}
     <ImageBackground
-      source={require('./../assets/images/story.webp')}
+      // source={require('./../assets/images/innospace logo2.webp')}
       style={styles.topWave}
       resizeMode="cover"
     >
@@ -32,7 +32,7 @@ const WelcomeScreen = ({ navigation }) => (
         style={styles.button}
         onPress={() => navigation.navigate('Login')}
       >
-        <Text style={styles.buttonText}>Start Now →</Text>
+        <Text style={styles.buttonText}>Get Started →</Text>
       </TouchableOpacity>
     </View>
   </View>

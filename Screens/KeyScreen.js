@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState, useRef } from 'react';
 import { View, Alert, TextInput, Modal, Text, TouchableOpacity, StyleSheet, ScrollView ,Pressable} from 'react-native';
 import { BluetoothContext } from '../Context/BluetoothContext';
 import { LogContext } from '../Context/LogContext';
@@ -31,6 +31,25 @@ const KeyScreen = () => {
   const [index, setIndex] = useState('');
   const [value, setValue] = useState('');
   const [btCollapsed, setBtCollapsed] = useState(true);
+  const [btNotConnectedVisible, setBtNotConnectedVisible] = useState(false);
+  const [noProductConnectedVisible, setNoProductConnectedVisible] = useState(false);
+  const serialTimeoutRef = useRef(null);
+
+  useEffect(() => {
+    // Check Bluetooth connection status
+    if (!connectedDevice) {
+      setBtNotConnectedVisible(true);
+    } else {
+      setBtNotConnectedVisible(false);
+      
+      // Check if product is connected (based on deviceName)
+      if (deviceName === "Not Found" || deviceName === "UNKNOWN") {
+        setNoProductConnectedVisible(true);
+      } else {
+        setNoProductConnectedVisible(false);
+      }
+    }
+  }, [connectedDevice, deviceName]);
 
   const toggleBtNameConfig = () => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
@@ -55,35 +74,41 @@ const KeyScreen = () => {
                 let parsed;
 
                 try {
-                  parsed = JSON.parse(decoded);
-
-                  if 
-                  (
+				          parsed = JSON.parse(decoded);
+                  if (
                     (parsed.rsp === "RF_FIRMWARE_VERSION_GET" || parsed.rsp === "FIRMWARE_VERSION_GET") &&
                     parsed.err === 0 && parsed.data?.[0]
-                  ) 
-                  {
+                  ) {
                     parsed.data[0] = parsed.data[0].toString().split('').join('.');
                   }
-
-                  if ((parsed.rsp === "DEV_TYPE_GET" || parsed.rsp === "RF_DEV_TYPE_GET") && 
-                      parsed.err === 0 && parsed.data && parsed.data.length > 0) {
+                
+                  if (
+                    (parsed.rsp === "DEV_TYPE_GET" || parsed.rsp === "RF_DEV_TYPE_GET") &&
+                    parsed.err === 0 && parsed.data && parsed.data.length > 0
+                  ) {
                     const deviceType = parsed.data[0];
                     parsed.data[0] = deviceType === 1 ? "Transmitter" : "Receiver";
                   }
+                
                   if (parsed.rsp === "RF_RELAY_TIMEOUT_SET" && parsed.err === 0 && parsed.data?.[0]) {
                     const timeoutValue = parsed.data[0] * 10;
                     parsed.data[0] = `${timeoutValue} ms`;
                   }
-                  if (parsed.rsp === "DEV_SERIAL_NO_GET") {
-                    if (parsed.err === 0 && parsed.data && parsed.data.length > 0) {
+                
+                  if (parsed.rsp === "DEV_SERIAL_NO_GET") {  
+                    if (serialTimeoutRef.current) {
+                      clearTimeout(serialTimeoutRef.current);
+                      serialTimeoutRef.current = null;
+                    }
+                
+                    if (parsed.err === 0 && parsed.data?.length > 0) {
                       const serialNumber = parsed.data[0];
                       setSerialNumber(serialNumber);
-                  
+                
                       if (serialNumber.length >= 7) {
                         const char5 = serialNumber.charAt(5);
                         const char6 = serialNumber.charAt(6);
-                  
+                
                         if (char5 === 'G' && char6 === 'R') {
                           setDeviceName("GRAB");
                         } else if (char5 === 'I' && char6 === 'R') {
@@ -92,14 +117,20 @@ const KeyScreen = () => {
                           setDeviceName("LRM3");
                         } else {
                           setDeviceName("UNKNOWN");
+                          setNoProductConnectedVisible(true);
                         }
+                      } else {
+                        setDeviceName("Not Found");
+                        setNoProductConnectedVisible(true);
                       }
-                    else {
-                      setDeviceName("No product connected");
+                    } else {
+                      setDeviceName("Not Found");
+                      setNoProductConnectedVisible(true);
                     }
+        
+                    return; 
                   }
-
-                  }
+              
                 } catch (jsonError) {
                   Alert.alert('JSON Parse Error', jsonError.message);
                   return;
@@ -137,11 +168,17 @@ const KeyScreen = () => {
                   dataOutput = parsed.data.toString();
                 }
               }
-
-                Alert.alert(
-                  'Status',
-                  `\u200B\nDescription: ${description}\n\u200B\nAction: ${action}\n\u200B\nMessage: ${message}\n\u200B\nData: ${dataOutput}`
-                );                                  
+              const isFailedSerial =
+              parsed.rsp === "DEV_SERIAL_NO_GET" &&
+              (parsed.err !== 0 || !parsed.data || parsed.data.length === 0);
+            
+             if (!isFailedSerial) {
+              Alert.alert(
+                'Status',
+                `\u200B\nDescription: ${description}\n\u200B\nAction: ${action}\n\u200B\nMessage: ${message}\n\u200B\nData: ${dataOutput}`
+              );
+            }
+                                       
               } catch (decodeError) {
                 Alert.alert('Decode Error', decodeError.message);
               }
@@ -220,7 +257,8 @@ const cbutton = [
     title: 'Get Product Name',
     action: 'DEV_SERIAL_NO_GET',
     needsInput: false,
-    onSend: () => JSON.stringify({ cmd: "DEV_SERIAL_NO_GET" })
+    onSend: () => JSON.stringify({ cmd: "DEV_SERIAL_NO_GET" }),
+    onPress: handleGetSerialNumber
   }
 ]
 
@@ -806,35 +844,41 @@ const lrmrlbuttons = [
   }
 ];
 
-///////////////////////////BUTTON CONFIGURATION ENDS////////////////////////////
+//HANDLE PRESS AND HANDLE SEND FUNCTION
 
-//BUTTON PRESS 
+const handleGetSerialNumber = () => {
+  if (!connectedDevice) {
+    setBtNotConnectedVisible(true);
+    return;
+  }
+
+
+  const serialGetCommand = { cmd: "DEV_SERIAL_NO_GET" };
+  sendCommand(serialGetCommand);
+
+  // Save timeout to cancel it if response arrives
+  if (serialTimeoutRef.current) clearTimeout(serialTimeoutRef.current);
+  serialTimeoutRef.current = timeout;
+};
+
+
 const handleButtonPress = (buttonConfig) => {
+  // Check Bluetooth connection first
+  if (!connectedDevice) {
+    setBtNotConnectedVisible(true);
+    return;
+  }
+  
+  // Then check if product is connected
+  if (deviceName === "Not Found" || deviceName === "UNKNOWN") {
+    setNoProductConnectedVisible(true);
+    return;
+  }
+
   setCurrentAction(buttonConfig);
   setInputValue('');
   setInputKeyIndex('');
   setInputKeyValue('');
-
-  // if (buttonConfig.action === 'RESET') {
-  //   Alert.alert(
-  //     'Confirm Reset',
-  //     'Are you sure you want to reset the configuration?',
-  //     [
-  //       {
-  //         text: 'Cancel',
-  //         style: 'cancel',
-  //       },
-  //       {
-  //         text: 'OK',
-  //         onPress: () => {
-  //           sendCommand(buttonConfig.onSend());
-  //         },
-  //       },
-  //     ],
-  //     { cancelable: false }
-  //   );
-  //   return;
-  // }
 
   if (buttonConfig.action === 'RESET' || buttonConfig.action === 'RF_RESET') {
     Alert.alert(
@@ -864,208 +908,240 @@ const handleButtonPress = (buttonConfig) => {
   }
 };
 
-  const handleSend = () => {
-    if (currentAction.validate && !currentAction.validate(inputValue)) {
-      Alert.alert('Error', currentAction.errorMessage);
-      return;
-    }
-    sendCommand(currentAction.onSend(inputValue));
-    setModalVisible(false);
-  };
+const handleSend = () => {
+  if (currentAction.validate && !currentAction.validate(inputValue)) {
+    Alert.alert('Error', currentAction.errorMessage);
+    return;
+  }
+  sendCommand(currentAction.onSend(inputValue));
+  setModalVisible(false);
+};
 
-// CONTAINERS FOR BUTTONS
-  return (
-<>
-  <ScrollView style={styles.mainContainer} contentContainerStyle={styles.contentContainer}>
-    {/* Top Row Container */}
-    <View style={styles.topRowContainer}>
-      <View style={styles.topButtonWrapper}>
-        <TouchableOpacity
-          style={styles.topButton}
-          onPress={() => handleButtonPress(cbutton[0])}
+// Connection Check Modal
+const renderAlertModal = (visible, message, onClose) => (
+  <Modal
+    transparent={true}
+    animationType="fade"
+    visible={visible}
+    onRequestClose={onClose}
+  >
+    <View style={styles.alertModalOverlay}>
+      <View style={styles.alertModalContainer}>
+        <Text style={styles.alertModalText}>{message}</Text>
+        <TouchableOpacity 
+          onPress={onClose} 
+          style={styles.alertModalButton}
         >
-          <Text style={styles.topButtonText}>Get Product Name</Text>
+          <Text style={styles.alertModalButtonText}>OK</Text>
         </TouchableOpacity>
       </View>
+    </View>
+  </Modal>
+);
 
-      <View style={styles.deviceInfoWrapper}>
-        {deviceName !== '' && (
-          <View style={styles.deviceInfoContainer}>
-            <Text style={styles.deviceInfoText} numberOfLines={1}>
-              {deviceName}
-            </Text>
+  
+// CONTAINERS FOR BUTTONS
+return (
+  <>
+    <ScrollView style={styles.mainContainer} contentContainerStyle={styles.contentContainer}>
+      {/* Top Row Container */}
+      <View style={styles.topRowContainer}>
+        <View style={styles.topButtonWrapper}>
+          <TouchableOpacity
+            style={styles.topButton}
+            onPress={() => handleButtonPress(cbutton[0])}
+          >
+            <Text style={styles.topButtonText}>Get Product Name</Text>
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.deviceInfoWrapper}>
+          {deviceName !== '' && (
+            <View style={styles.deviceInfoContainer}>
+              <Text style={styles.deviceInfoText} numberOfLines={1}>
+                {deviceName}
+              </Text>
+            </View>
+          )}
+        </View>
+      </View>
+
+      {/* Bluetooth Configuration Name Container */}
+      <View style={styles.btNameConfigContainer}>
+        <TouchableOpacity
+          onPress={toggleBtNameConfig}
+          style={styles.btNameConfigItem}
+          activeOpacity={0.8}
+        >
+          <Text style={styles.btNameConfigItemText}>Bluetooth Name Configuration</Text>
+          <Text style={styles.btNameConfigArrow}>{btCollapsed ? '▾' : '▴'}</Text>
+        </TouchableOpacity>
+
+        {!btCollapsed && (
+          <View>
+            {nbuttons.map((button, index) => (
+              <View key={button.title}>
+                <TouchableOpacity
+                  style={styles.btNameConfigItem}
+                  onPress={() => handleButtonPress(button)}
+                >
+                  <Text style={styles.btNameConfigItemText}>{button.title}</Text>
+                  <Text style={styles.btNameConfigArrow}>›</Text>
+                </TouchableOpacity>
+                {index < nbuttons.length - 1 && <View style={styles.btNameConfigSeparator} />}
+              </View>
+            ))}
           </View>
         )}
       </View>
-    </View>
 
-    {/* Bluetooth Configuration Name Container */}
-
-          <View style={styles.btNameConfigContainer}>
-      <TouchableOpacity
-        onPress={toggleBtNameConfig}
-        style={styles.btNameConfigItem}
-        activeOpacity={0.8}
-      >
-        <Text style={styles.btNameConfigItemText}>Bluetooth Name Configuration</Text>
-        <Text style={styles.btNameConfigArrow}>{btCollapsed ? '▾' : '▴'}</Text>
-      </TouchableOpacity>
-
-      {!btCollapsed && (
-        <View>
-          {nbuttons.map((button, index) => (
+      {/* GENERAL Configurations Container */}
+      <View style={styles.commonConfigContainer}>
+        <Text style={styles.sectionTitle}>Device Configurations</Text>
+        <ScrollView nestedScrollEnabled style={styles.innerScroll}>
+          {cbuttons.slice(1).map((button, index) => (
             <View key={button.title}>
               <TouchableOpacity
-                style={styles.btNameConfigItem}
+                style={styles.commonConfigItem}
                 onPress={() => handleButtonPress(button)}
               >
-                <Text style={styles.btNameConfigItemText}>{button.title}</Text>
-                <Text style={styles.btNameConfigArrow}>›</Text>
+                <Text style={styles.commonConfigItemText} numberOfLines={1}>
+                  {button.title}
+                </Text>
+                <Text style={styles.arrow}>›</Text>
               </TouchableOpacity>
-              {index < nbuttons.length - 1 && <View style={styles.btNameConfigSeparator} />}
+              {index < cbuttons.slice(1).length - 1 && <View style={styles.separator} />}
             </View>
           ))}
-        </View>
-      )}
-    </View>
+        </ScrollView>
+      </View>
 
-
-
-    {/* GENERAL Configurations Container */}
-    <View style={styles.commonConfigContainer}>
-      <Text style={styles.sectionTitle}>Device Configurations</Text>
-      <ScrollView nestedScrollEnabled style={styles.innerScroll}>
-        {cbuttons.slice(1).map((button, index) => (
-          <View key={button.title}>
-            <TouchableOpacity
-              style={styles.commonConfigItem}
-              onPress={() => handleButtonPress(button)}
-            >
-              <Text style={styles.commonConfigItemText} numberOfLines={1}>
-                {button.title}
-              </Text>
-              <Text style={styles.arrow}>›</Text>
-            </TouchableOpacity>
-            {index < cbuttons.slice(1).length - 1 && <View style={styles.separator} />}
+      {deviceName === 'IR/RF' && (
+        <>
+          {/* RF PRODUCTION Configurations Container */}
+          <View style={styles.rfConfigContainer}>
+            <Text style={styles.sectionTitle}>RF Configurations</Text>
+            <ScrollView nestedScrollEnabled style={styles.innerScroll}>
+              {rfbuttons.map((button, index) => (
+                <View key={button.title}>
+                  <TouchableOpacity
+                    style={styles.rfConfigItem}
+                    onPress={() => handleButtonPress(button)}
+                  >
+                    <Text style={styles.rfConfigItemText} numberOfLines={1}>
+                      {button.title}
+                    </Text>
+                    <Text style={styles.arrow}>›</Text>
+                  </TouchableOpacity>
+                  {index < rfbuttons.length - 1 && <View style={styles.separator} />}
+                </View>
+              ))}
+            </ScrollView>
           </View>
-        ))}
-      </ScrollView>
-    </View>
 
-    {deviceName === 'IR/RF' && (
-      <>
-        {/* RF PRODUCTION Configurations Container */}
-        <View style={styles.rfConfigContainer}>
-          <Text style={styles.sectionTitle}>RF Configurations</Text>
-          <ScrollView nestedScrollEnabled style={styles.innerScroll}>
-            {rfbuttons.map((button, index) => (
-              <View key={button.title}>
-                <TouchableOpacity
-                  style={styles.rfConfigItem}
-                  onPress={() => handleButtonPress(button)}
-                >
-                  <Text style={styles.rfConfigItemText} numberOfLines={1}>
-                    {button.title}
-                  </Text>
-                  <Text style={styles.arrow}>›</Text>
-                </TouchableOpacity>
-                {index < rfbuttons.length - 1 && <View style={styles.separator} />}
-              </View>
-            ))}
-          </ScrollView>
-        </View>
+          {/* RF PRODUCT IR Configurations Container */}
+          <View style={styles.rfIrConfigContainer}>
+            <Text style={styles.sectionTitle}>IR Configurations</Text>
+            <ScrollView nestedScrollEnabled style={styles.innerScroll}>
+              {rfirbuttons.map((button, index) => (
+                <View key={button.title}>
+                  <TouchableOpacity
+                    style={styles.rfIrConfigItem}
+                    onPress={() => handleButtonPress(button)}
+                  >
+                    <Text style={styles.rfIrConfigItemText} numberOfLines={1}>
+                      {button.title}
+                    </Text>
+                    <Text style={styles.arrow}>›</Text>
+                  </TouchableOpacity>
+                  {index < rfirbuttons.length - 1 && <View style={styles.separator} />}
+                </View>
+              ))}
+            </ScrollView>
+          </View>
 
-        {/* RF PRODUCT IR Configurations Container */}
-        <View style={styles.rfIrConfigContainer}>
-          <Text style={styles.sectionTitle}>IR Configurations</Text>
-          <ScrollView nestedScrollEnabled style={styles.innerScroll}>
-            {rfirbuttons.map((button, index) => (
-              <View key={button.title}>
-                <TouchableOpacity
-                  style={styles.rfIrConfigItem}
-                  onPress={() => handleButtonPress(button)}
-                >
-                  <Text style={styles.rfIrConfigItemText} numberOfLines={1}>
-                    {button.title}
-                  </Text>
-                  <Text style={styles.arrow}>›</Text>
-                </TouchableOpacity>
-                {index < rfirbuttons.length - 1 && <View style={styles.separator} />}
-              </View>
-            ))}
-          </ScrollView>
-        </View>
+          {/* RF PRODUCT Relay Configurations Container */}
+          <View style={styles.rfRelayConfigContainer}>
+            <Text style={styles.sectionTitle}>RF Relay Configurations</Text>
+            <ScrollView nestedScrollEnabled style={styles.innerScroll}>
+              {rfrlbuttons.map((button, index) => (
+                <View key={button.title}>
+                  <TouchableOpacity
+                    style={styles.rfRelayConfigItem}
+                    onPress={() => handleButtonPress(button)}
+                  >
+                    <Text style={styles.rfRelayConfigItemText} numberOfLines={1}>
+                      {button.title}
+                    </Text>
+                    <Text style={styles.arrow}>›</Text>
+                  </TouchableOpacity>
+                  {index < rfrlbuttons.length - 1 && <View style={styles.separator} />}
+                </View>
+              ))}
+            </ScrollView>
+          </View>
+        </>
+      )}
 
-        {/* RF PRODUCT Relay Configurations Container */}
-        <View style={styles.rfRelayConfigContainer}>
-          <Text style={styles.sectionTitle}>RF Relay Configurations</Text>
-          <ScrollView nestedScrollEnabled style={styles.innerScroll}>
-            {rfrlbuttons.map((button, index) => (
-              <View key={button.title}>
-                <TouchableOpacity
-                  style={styles.rfRelayConfigItem}
-                  onPress={() => handleButtonPress(button)}
-                >
-                  <Text style={styles.rfRelayConfigItemText} numberOfLines={1}>
-                    {button.title}
-                  </Text>
-                  <Text style={styles.arrow}>›</Text>
-                </TouchableOpacity>
-                {index < rfrlbuttons.length - 1 && <View style={styles.separator} />}
-              </View>
-            ))}
-          </ScrollView>
-        </View>
-      </>
+      {deviceName === 'LRM3' && (
+        <>
+          {/* LRM3 PRODUCT RELAY CONFIGURATION Container */}
+          <View style={styles.lrm3RelayConfigContainer}>
+            <Text style={styles.sectionTitle}>LRM3 Relay Configuration</Text>
+            <ScrollView nestedScrollEnabled style={styles.innerScroll}>
+              {lrmrlbuttons.map((button, index) => (
+                <View key={button.title}>
+                  <TouchableOpacity
+                    style={styles.lrm3RelayConfigItem}
+                    onPress={() => handleButtonPress(button)}
+                  >
+                    <Text style={styles.lrm3RelayConfigItemText} numberOfLines={1}>
+                      {button.title}
+                    </Text>
+                    <Text style={styles.arrow}>›</Text>
+                  </TouchableOpacity>
+                  {index < lrmrlbuttons.length - 1 && <View style={styles.separator} />}
+                </View>
+              ))}
+            </ScrollView>
+          </View>
+
+          {/* LRM3 RF CONFIGURATION Container */}
+          <View style={styles.lrm3ConfigContainer}>
+            <Text style={styles.sectionTitle}>LRM3 RF Configuration</Text>
+            <ScrollView nestedScrollEnabled style={styles.innerScroll}>
+              {lrmrfbuttons.map((button, index) => (
+                <View key={button.title}>
+                  <TouchableOpacity
+                    style={styles.lrm3ConfigItem}
+                    onPress={() => handleButtonPress(button)}
+                  >
+                    <Text style={styles.lrm3ConfigItemText} numberOfLines={1}>
+                      {button.title}
+                    </Text>
+                    <Text style={styles.arrow}>›</Text>
+                  </TouchableOpacity>
+                  {index < lrmrfbuttons.length - 1 && <View style={styles.separator} />}
+                </View>
+              ))}
+            </ScrollView>
+          </View>
+        </>
+      )}
+    </ScrollView>
+
+    {/* Bluetooth Connection Alert Modals */}
+    {renderAlertModal(
+      btNotConnectedVisible, 
+      'Not connected to Bluetooth', 
+      () => setBtNotConnectedVisible(false)
     )}
 
-    {deviceName === 'LRM3' && (
-      <>
-        {/* LRM3 PRODUCT RELAY CONFIGURATION Container */}
-        <View style={styles.lrm3RelayConfigContainer}>
-          <Text style={styles.sectionTitle}>LRM3 Relay Configuration</Text>
-          <ScrollView nestedScrollEnabled style={styles.innerScroll}>
-            {lrmrlbuttons.map((button, index) => (
-              <View key={button.title}>
-                <TouchableOpacity
-                  style={styles.lrm3RelayConfigItem}
-                  onPress={() => handleButtonPress(button)}
-                >
-                  <Text style={styles.lrm3RelayConfigItemText} numberOfLines={1}>
-                    {button.title}
-                  </Text>
-                  <Text style={styles.arrow}>›</Text>
-                </TouchableOpacity>
-                {index < lrmrlbuttons.length - 1 && <View style={styles.separator} />}
-              </View>
-            ))}
-          </ScrollView>
-        </View>
-
-        {/* LRM3 RF CONFIGURATION Container */}
-        <View style={styles.lrm3ConfigContainer}>
-          <Text style={styles.sectionTitle}>LRM3 RF Configuration</Text>
-          <ScrollView nestedScrollEnabled style={styles.innerScroll}>
-            {lrmrfbuttons.map((button, index) => (
-              <View key={button.title}>
-                <TouchableOpacity
-                  style={styles.lrm3ConfigItem}
-                  onPress={() => handleButtonPress(button)}
-                >
-                  <Text style={styles.lrm3ConfigItemText} numberOfLines={1}>
-                    {button.title}
-                  </Text>
-                  <Text style={styles.arrow}>›</Text>
-                </TouchableOpacity>
-                {index < lrmrfbuttons.length - 1 && <View style={styles.separator} />}
-              </View>
-            ))}
-          </ScrollView>
-        </View>
-      </>
+    {renderAlertModal(
+      noProductConnectedVisible, 
+      'No product connected', 
+      () => setNoProductConnectedVisible(false)
     )}
-  </ScrollView>
-
 
 {/* MAIN BUTTONS SET VALUE MODAL */}
 <Modal
@@ -1566,9 +1642,6 @@ const styles = StyleSheet.create({
     flex: 0.4,
     paddingRight: 10,
   },
-  deviceInfoWrapper: {
-    flex: 0.6,
-  },
   topButton: {
     backgroundColor: '#007AFF',
     paddingVertical: 10,
@@ -1583,25 +1656,30 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   deviceInfoContainer: {
-    backgroundColor: '#F28C28',
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-    borderRadius: 16,
+    
+    backgroundColor: '#E3F2FD', // Soft light blue (Google-style blue-100)
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 20,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.12,
-    shadowRadius: 5,
-    elevation: 5,
-    maxWidth: '95%',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 36,
+    maxWidth: '66%',
     alignSelf: 'flex-end',
-    marginTop: 4,
+    marginTop: 8,
+    minWidth: 200, // ensures full "Not Found" text is visible
   },
   deviceInfoText: {
     fontSize: 16,
-    fontWeight: 'bold',
-    color: '#000',
+    fontWeight: '600',
+    color: '#0D47A1', // Darker blue for good contrast
   },
-
+  deviceInfoWrapper: {
+    flex: 0.6,
+  },
+  
   //Modal Container 
 
   modalContainer: {
@@ -1883,6 +1961,42 @@ const styles = StyleSheet.create({
     height: 1,
     backgroundColor: '#E0E0E0',
     marginHorizontal: 16,
+  },
+
+  //Alert Modal
+  alertModalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+  alertModalContainer: {
+    backgroundColor: '#F8F8F8',
+    borderRadius: 13,
+    padding: 0,
+    width: 270,
+    overflow: 'hidden',
+  },
+  alertModalText: {
+    fontSize: 17,
+    textAlign: 'center',
+    padding: 20,
+    paddingBottom: 16,
+    color: '#000',
+    fontWeight: '400',
+  },
+  alertModalButton: {
+    borderTopWidth: 0.5,
+    borderTopColor: '#DBDBDB',
+    paddingVertical: 12,
+    width: '100%',
+    alignItems: 'center',
+    backgroundColor: 'transparent',
+  },
+  alertModalButtonText: {
+    color: '#007AFF',
+    fontSize: 17,
+    fontWeight: '600',
   },
   scrollContent: {
     paddingBottom: 40,

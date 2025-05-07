@@ -1,63 +1,120 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Modal, StyleSheet } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons'; 
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 const SignUpScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [mobile, setMobile] = useState('');
+  const [emailError, setEmailError] = useState('');
+  const [mobileError, setMobileError] = useState('');
   const [isModalVisible, setIsModalVisible] = useState(false);
 
   const handleSendOTP = () => {
+    setEmailError('');
+    setMobileError('');
+
+    if (!email && !mobile) {
+      setEmailError('Please enter an email address.');
+      setMobileError('Please enter a mobile number.');
+      return;
+    }
+
+    const validEmail = /^\S+@gmail\.com$/.test(email);
+    const validMobile = /^\d{10}$/.test(mobile);
+
+    if (!email) {
+      setEmailError('Please enter an email address.');
+      return;
+    } else if (!validEmail) {
+      setEmailError('Please enter a valid email address.');
+      return;
+    }
+
+    if (!mobile) {
+      setMobileError('Please enter a mobile number.');
+      return;
+    } else if (!validMobile) {
+      setMobileError('Please enter a valid 10-digit mobile number.');
+      return;
+    }
+
+    const [localPart, domain] = email.split('@');
+
+    if (email !== 'admin@gmail.com' || mobile !== '1234567890') {
+      if (email !== 'admin@gmail.com' && domain === 'gmail.com' && localPart !== 'admin') {
+        setEmailError('User Email ID Doesn’t Exist.');
+      }
+      if (mobile !== '1234567890') {
+        setMobileError('User Mobile Number Doesn’t Exist.');
+      }
+      return;
+    }
+
     setIsModalVisible(true);
+  };
+
+  const handleGmailSignup = () => {
+    console.log('Redirecting to Gmail');
+    // navigation.navigate('TabScreen');
   };
 
   const handleOptionSelect = (method) => {
     setIsModalVisible(false);
     console.log(`Send OTP via ${method}`);
-  
+    
     if (method === 'Email') {
       navigation.navigate('OtpVerification', {
         method: 'Email',
-        email: email,
+        email: email,  // Pass the email value
       });
     } else if (method === 'Mobile') {
       navigation.navigate('OtpVerification', {
         method: 'Mobile',
-        mobile: mobile,
+        mobile: mobile,  // Pass the mobile value
       });
     }
   };
-  
-
-  const handleGmailSignup = () => {
-    console.log('Redirecting to Gmail');
-    // navigation.navigate('Dashboard'); // Simulate successful login
-  };
 
   return (
-    <View style={styles.container}>
+    <View style={styles.screen}>
       <Text style={styles.header}>Sign up Here!</Text>
 
-      <View style={styles.section}>
+      <View style={styles.inputContainer}>
         <Text style={styles.label}>Email</Text>
         <TextInput
-          style={styles.input}
+          style={[styles.input, emailError ? styles.inputError : null]}
           placeholder="Enter your email"
           value={email}
-          onChangeText={setEmail}
+          onChangeText={(text) => {
+            setEmail(text);
+            if (emailError) setEmailError('');
+          }}
           keyboardType="email-address"
         />
-      </View>
+        {emailError ? (
+          <View style={styles.errorRow}>
+            <Icon name="alert-circle-outline" size={16} color="red" />
+            <Text style={styles.errorText}>{emailError}</Text>
+          </View>
+        ) : null}
 
-      <View style={styles.section}>
         <Text style={styles.label}>Mobile number</Text>
         <TextInput
-          style={styles.input}
+          style={[styles.input, mobileError ? styles.inputError : null]}
           placeholder="Enter your mobile number"
           value={mobile}
-          onChangeText={setMobile}
+          onChangeText={(text) => {
+            setMobile(text);
+            if (mobileError) setMobileError('');
+          }}
           keyboardType="numeric"
         />
+        {mobileError ? (
+          <View style={styles.errorRow}>
+            <Icon name="alert-circle-outline" size={16} color="red" />
+            <Text style={styles.errorText}>{mobileError}</Text>
+          </View>
+        ) : null}
       </View>
 
       <TouchableOpacity style={styles.otpButton} onPress={handleSendOTP}>
@@ -67,28 +124,28 @@ const SignUpScreen = ({ navigation }) => {
       <View style={styles.separator} />
 
       <TouchableOpacity style={styles.gmailButton} onPress={handleGmailSignup}>
-      <Icon name="gmail" style={styles.icon} />
-      <Text style={styles.gmailButtonText}>Sign up using Gmail  </Text>
+        <Icon name="gmail" style={styles.icon} />
+        <Text style={styles.gmailButtonText}>Sign up using Gmail</Text>
       </TouchableOpacity>
 
-      <Modal visible={isModalVisible} transparent animationType="fade">
+     {/* OTP Method Modal */}
+      <Modal visible={isModalVisible} transparent animationType="fade" onRequestClose={() => setIsModalVisible(false)}>
         <View style={styles.modalOverlay}>
           <View style={styles.modalBox}>
             <Text style={styles.modalTitle}>Choose OTP Method</Text>
-            <TouchableOpacity
-              style={styles.modalOption}
-              onPress={() => handleOptionSelect('Email')}
-            >
+
+            <TouchableOpacity style={styles.modalOption} onPress={() => handleOptionSelect('Email')}>
               <View style={styles.circle} />
               <Text style={styles.optionText}>Via Email</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity
-              style={styles.modalOption}
-              onPress={() => handleOptionSelect('Mobile')}
-            >
+            <TouchableOpacity style={styles.modalOption} onPress={() => handleOptionSelect('Mobile')}>
               <View style={styles.circle} />
               <Text style={styles.optionText}>Via Mobile</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.alertModalButton} onPress={() => setIsModalVisible(false)}>
+              <Text style={styles.alertModalButtonText}>Close</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -98,145 +155,152 @@ const SignUpScreen = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  container: {
+  screen: {
     flex: 1,
-    backgroundColor: '#F9FAFB', // New background
-    padding: 20,
-    justifyContent: 'flex-start',
+    backgroundColor: '#F9FAFB',
+    justifyContent: 'center',
+    paddingHorizontal: 16,
   },
   header: {
     fontSize: 26,
     fontWeight: 'bold',
-    color: '#1A73E8', // Primary Blue
+    color: '#1A73E8',
     alignSelf: 'center',
     marginBottom: 30,
   },
-  section: {
-    backgroundColor: '#FFFFFF',
-    padding: 20,
-    borderRadius: 15,
-    marginBottom: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 5 },
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-    elevation: 5,
-    borderColor: '#E0E0E0', // Soft border
-    borderWidth: 1,
-  },
   label: {
-    fontSize: 16,
-    color: '#5F6368', // Secondary text
+    fontSize: 14,
+    color: '#1C1C1C',
+    marginTop: 10,
     marginBottom: 5,
-    fontWeight: '500',
+  },
+  inputContainer: {
+    width: '92%',
+    maxWidth: 420,
+    backgroundColor: '#FFFFFF',
+    padding: 25,
+    borderRadius: 15,
+    alignSelf: 'center',
+    marginTop: 40,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
+    borderColor: '#E0E0E0',
+    borderWidth: 1,
   },
   input: {
-    height: 45,
+    backgroundColor: '#F2F2F2',
+    borderRadius: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    fontSize: 16,
     borderWidth: 1,
     borderColor: '#E0E0E0',
-    borderRadius: 10,
-    marginBottom: 10,
-    paddingLeft: 15,
-    fontSize: 16,
-    color: '#1C1C1C', // Primary text
-    backgroundColor: '#FFFFFF', // Card-style input
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.03,
-    shadowRadius: 2,
-    elevation: 1,
+  },
+  inputError: {
+    borderColor: 'red',
+  },
+  errorRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 4,
+  },
+  errorText: {
+    color: 'red',
+    fontSize: 13,
+    marginLeft: 4,
   },
   otpButton: {
-    backgroundColor: '#FFA000', // Accent Orange
-    padding: 12,
-    borderRadius: 8,
+    backgroundColor: '#1A73E8',
+    paddingVertical: 14,
+    marginTop: 30,
+    borderRadius: 10,
     alignItems: 'center',
-    shadowColor: '#FFA000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
-    elevation: 4,
+    marginHorizontal: 30,
   },
   otpButtonText: {
-    color: 'white',
+    color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
   },
   separator: {
     height: 1,
     backgroundColor: '#E0E0E0',
-    marginVertical: 25,
+    marginVertical: 30,
+    marginHorizontal: 40,
   },
   gmailButton: {
-    backgroundColor: '#1A73E8', // Primary Blue
-    paddingVertical: 12,
-    paddingHorizontal: 18,
-    borderRadius: 30,
-    alignItems: 'center',
     flexDirection: 'row',
+    backgroundColor: '#FFA000',
+    paddingVertical: 14,
+    borderRadius: 10,
+    alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 10,
-    shadowColor: '#1A73E8',
-    shadowOpacity: 0.15,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 4,
+    marginHorizontal: 30,
   },
   gmailButtonText: {
-    color: '#FFFFFF',
+    color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
-    marginLeft: 12,
+    marginLeft: 8,
   },
   icon: {
-    color: '#FFFFFF',
-    fontSize: 24,
-    marginRight: 10,
+    color: '#fff',
+    fontSize: 20,
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: '#00000088',
+    backgroundColor: 'rgba(0,0,0,0.75)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   modalBox: {
+    backgroundColor: '#fff',
+    padding: 25,
+    borderRadius: 10,
     width: '80%',
-    backgroundColor: '#FFFFFF',
-    padding: 20,
-    borderRadius: 12,
-    borderColor: '#E0E0E0',
-    borderWidth: 1,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.2,
-    shadowRadius: 10,
-    elevation: 6,
+    alignItems: 'center',
+    elevation: 5,
+     height: 220
   },
   modalTitle: {
     fontSize: 18,
     fontWeight: 'bold',
     color: '#1A73E8',
-    marginBottom: 15,
-    textAlign: 'center',
+    marginBottom: 20,
   },
   modalOption: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginVertical: 10,
+    paddingVertical: 10,
+    width: '100%',
   },
   circle: {
-    height: 16,
     width: 16,
+    height: 16,
     borderRadius: 8,
     borderWidth: 2,
-    borderColor: '#FFA000',
+    borderColor: '#1A73E8',
     marginRight: 10,
   },
   optionText: {
     fontSize: 16,
-    color: '#1C1C1C',
+    color: '#333',
+  },
+  alertModalButton: {
+    borderTopWidth: 0.5,
+    borderTopColor: '#DBDBDB',
+    width: '100%',
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  alertModalButtonText: {
+    color: '#007AFF',
+    fontSize: 17,
+    fontWeight: '600',
   },
 });
 
 export default SignUpScreen;
-
