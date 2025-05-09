@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState , useEffect} from 'react';
 import {
   View,
   Text,
@@ -11,38 +11,39 @@ import {
   ScrollView,
   Platform,
 } from 'react-native';
-import { Ionicons, MaterialIcons } from '@expo/vector-icons';
+import { Ionicons, MaterialIcons, FontAwesome } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const NewUserRegScreen = ({ navigation }) => {
   // State for form fields
   const [fullName, setFullName] = React.useState('');
   const [designation, setDesignation] = React.useState('');
-  const [device, setDevice] = React.useState('');
-  const [version, setVersion] = React.useState('');
   const [email, setEmail] = React.useState('');
   const [mobileNumber, setMobileNumber] = React.useState('');
-
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    
   // State for touched fields
   const [fullNameTouched, setFullNameTouched] = React.useState(false);
   const [designationTouched, setDesignationTouched] = React.useState(false);
-  const [deviceTouched, setDeviceTouched] = React.useState(false);
-  const [versionTouched, setVersionTouched] = React.useState(false);
   const [emailTouched, setEmailTouched] = React.useState(false);
   const [mobileNumberTouched, setMobileNumberTouched] = React.useState(false);
+  const [passwordTouched, setPasswordTouched] = useState(false);
+  const [confirmPasswordTouched, setConfirmPasswordTouched] = useState(false);
 
   // State for error messages
   const [fullNameError, setFullNameError] = React.useState('');
   const [designationError, setDesignationError] = React.useState('');
-  const [deviceError, setDeviceError] = React.useState('');
-  const [versionError, setVersionError] = React.useState('');
   const [emailError, setEmailError] = React.useState('');
   const [mobileNumberError, setMobileNumberError] = React.useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const [confirmPasswordError, setConfirmPasswordError] = useState('');
 
   // Alert modal state
   const [alertVisible, setAlertVisible] = React.useState(false);
   const [alertMessage, setAlertMessage] = React.useState('');
- 
   
   //Succesful Registration 
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -50,11 +51,79 @@ const NewUserRegScreen = ({ navigation }) => {
   //User Exists Modal 
   const [showUserExistsModal, setShowUserExistsModal] = useState(false);
 
+  const[isInputDisabled, setInputDisabled] = useState(false);
+
+
+    useEffect(() => {
+      const loadUserData = async () => {
+        try {
+          const values = await AsyncStorage.multiGet(['@email', '@mobileNumber']);
+          const email = values[0][1];
+          const mobileNumber = values[1][1];
+
+          setEmail(email);
+          setMobileNumber(mobileNumber);
+          setInputDisabled(true);
+        } catch (error) {
+          console.error('Failed to load data:', error);
+        }
+      };
+
+      loadUserData();
+    }, []);
+
   // Validation functions
-  const validateEmail = (email) => /^[a-zA-Z0-9._%+-]+@gmail\.com$/.test(email);
-  const validateMobileNumber = (number) => /^[0-9]{10}$/.test(number);
+  // const validateEmail = (email) => /^[a-zA-Z0-9._%+-]+@gmail\.com$/.test(email);
+  // const validateMobileNumber = (number) => /^[0-9]{10}$/.test(number);
   const validateStringField = (field) => /^[a-zA-Z\s]+$/.test(field);
-  const validateVersion = (version) => /^[a-zA-Z0-9.]+$/.test(version);
+  const validatePassword = (password) => {
+    if (password.length < 8) return false;
+
+    const hasLower = /[a-z]/.test(password);
+    const hasUpper = /[A-Z]/.test(password);
+    const hasNumber = /\d/.test(password);
+    const hasSpecial = /[@$!%*#?&]/.test(password);
+
+    return hasLower && hasUpper && hasNumber && hasSpecial;
+  };
+
+  const PasswordRequirements = () => {
+    return (
+      <View style={passwordStyles.container}>
+        <Text style={passwordStyles.title}>Your password must contain:</Text>
+
+        <View style={passwordStyles.requirement}>
+          <FontAwesome name="check" size={16} color="#4CAF50" />
+          <Text style={passwordStyles.text}>At least 8 characters</Text>
+        </View>
+
+        <View style={passwordStyles.requirement}>
+          <FontAwesome name="check" size={16} color="#4CAF50" />
+          <Text style={passwordStyles.text}>Required:</Text>
+        </View>
+
+        <View style={passwordStyles.subRequirement}>
+          <FontAwesome name="circle" size={8} color="#000" style={passwordStyles.bullet} />
+          <Text style={passwordStyles.text}>Lower case letters (a-z)</Text>
+        </View>
+
+        <View style={passwordStyles.subRequirement}>
+          <FontAwesome name="circle" size={8} color="#000" style={passwordStyles.bullet} />
+          <Text style={passwordStyles.text}>Upper case letters (A-Z)</Text>
+        </View>
+
+        <View style={passwordStyles.subRequirement}>
+          <FontAwesome name="circle" size={8} color="#000" style={passwordStyles.bullet} />
+          <Text style={passwordStyles.text}>Numbers (0-9)</Text>
+        </View>
+
+        <View style={passwordStyles.subRequirement}>
+          <FontAwesome name="circle" size={8} color="#000" style={passwordStyles.bullet} />
+          <Text style={passwordStyles.text}>Special characters (ex. !@#$%^&*)</Text>
+        </View>
+      </View>
+    );
+  };
 
   const showAlert = (message) => {
     setAlertMessage(message);
@@ -62,24 +131,24 @@ const NewUserRegScreen = ({ navigation }) => {
   };
 
   const handleSignUp = async () => {
+    //Touched Fields
     setFullNameTouched(true);
     setDesignationTouched(true);
-    setDeviceTouched(true);
-    setVersionTouched(true);
-    setEmailTouched(true);
-    setMobileNumberTouched(true);
- 
-    setFullNameTouched(true);
-    setDesignationTouched(true);
-    setDeviceTouched(true);
-    setVersionTouched(true);
-    setEmailTouched(true);
-    setMobileNumberTouched(true);
+    // setEmailTouched(true);
+    // setMobileNumberTouched(true);
+    setPasswordTouched(true);
+    setConfirmPasswordTouched(true);
 
+    // Reset errors
+    // setEmailError('');
+    setPasswordError('');
+    setConfirmPasswordError('');
+ 
     let hasEmptyFields = false;
     let hasValidationErrors = false;
-
-
+    let shouldShowPasswordAlert = false;
+    
+    //Name
     if (!fullName) {
       setFullNameError('Please enter Full Name');
       hasEmptyFields = true;
@@ -87,7 +156,8 @@ const NewUserRegScreen = ({ navigation }) => {
       setFullNameError('Full name must be at least 6 letters and contain only letters');
       hasError = true;
     }
-
+    
+    //Designation
     if (!designation) {
       setDesignationError('Please enter Designation');
       hasEmptyFields = true;
@@ -96,59 +166,44 @@ const NewUserRegScreen = ({ navigation }) => {
       hasValidationErrors = true;
     }
 
-    if (!device) {
-      setDeviceError('Please enter Device');
-      hasEmptyFields = true;
-    } else if (!validateStringField(device)) {
-      setDeviceError('Please enter valid Device');
-      hasValidationErrors = true;
-    }
-
-    if (!version) {
-      setVersionError('Please enter Version');
-      hasEmptyFields = true;
-    } else if (!validateVersion(version)) {
-      setVersionError('Please enter valid Version');
-      hasValidationErrors = true;
-    }
-
-    if (!email) {
-      setEmailError('Please enter Email');
-      hasEmptyFields = true;
-    } else if (!validateEmail(email)) {
-      setEmailError('Please enter valid Email');
-      hasValidationErrors = true;
-    }
-
-    if (!mobileNumber) {
-      setMobileNumberError('Please enter Mobile Number');
-      hasEmptyFields = true;
-    } else if (!validateMobileNumber(mobileNumber)) {
-      setMobileNumberError('Please enter valid Mobile Number');
-      hasValidationErrors = true;
-    }
+       // New Password validation
+       if (!newPassword) {
+        setPasswordError('Please enter your new password');
+        hasValidationError = true;
+      } else if (!validatePassword(newPassword)) {
+        shouldShowPasswordAlert = true;
+        hasValidationError = true;
+      }
+  
+      // Confirm Password validation
+      if (!confirmPassword) {
+        setConfirmPasswordError('Please confirm your new password');
+        hasValidationError = true;
+      } else if (newPassword !== confirmPassword) {
+        setConfirmPasswordError('Passwords do not match');
+        hasValidationError = true;
+      }
+  
+      // Show password alert if password is invalid
+      if (shouldShowPasswordAlert) {
+        showAlert('Please enter a valid password');
+        return;
+      }
 
     if (hasEmptyFields && !hasValidationErrors) {
       showAlert('All fields are required');
       return;
     }
-
+    
     if (hasValidationErrors) return;
-
-    if (email.toLowerCase() === 'admin@gmail.com') {
-      setShowUserExistsModal(true);
-      return;
-    }
+    
 
     try 
     { 
       await AsyncStorage.multiSet([
         ['@username', fullName],
-        ['@email', email],
-        ['@mobile', mobileNumber],
         ['@designation', designation],
-        ['@device', device],
-        ['@version', version],
+        ['@password', confirmPassword]
       ]);
       setShowSuccessModal(true);
     } 
@@ -225,70 +280,10 @@ const NewUserRegScreen = ({ navigation }) => {
                   }}
                 />
               </View>
-              {designationTouched && designationError ? (
+              {designationTouched && designationError ? ( 
                 <View style={styles.errorContainer}>
                   <Ionicons name="warning" size={16} color="red" />
                   <Text style={styles.errorText}>{designationError}</Text>
-                </View>
-              ) : null}
-            </View>
-  
-            {/* Device Field */}
-            <View style={styles.inputFieldContainer}>
-              <Text style={styles.label}>Device</Text>
-              <View style={styles.inputContainer}>
-                <MaterialIcons name="devices" size={20} color="grey" style={styles.inputIcon} />
-                <TextInput
-                  style={styles.inputBox}
-                  placeholder="Enter your device"
-                  value={device}
-                  onChangeText={(text) => {
-                    setDevice(text);
-                    setDeviceTouched(true);
-                    setDeviceError('');
-                  }}
-                  onBlur={() => {
-                    if (deviceTouched) {
-                      if (!device) setDeviceError('Please enter Device');
-                      else if (!validateStringField(device)) setDeviceError('Please enter valid Device');
-                    }
-                  }}
-                />
-              </View>
-              {deviceTouched && deviceError ? (
-                <View style={styles.errorContainer}>
-                  <Ionicons name="warning" size={16} color="red" />
-                  <Text style={styles.errorText}>{deviceError}</Text>
-                </View>
-              ) : null}
-            </View>
-  
-            {/* Version Field */}
-            <View style={styles.inputFieldContainer}>
-              <Text style={styles.label}>Version</Text>
-              <View style={styles.inputContainer}>
-                <MaterialIcons name="system-update" size={20} color="grey" style={styles.inputIcon} />
-                <TextInput
-                  style={styles.inputBox}
-                  placeholder="Enter version"
-                  value={version}
-                  onChangeText={(text) => {
-                    setVersion(text);
-                    setVersionTouched(true);
-                    setVersionError('');
-                  }}
-                  onBlur={() => {
-                    if (versionTouched) {
-                      if (!version) setVersionError('Please enter Version');
-                      else if (!validateVersion(version)) setVersionError('Please enter valid Version');
-                    }
-                  }}
-                />
-              </View>
-              {versionTouched && versionError ? (
-                <View style={styles.errorContainer}>
-                  <Ionicons name="warning" size={16} color="red" />
-                  <Text style={styles.errorText}>{versionError}</Text>
                 </View>
               ) : null}
             </View>
@@ -299,7 +294,7 @@ const NewUserRegScreen = ({ navigation }) => {
               <View style={styles.inputContainer}>
                 <MaterialIcons name="email" size={20} color="grey" style={styles.inputIcon} />
                 <TextInput
-                  style={styles.inputBox}
+                  style={[styles.inputBox, { opacity: isInputDisabled ? 0.5 : 1 }]} 
                   placeholder="yourname@gmail.com"
                   value={email}
                   onChangeText={(text) => {
@@ -313,6 +308,7 @@ const NewUserRegScreen = ({ navigation }) => {
                       else if (!validateEmail(email)) setEmailError('Please enter valid Email');
                     }
                   }}
+                  editable={!isInputDisabled}  
                 />
               </View>
               {emailTouched && emailError ? (
@@ -322,39 +318,111 @@ const NewUserRegScreen = ({ navigation }) => {
                 </View>
               ) : null}
             </View>
-  
-            {/* Mobile Number Field */}
-            <View style={styles.inputFieldContainer}>
-              <Text style={styles.label}>Mobile Number</Text>
-              <View style={styles.inputContainer}>
-                <MaterialIcons name="phone" size={20} color="grey" style={styles.inputIcon} />
-                <TextInput
-                  style={styles.inputBox}
-                  placeholder="Enter 10-digit mobile number"
-                  value={mobileNumber}
-                  onChangeText={(text) => {
-                    setMobileNumber(text);
-                    setMobileNumberTouched(true);
-                    setMobileNumberError('');
-                  }}
-                  onBlur={() => {
-                    if (mobileNumberTouched) {
-                      if (!mobileNumber) setMobileNumberError('Please enter Mobile Number');
-                      else if (!validateMobileNumber(mobileNumber)) setMobileNumberError('Please enter valid Mobile Number');
-                    }
-                  }}
-                  keyboardType="phone-pad"
-                  maxLength={10}
-                />
-              </View>
-              {mobileNumberTouched && mobileNumberError ? (
-                <View style={styles.errorContainer}>
-                  <Ionicons name="warning" size={16} color="red" />
-                  <Text style={styles.errorText}>{mobileNumberError}</Text>
-                </View>
-              ) : null}
+
+          {/* Mobile Number Field */}
+          <View style={styles.inputFieldContainer}>
+            <Text style={styles.label}>Mobile Number</Text>
+            <View style={styles.inputContainer}>
+              <MaterialIcons name="phone" size={20} color="grey" style={styles.inputIcon} />
+              <TextInput
+                style={[styles.inputBox, { opacity: isInputDisabled ? 0.5 : 1 }]}  // Apply opacity
+                placeholder="Enter 10-digit mobile number"
+                value={mobileNumber}
+                onChangeText={(text) => {
+                  setMobileNumber(text);
+                  setMobileNumberTouched(true);
+                  setMobileNumberError('');
+                }}
+                onBlur={() => {
+                  if (mobileNumberTouched) {
+                    if (!mobileNumber) setMobileNumberError('Please enter Mobile Number');
+                    else if (!validateMobileNumber(mobileNumber)) setMobileNumberError('Please enter valid Mobile Number');
+                  }
+                }}
+                keyboardType="phone-pad"
+                maxLength={10}
+                editable={!isInputDisabled}  
+              />
             </View>
-  
+            {mobileNumberTouched && mobileNumberError ? (
+              <View style={styles.errorContainer}>
+                <Ionicons name="warning" size={16} color="red" />
+                <Text style={styles.errorText}>{mobileNumberError}</Text>
+              </View>
+            ) : null}
+          </View>
+
+          {/* New Password */}
+          <View style={styles.inputFieldContainer}>
+            <Text style={styles.label}>New Password</Text>
+            <View style={styles.inputContainer}>
+              <MaterialIcons name="key" size={20} color="grey" style={styles.inputIcon} />
+              <TextInput
+                style={styles.inputBox}
+                value={newPassword}
+                onChangeText={(text) => {
+                  setNewPassword(text);
+                  setPasswordTouched(true);
+                  setPasswordError('');
+                }}
+                placeholder="Enter new password"
+                placeholderTextColor="grey"
+                secureTextEntry={!showPassword}
+                autoCapitalize="none"
+              />
+             
+              <TouchableOpacity
+                style={styles.eyeIcon}
+                onPress={() => setShowPassword(!showPassword)}
+              >
+                <Text>{showPassword ? '👁️' : '👁️‍🗨️'}</Text>
+              </TouchableOpacity>
+            </View>
+        
+            {passwordError !== '' && passwordTouched && (
+              <View style={styles.errorContainer}>
+                <Ionicons name="warning" size={16} color="red" />
+                <Text style={styles.errorText}>{passwordError}</Text>
+              </View>
+            )}
+          </View>
+
+          {/* Confirm Password */}
+          <View style={styles.inputFieldContainer}>
+            <Text style={styles.label}>Confirm New Password</Text>
+            <View style={styles.inputContainer}>
+              <MaterialIcons name="key" size={20} color="grey" style={styles.inputIcon} />
+              <TextInput
+                style={styles.inputBox}
+                value={confirmPassword}
+                onChangeText={(text) => {
+                  setConfirmPassword(text);
+                  setConfirmPasswordTouched(true);
+                  setConfirmPasswordError('');
+                }}
+                placeholder="Confirm new password"
+                placeholderTextColor="grey"
+                secureTextEntry={!showConfirmPassword}
+                autoCapitalize="none"
+              />
+         
+              <TouchableOpacity
+                style={styles.eyeIcon}
+                onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+              >
+                <Text>{showConfirmPassword ? '👁️' : '👁️‍🗨️'}</Text>
+              </TouchableOpacity>
+            </View>
+           
+            {confirmPasswordError !== '' && confirmPasswordTouched && (
+              <View style={styles.errorContainer}>
+                <Ionicons name="warning" size={16} color="red" />
+                <Text style={styles.errorText}>{confirmPasswordError}</Text>
+              </View>
+            )}
+          </View>
+
+
             <TouchableOpacity style={styles.loginButton} onPress={handleSignUp}>
             <Text style={styles.loginButtonText}>Register</Text>
           </TouchableOpacity>
@@ -365,7 +433,8 @@ const NewUserRegScreen = ({ navigation }) => {
                 <Text style={styles.LoginHereText}>Login Here</Text>
               </TouchableOpacity>
             </View>
-          </View>
+
+        </View> 
         </ScrollView>
       </KeyboardAvoidingView>
   
@@ -450,6 +519,31 @@ const NewUserRegScreen = ({ navigation }) => {
         </View>
       </View>
       </Modal>
+
+         <Modal
+              animationType="fade"
+              transparent
+              visible={alertVisible}
+              onRequestClose={() => setAlertVisible(false)}
+            >
+              <View style={styles.modalOverlay}>
+                <View style={styles.modalContainer}>
+                  <Text style={styles.modalText}>{alertMessage}</Text>
+                  {alertMessage === 'Please enter a valid password' && <PasswordRequirements />}
+                  <Pressable
+                    style={styles.modalButton}
+                    onPress={() => {
+                      setAlertVisible(false);
+                      if (alertMessage === 'Password reset successfully!') {
+                        navigation.navigate('Login');
+                      }
+                    }}
+                  >
+                    <Text style={styles.modalButtonText}>OK</Text>
+                  </Pressable>
+                </View>
+              </View>
+            </Modal>
     </>
   );
 };
@@ -487,6 +581,10 @@ const styles = StyleSheet.create({
     marginBottom: 5,
     marginLeft: 5,
   },
+  eyeIcon: {
+      marginLeft: -10,
+      padding: 10,
+    },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -604,6 +702,52 @@ const styles = StyleSheet.create({
     fontSize: 17,
     fontWeight: '600',
   },
+});
+
+ 
+  //Invalid Password Alert
+  const passwordStyles = StyleSheet.create({
+    container: {
+      width: '100%',
+      paddingHorizontal: 16,
+      alignSelf: 'center',
+    },
+    title: {
+      fontWeight: 'bold',
+      marginBottom: 5,
+      fontSize: 16,
+    },
+    requirement: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginVertical: 2,
+    },
+    subRequirement: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginLeft: 20,
+      marginVertical: 2,
+    },
+    text: {
+      marginLeft: 10,
+      fontSize: 14,
+    },
+    bullet: {
+      marginRight: 10,
+    },
+    errorContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginTop: 2,
+      marginBottom: 8,
+      marginLeft: 5,
+    },
+    errorText: {
+      color: 'red',
+      fontSize: 13,
+      marginLeft: 5,
+    },
+ 
 });
 
 export default NewUserRegScreen;

@@ -5,7 +5,6 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
-  Alert,
   ScrollView,
   KeyboardAvoidingView,
   Platform,
@@ -22,28 +21,29 @@ const SettingsScreen = ({ navigation }) => {
   const [designation, setDesignation] = useState('');
   const [bluetoothName, setBluetoothName] = useState('');
   const [currentPassword, setCurrentPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
-  const [showNewPassword, setShowNewPassword] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [modalMessage, setModalMessage] = useState(''); 
   const [showLogoutModal, setShowLogoutModal] = useState(false); 
+  const[isInputDisabled, setInputDisabled] = useState(false);
 
   useEffect(() => {
     const loadUserData = async () => {
       try {
-        const [[, storedName], [, storedEmail], [, storedMobile], [, storedBluetooth]] =
+        const [[storedName], [storedEmail], [storedMobile], [storedBluetooth] , [storedPassword]] =
           await AsyncStorage.multiGet([
             '@username',
             '@email',
             '@mobile',
             '@bluetoothName',
+            '@password'
           ]);
 
         if (storedName) setName(storedName);
         if (storedEmail) setEmail(storedEmail);
         if (storedMobile) setMobile(storedMobile);
         if (storedBluetooth) setBluetoothName(storedBluetooth);
+        if (storedPassword) setCurrentPassword(storedPassword);
       } catch (error) {
         console.error('Failed to load data:', error);
       }
@@ -107,12 +107,13 @@ const SettingsScreen = ({ navigation }) => {
             <View style={styles.inputContainer}>
               <Text style={styles.label}>Email ID</Text>
               <TextInput
-                style={styles.inputBox}
+                style={[styles.inputBox,{ opacity: 0.5 }]}
                 placeholder="Enter your email"
                 placeholderTextColor="#999"
                 value={email}
                 onChangeText={setEmail}
                 keyboardType="email-address"
+                editable={false} 
               />
             </View>
   
@@ -120,12 +121,13 @@ const SettingsScreen = ({ navigation }) => {
             <View style={styles.inputContainer}>
               <Text style={styles.label}>Mobile Number</Text>
               <TextInput
-                style={styles.inputBox}
+                style={[styles.inputBox,{ opacity: 0.5 }]}
                 placeholder="Enter your mobile number"
                 placeholderTextColor="#999"
                 value={mobile}
                 onChangeText={setMobile}
                 keyboardType="phone-pad"
+                editable={false} 
               />
             </View>
           
@@ -164,32 +166,31 @@ const SettingsScreen = ({ navigation }) => {
             <Text style={styles.sectionTitle}>Security</Text>
   
             {/* Current Password */}
-            <View style={styles.inputContainer}>
-              <Text style={styles.label}>Current Password</Text>
-              <View style={styles.passwordContainer}>
-                <TextInput
-                  style={styles.passwordInput}
-                  placeholder="Enter your current password"
-                  placeholderTextColor="#999"
-                  value={currentPassword}
-                  onChangeText={setCurrentPassword}
-                  secureTextEntry={!showCurrentPassword}
-                />
-                <TouchableOpacity
-                  style={styles.eyeIcon}
-                  onPress={() =>
-                    setShowCurrentPassword(!showCurrentPassword)
-                  }
-                >
-                  <Ionicons
-                    name={showCurrentPassword ? 'eye-off' : 'eye'}
-                    size={24}
-                    color="#666"
-                  />
-                </TouchableOpacity>
-              </View>
-            </View>
+          <View style={styles.inputContainer}>
+          <Text style={styles.label}>Current Password</Text>
+          <View style={styles.passwordContainer}>
+            <TextInput
+              style={[styles.passwordInput, { opacity: 0.5 }]} 
+              placeholder="Enter your current password"
+              placeholderTextColor="#999"
+              value={currentPassword}
+              secureTextEntry={!showCurrentPassword}
+              editable={false} 
+            />
+            <TouchableOpacity
+              style={styles.eyeIcon}
+              onPress={() => setShowCurrentPassword(!showCurrentPassword)}
+            >
+              <Ionicons
+                name={showCurrentPassword ? 'eye-off' : 'eye'}
+                size={24}
+                color="#666"
+              />
+            </TouchableOpacity>
           </View>
+        </View>
+      </View>
+
   
           {/* Save Button */}
           <TouchableOpacity
@@ -310,7 +311,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 14,
-    color: '#5F6368',
+    color: '#000',
     marginBottom: 8,
     fontWeight: '500',
   },

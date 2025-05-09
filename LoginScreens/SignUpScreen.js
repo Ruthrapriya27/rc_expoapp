@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Modal, StyleSheet } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const SignUpScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
@@ -9,7 +10,7 @@ const SignUpScreen = ({ navigation }) => {
   const [mobileError, setMobileError] = useState('');
   const [isModalVisible, setIsModalVisible] = useState(false);
 
-  const handleSendOTP = () => {
+  const handleSendOTP = async () => {
     setEmailError('');
     setMobileError('');
 
@@ -38,22 +39,32 @@ const SignUpScreen = ({ navigation }) => {
       return;
     }
 
-    const [localPart, domain] = email.split('@');
+    // const [localPart, domain] = email.split('@');
 
-    if (email !== 'admin@gmail.com' || mobile !== '1234567890') {
-      if (email !== 'admin@gmail.com' && domain === 'gmail.com' && localPart !== 'admin') {
-        setEmailError('User Email ID Doesn’t Exist.');
-      }
-      if (mobile !== '1234567890') {
-        setMobileError('User Mobile Number Doesn’t Exist.');
-      }
-      return;
+    // if (email !== 'admin@gmail.com' || mobile !== '1234567890') {
+    //   if (email !== 'admin@gmail.com' && domain === 'gmail.com' && localPart !== 'admin') {
+    //     setEmailError('User Email ID Doesn’t Exist.');
+    //   }
+    //   if (mobile !== '1234567890') {
+    //     setMobileError('User Mobile Number Doesn’t Exist.');
+    //   }
+    //   return;
+    // }
+
+    try {
+      await AsyncStorage.multiSet([
+        ['@email', email],
+        ['@mobileNumber', mobile],
+      ]);
+      setIsModalVisible(true);
+    } catch (error) {
+      console.error("Error saving data to AsyncStorage", error);
+      showAlert("Failed to save data. Please try again.");
     }
-
-    setIsModalVisible(true);
   };
-
-  const handleGmailSignup = () => {
+ 
+  const handleGmailSignup = () => 
+  {
     console.log('Redirecting to Gmail');
     // navigation.navigate('TabScreen');
   };
@@ -128,6 +139,15 @@ const SignUpScreen = ({ navigation }) => {
         <Text style={styles.gmailButtonText}>Sign up using Gmail</Text>
       </TouchableOpacity>
 
+
+        <View style={styles.signupContainer}>
+           <Text style={styles.signupLabel}>Already have an account? </Text>
+          <TouchableOpacity onPress={() => navigation.navigate('Login')}>
+            <Text style={styles.LoginHereText}>Login Here</Text>
+          </TouchableOpacity>
+        </View>
+
+
      {/* OTP Method Modal */}
       <Modal visible={isModalVisible} transparent animationType="fade" onRequestClose={() => setIsModalVisible(false)}>
         <View style={styles.modalOverlay}>
@@ -201,6 +221,24 @@ const styles = StyleSheet.create({
   },
   inputError: {
     borderColor: 'red',
+  },
+  signupContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 5,
+  },
+  signupLabel: {
+    marginTop: 20,
+    color: '#000',
+    fontSize: 14,
+  },
+   LoginHereText: {
+    color: '#1A73E8',
+    fontSize: 14,
+    fontWeight: '500',
+    textDecorationLine: 'underline',
+    marginTop: 20,
   },
   errorRow: {
     flexDirection: 'row',

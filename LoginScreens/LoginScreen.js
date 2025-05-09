@@ -119,12 +119,14 @@ const LoginScreen = ({ navigation }) => {
     // Return if we have any other validation errors
     if (hasValidationError) return;
 
+    navigation.navigate('TabScreen');
+
     // Credentials check
-    if (email === 'admin@gmail.com' && password === 'Admin@123') {
-        navigation.navigate('TabScreen');
-    } else {
-        showAlert('User Doesnt Exist.Please try again.');
-    }
+    // if (email === 'admin@gmail.com' && password === 'Admin@123') {
+    //     navigation.navigate('TabScreen');
+    // } else {
+    //     showAlert('User Doesnt Exist.Please try again.');
+    // }
 };
 
   return (

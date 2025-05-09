@@ -10,9 +10,11 @@ const ForgotPasswordScreen = ({ navigation }) => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [alertVisible, setAlertVisible] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
+  
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [confirmPasswordError, setConfirmPasswordError] = useState('');
+  
   const [emailTouched, setEmailTouched] = useState(false);
   const [passwordTouched, setPasswordTouched] = useState(false);
   const [confirmPasswordTouched, setConfirmPasswordTouched] = useState(false);
@@ -160,6 +162,7 @@ const ForgotPasswordScreen = ({ navigation }) => {
         </View>
       )}
 
+      //New Password
       <Text style={styles.label}>New Password</Text>
       <View style={styles.passwordContainer}>
         <TextInput
@@ -189,6 +192,7 @@ const ForgotPasswordScreen = ({ navigation }) => {
         </View>
       )}
 
+      //Confirm New Password
       <Text style={styles.label}>Confirm New Password</Text>
       <View style={styles.passwordContainer}>
         <TextInput
@@ -389,6 +393,7 @@ const styles = StyleSheet.create({
   },
 });
 
+//Invalid Password Alert
 const passwordStyles = StyleSheet.create({
   container: {
     width: '100%',
