@@ -10,11 +10,11 @@ const ForgotPasswordScreen = ({ navigation }) => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [alertVisible, setAlertVisible] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
-  
+
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [confirmPasswordError, setConfirmPasswordError] = useState('');
-  
+
   const [emailTouched, setEmailTouched] = useState(false);
   const [passwordTouched, setPasswordTouched] = useState(false);
   const [confirmPasswordTouched, setConfirmPasswordTouched] = useState(false);
@@ -83,7 +83,7 @@ const ForgotPasswordScreen = ({ navigation }) => {
     setEmailTouched(true);
     setPasswordTouched(true);
     setConfirmPasswordTouched(true);
-    
+
     // Reset errors
     setEmailError('');
     setPasswordError('');
@@ -119,7 +119,6 @@ const ForgotPasswordScreen = ({ navigation }) => {
       hasValidationError = true;
     }
 
-    // Show password alert if password is invalid
     if (shouldShowPasswordAlert) {
       showAlert('Please enter a valid password');
       return;
@@ -162,7 +161,7 @@ const ForgotPasswordScreen = ({ navigation }) => {
         </View>
       )}
 
-      //New Password
+      {/*New Password*/}
       <Text style={styles.label}>New Password</Text>
       <View style={styles.passwordContainer}>
         <TextInput
@@ -178,21 +177,15 @@ const ForgotPasswordScreen = ({ navigation }) => {
           secureTextEntry={!showPassword}
           autoCapitalize="none"
         />
-       <TouchableOpacity
+        <TouchableOpacity
           style={styles.eyeIcon}
           onPress={() => setShowPassword(!showPassword)}
         >
-          <Text>{showPassword ? '👁️' : '👁️‍🗨️'}</Text>
+          <Ionicons name={showPassword ? 'eye' : 'eye-off'} size={24} color="grey" />
         </TouchableOpacity>
       </View>
-      {passwordError !== '' && passwordTouched && (
-        <View style={styles.errorContainer}>
-          <Ionicons name="warning" size={16} color="red" />
-          <Text style={styles.errorText}>{passwordError}</Text>
-        </View>
-      )}
 
-      //Confirm New Password
+      {/*Confirm New Password*/}
       <Text style={styles.label}>Confirm New Password</Text>
       <View style={styles.passwordContainer}>
         <TextInput
@@ -208,11 +201,11 @@ const ForgotPasswordScreen = ({ navigation }) => {
           secureTextEntry={!showConfirmPassword}
           autoCapitalize="none"
         />
-       <TouchableOpacity
+        <TouchableOpacity
           style={styles.eyeIcon}
           onPress={() => setShowConfirmPassword(!showConfirmPassword)}
         >
-          <Text>{showConfirmPassword ? '👁️' : '👁️‍🗨️'}</Text>
+          <Ionicons name={showConfirmPassword ? 'eye' : 'eye-off'} size={24} color="grey" />
         </TouchableOpacity>
 
       </View>
@@ -256,32 +249,37 @@ const ForgotPasswordScreen = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  container: {
+  container:
+  {
     flex: 1,
     justifyContent: 'center',
     padding: 24,
     backgroundColor: '#F9FAFB',
   },
-  title: {
+  title:
+  {
     fontSize: 22,
     fontWeight: 'bold',
     textAlign: 'center',
     color: '#1A73E8',
     marginBottom: 16,
   },
-  instruction: {
+  instruction:
+  {
     textAlign: 'center',
     marginBottom: 24,
     color: '#5F6368',
     fontSize: 15,
   },
-  label: {
-    marginBottom: 8,
+  label:
+  {
+    marginBottom: 5,
     color: '#000',
     fontSize: 14,
     fontWeight: 'bold',
   },
-  inputContainer: {
+  inputContainer:
+  {
     borderWidth: 1,
     borderColor: '#E0E0E0',
     borderRadius: 10,
@@ -293,14 +291,16 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 2,
   },
-  inputBox: {
+  inputBox:
+  {
     height: 50,
     fontSize: 16,
     color: '#1C1C1C',
     paddingLeft: 15,
     paddingRight: 15,
   },
-  passwordContainer: {
+  passwordContainer:
+  {
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
@@ -314,7 +314,8 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 2,
   },
-  passwordInput: {
+  passwordInput:
+  {
     flex: 1,
     height: 50,
     fontSize: 16,
@@ -322,10 +323,12 @@ const styles = StyleSheet.create({
     paddingLeft: 15,
     paddingRight: 15,
   },
-  eyeIcon: {
+  eyeIcon:
+  {
     padding: 10,
   },
-  resetButton: {
+  resetButton:
+  {
     backgroundColor: '#FFA000',
     paddingVertical: 14,
     borderRadius: 10,
@@ -337,30 +340,37 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
     elevation: 4,
   },
-  buttonText: {
+  buttonText:
+  {
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: 'bold',
   },
-  errorContainer: {
+  errorContainer:
+  {
     flexDirection: 'row',
     alignItems: 'center',
     marginTop: 2,
     marginBottom: 8,
     marginLeft: 5,
   },
-  errorText: {
+  errorText:
+  {
     color: 'red',
     fontSize: 13,
     marginLeft: 5,
   },
-  modalOverlay: {
+
+  //SUCCESFULLY RESET ALERT MODAL 
+  modalOverlay:
+  {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'rgba(0, 0, 0, 0.75)',
   },
-  modalContainer: {
+  modalContainer:
+  {
     backgroundColor: '#FFFFFF',
     borderRadius: 13,
     width: '85%',
@@ -369,7 +379,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginHorizontal: 16,
   },
-  modalText: {
+  modalText:
+  {
     fontSize: 16,
     textAlign: 'center',
     paddingHorizontal: 24,
@@ -379,14 +390,16 @@ const styles = StyleSheet.create({
     fontWeight: '400',
     lineHeight: 24,
   },
-  modalButton: {
+  modalButton:
+  {
     borderTopWidth: 0.5,
     borderTopColor: '#DBDBDB',
     width: '100%',
     paddingVertical: 12,
     alignItems: 'center',
   },
-  modalButtonText: {
+  modalButtonText:
+  {
     color: '#007AFF',
     fontSize: 17,
     fontWeight: '600',

@@ -1,14 +1,15 @@
-import React, { useContext, useState ,useEffect } from 'react';
-import { View, Text, FlatList, StyleSheet, Alert, TouchableOpacity, Animated, Easing } from 'react-native';
+import React, { useContext, useState, useEffect } from 'react';
+import { View, Text, FlatList, StyleSheet, Alert, TouchableOpacity, Animated, Easing, Modal } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LogContext } from '../Context/LogContext';
 import { BluetoothContext } from '../Context/BluetoothContext';
 
 const DashboardScreen = () => {
-  const { logs, clearLogs, deviceIdcode, customerName, timestamp, deviceID }  = useContext(LogContext);
+  const { logs, clearLogs, deviceIdcode, customerName, timestamp, deviceID } = useContext(LogContext);
   const [areLogsExpanded, setAreLogsExpanded] = useState(false);
   const [animation] = useState(new Animated.Value(0));
   const { connectedDevice } = useContext(BluetoothContext);
+  const [showClearLogsModal, setShowClearLogsModal] = useState(false);
 
   useEffect(() => {
   }, [connectedDevice]);
@@ -23,15 +24,7 @@ const DashboardScreen = () => {
   };
 
   const handleClearPress = () => {
-    Alert.alert(
-      'Clear All Logs',
-      'Are you sure you want to clear all the logs?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Delete All', style: 'destructive', onPress: () => clearLogs() }
-      ],
-      { cancelable: true }
-    );
+    setShowClearLogsModal(true);
   };
 
   const renderLogItem = ({ item }) => (
@@ -44,14 +37,14 @@ const DashboardScreen = () => {
   const renderSettingItem = ({ item, index }) => (
     <View style={[
       styles.logItem,
-      index === settingsData.length - 1 && { borderBottomWidth: 0 } 
+      index === settingsData.length - 1 && { borderBottomWidth: 0 }
     ]}>
       <Ionicons name="ellipse" size={8} color="#007AFF" style={styles.bullet} />
       <Text style={styles.logText}>{item.key}: {item.value || 'N/A'}</Text>
     </View>
   );
   const settingsData = [
-    { key: 'Bluetooth Device ID', value: connectedDevice?.name || 'No device connected' }, 
+    { key: 'Bluetooth Device ID', value: connectedDevice?.name || 'No device connected' },
     { key: 'Device ID Code', value: deviceIdcode || 'N/A' },
     { key: 'Customer Name', value: customerName || 'N/A' },
     { key: 'Timestamp', value: timestamp || 'N/A' },
@@ -84,15 +77,15 @@ const DashboardScreen = () => {
 
       <View style={[styles.header, { marginTop: 24 }]}>
         <Text style={styles.title}>Activity Logs</Text>
-        <TouchableOpacity 
-          onPress={handleClearPress} 
+        <TouchableOpacity
+          onPress={handleClearPress}
           style={styles.clearButton}
           disabled={!logs || logs.length === 0}
         >
-          <Ionicons 
-            name="trash-bin-outline" 
-            size={24} 
-            color={(!logs || logs.length === 0) ? "#CCCCCC" : "#FF3B30"} 
+          <Ionicons
+            name="trash-bin-outline"
+            size={24}
+            color={(!logs || logs.length === 0) ? "#CCCCCC" : "#FF3B30"}
           />
         </TouchableOpacity>
       </View>
@@ -108,7 +101,7 @@ const DashboardScreen = () => {
 
       <Animated.View style={[
         styles.logsContainer,
-        { 
+        {
           height: containerHeight,
           opacity: animation,
           padding: animation.interpolate({
@@ -132,6 +125,39 @@ const DashboardScreen = () => {
           />
         )}
       </Animated.View>
+
+      {/* Activity Clear Confirmation Modal */}
+      <Modal
+        transparent
+        visible={showClearLogsModal}
+        animationType="fade"
+        onRequestClose={() => setShowClearLogsModal(false)}
+      >
+        <View style={styles.logdelmodalOverlay}>
+          <View style={styles.logdelmodalContainer}>
+            <Text style={styles.logdelmodalText}>
+              Are you sure you want to clear all the logs?
+            </Text>
+            <View style={{ flexDirection: 'row' }}>
+              <TouchableOpacity
+                style={styles.logdelmodalButton}
+                onPress={() => setShowClearLogsModal(false)}
+              >
+                <Text style={styles.logdelmodalButtonText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.logdelmodalButton}
+                onPress={() => {
+                  clearLogs();
+                  setShowClearLogsModal(false);
+                }}
+              >
+                <Text style={styles.logdelmodalButtonText}>Delete All</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -225,6 +251,48 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#1C1C1C',
     lineHeight: 22,
+  },
+
+  // Log Delete Modal
+  logdelmodalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.75)',
+  },
+  logdelmodalContainer: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 13,
+    width: 300,
+    height: 160,
+    overflow: 'hidden',
+  },
+  logdelmodalText: {
+    fontSize: 16,
+    textAlign: 'center',
+    paddingHorizontal: 24,
+    paddingTop: 25,
+    paddingBottom: 20,
+    color: '#000',
+    fontWeight: '400',
+    lineHeight: 24,
+  },
+  logdelmodalButtonContainer: {
+    flexDirection: 'row',
+    borderTopWidth: 0.5,
+    borderTopColor: '#DBDBDB',
+  },
+  logdelmodalButton: {
+    borderTopWidth: 0.5,
+    borderTopColor: '#DBDBDB',
+    flex: 1,
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  logdelmodalButtonText: {
+    color: '#007AFF',
+    fontSize: 17,
+    fontWeight: '600',
   },
 });
 

@@ -62,9 +62,8 @@ const SignUpScreen = ({ navigation }) => {
       showAlert("Failed to save data. Please try again.");
     }
   };
- 
-  const handleGmailSignup = () => 
-  {
+
+  const handleGmailSignup = () => {
     console.log('Redirecting to Gmail');
     // navigation.navigate('TabScreen');
   };
@@ -72,7 +71,7 @@ const SignUpScreen = ({ navigation }) => {
   const handleOptionSelect = (method) => {
     setIsModalVisible(false);
     console.log(`Send OTP via ${method}`);
-    
+
     if (method === 'Email') {
       navigation.navigate('OtpVerification', {
         method: 'Email',
@@ -140,15 +139,15 @@ const SignUpScreen = ({ navigation }) => {
       </TouchableOpacity>
 
 
-        <View style={styles.signupContainer}>
-           <Text style={styles.signupLabel}>Already have an account? </Text>
-          <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-            <Text style={styles.LoginHereText}>Login Here</Text>
-          </TouchableOpacity>
-        </View>
+      <View style={styles.signupContainer}>
+        <Text style={styles.signupLabel}>Already have an account? </Text>
+        <TouchableOpacity onPress={() => navigation.navigate('Login')}>
+          <Text style={styles.LoginHereText}>Login Here</Text>
+        </TouchableOpacity>
+      </View>
 
 
-     {/* OTP Method Modal */}
+      {/* OTP Method Modal */}
       <Modal visible={isModalVisible} transparent animationType="fade" onRequestClose={() => setIsModalVisible(false)}>
         <View style={styles.modalOverlay}>
           <View style={styles.modalBox}>
@@ -233,7 +232,7 @@ const styles = StyleSheet.create({
     color: '#000',
     fontSize: 14,
   },
-   LoginHereText: {
+  LoginHereText: {
     color: '#1A73E8',
     fontSize: 14,
     fontWeight: '500',
@@ -301,7 +300,7 @@ const styles = StyleSheet.create({
     width: '80%',
     alignItems: 'center',
     elevation: 5,
-     height: 220
+    height: 220
   },
   modalTitle: {
     fontSize: 18,

@@ -1,4 +1,4 @@
-import React, { useState , useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,7 +7,7 @@ import {
   StyleSheet,
   Modal,
   Pressable,
-  KeyboardAvoidingView, 
+  KeyboardAvoidingView,
   ScrollView,
   Platform,
 } from 'react-native';
@@ -24,7 +24,7 @@ const NewUserRegScreen = ({ navigation }) => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-    
+
   // State for touched fields
   const [fullNameTouched, setFullNameTouched] = React.useState(false);
   const [designationTouched, setDesignationTouched] = React.useState(false);
@@ -44,33 +44,33 @@ const NewUserRegScreen = ({ navigation }) => {
   // Alert modal state
   const [alertVisible, setAlertVisible] = React.useState(false);
   const [alertMessage, setAlertMessage] = React.useState('');
-  
+
   //Succesful Registration 
   const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   //User Exists Modal 
   const [showUserExistsModal, setShowUserExistsModal] = useState(false);
 
-  const[isInputDisabled, setInputDisabled] = useState(false);
+  const [isInputDisabled, setInputDisabled] = useState(false);
 
 
-    useEffect(() => {
-      const loadUserData = async () => {
-        try {
-          const values = await AsyncStorage.multiGet(['@email', '@mobileNumber']);
-          const email = values[0][1];
-          const mobileNumber = values[1][1];
+  useEffect(() => {
+    const loadUserData = async () => {
+      try {
+        const values = await AsyncStorage.multiGet(['@email', '@mobileNumber']);
+        const email = values[0][1];
+        const mobileNumber = values[1][1];
 
-          setEmail(email);
-          setMobileNumber(mobileNumber);
-          setInputDisabled(true);
-        } catch (error) {
-          console.error('Failed to load data:', error);
-        }
-      };
+        setEmail(email);
+        setMobileNumber(mobileNumber);
+        setInputDisabled(true);
+      } catch (error) {
+        console.error('Failed to load data:', error);
+      }
+    };
 
-      loadUserData();
-    }, []);
+    loadUserData();
+  }, []);
 
   // Validation functions
   // const validateEmail = (email) => /^[a-zA-Z0-9._%+-]+@gmail\.com$/.test(email);
@@ -143,11 +143,11 @@ const NewUserRegScreen = ({ navigation }) => {
     // setEmailError('');
     setPasswordError('');
     setConfirmPasswordError('');
- 
+
     let hasEmptyFields = false;
     let hasValidationErrors = false;
     let shouldShowPasswordAlert = false;
-    
+
     //Name
     if (!fullName) {
       setFullNameError('Please enter Full Name');
@@ -156,7 +156,7 @@ const NewUserRegScreen = ({ navigation }) => {
       setFullNameError('Full name must be at least 6 letters and contain only letters');
       hasError = true;
     }
-    
+
     //Designation
     if (!designation) {
       setDesignationError('Please enter Designation');
@@ -166,49 +166,47 @@ const NewUserRegScreen = ({ navigation }) => {
       hasValidationErrors = true;
     }
 
-       // New Password validation
-       if (!newPassword) {
-        setPasswordError('Please enter your new password');
-        hasValidationError = true;
-      } else if (!validatePassword(newPassword)) {
-        shouldShowPasswordAlert = true;
-        hasValidationError = true;
-      }
-  
-      // Confirm Password validation
-      if (!confirmPassword) {
-        setConfirmPasswordError('Please confirm your new password');
-        hasValidationError = true;
-      } else if (newPassword !== confirmPassword) {
-        setConfirmPasswordError('Passwords do not match');
-        hasValidationError = true;
-      }
-  
-      // Show password alert if password is invalid
-      if (shouldShowPasswordAlert) {
-        showAlert('Please enter a valid password');
-        return;
-      }
+    // New Password validation
+    if (!newPassword) {
+      setPasswordError('Please enter your new password');
+      hasValidationError = true;
+    } else if (!validatePassword(newPassword)) {
+      shouldShowPasswordAlert = true;
+      hasValidationError = true;
+    }
+
+    // Confirm Password validation
+    if (!confirmPassword) {
+      setConfirmPasswordError('Please confirm your new password');
+      hasValidationError = true;
+    } else if (newPassword !== confirmPassword) {
+      setConfirmPasswordError('Passwords do not match');
+      hasValidationError = true;
+    }
+
+    // Show password alert if password is invalid
+    if (shouldShowPasswordAlert) {
+      showAlert('Please enter a valid password');
+      return;
+    }
 
     if (hasEmptyFields && !hasValidationErrors) {
       showAlert('All fields are required');
       return;
     }
-    
-    if (hasValidationErrors) return;
-    
 
-    try 
-    { 
+    if (hasValidationErrors) return;
+
+
+    try {
       await AsyncStorage.multiSet([
         ['@username', fullName],
         ['@designation', designation],
         ['@password', confirmPassword]
       ]);
       setShowSuccessModal(true);
-    } 
-    catch (error) 
-    {
+    }
+    catch (error) {
       console.error("Error saving data to AsyncStorage", error);
       showAlert("Failed to save data. Please try again.");
     }
@@ -221,13 +219,13 @@ const NewUserRegScreen = ({ navigation }) => {
         style={styles.keyboardAvoidContainer}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 60 : 0}
       >
-        <ScrollView 
+        <ScrollView
           contentContainerStyle={styles.scrollContainer}
           keyboardShouldPersistTaps="handled"
         >
           <View style={styles.innerContainer}>
             <Text style={styles.startLine}>Create New Account</Text>
-  
+
             {/* Full Name Field */}
             <View style={styles.inputFieldContainer}>
               <Text style={styles.label}>Full Name</Text>
@@ -257,7 +255,7 @@ const NewUserRegScreen = ({ navigation }) => {
                 </View>
               ) : null}
             </View>
-  
+
             {/* Designation Field */}
             <View style={styles.inputFieldContainer}>
               <Text style={styles.label}>Designation</Text>
@@ -280,21 +278,21 @@ const NewUserRegScreen = ({ navigation }) => {
                   }}
                 />
               </View>
-              {designationTouched && designationError ? ( 
+              {designationTouched && designationError ? (
                 <View style={styles.errorContainer}>
                   <Ionicons name="warning" size={16} color="red" />
                   <Text style={styles.errorText}>{designationError}</Text>
                 </View>
               ) : null}
             </View>
-  
+
             {/* Email Field */}
             <View style={styles.inputFieldContainer}>
               <Text style={styles.label}>Email</Text>
               <View style={styles.inputContainer}>
                 <MaterialIcons name="email" size={20} color="grey" style={styles.inputIcon} />
                 <TextInput
-                  style={[styles.inputBox, { opacity: isInputDisabled ? 0.5 : 1 }]} 
+                  style={[styles.inputBox, { opacity: isInputDisabled ? 0.5 : 1 }]}
                   placeholder="yourname@gmail.com"
                   value={email}
                   onChangeText={(text) => {
@@ -308,7 +306,7 @@ const NewUserRegScreen = ({ navigation }) => {
                       else if (!validateEmail(email)) setEmailError('Please enter valid Email');
                     }
                   }}
-                  editable={!isInputDisabled}  
+                  editable={!isInputDisabled}
                 />
               </View>
               {emailTouched && emailError ? (
@@ -319,114 +317,114 @@ const NewUserRegScreen = ({ navigation }) => {
               ) : null}
             </View>
 
-          {/* Mobile Number Field */}
-          <View style={styles.inputFieldContainer}>
-            <Text style={styles.label}>Mobile Number</Text>
-            <View style={styles.inputContainer}>
-              <MaterialIcons name="phone" size={20} color="grey" style={styles.inputIcon} />
-              <TextInput
-                style={[styles.inputBox, { opacity: isInputDisabled ? 0.5 : 1 }]}  // Apply opacity
-                placeholder="Enter 10-digit mobile number"
-                value={mobileNumber}
-                onChangeText={(text) => {
-                  setMobileNumber(text);
-                  setMobileNumberTouched(true);
-                  setMobileNumberError('');
-                }}
-                onBlur={() => {
-                  if (mobileNumberTouched) {
-                    if (!mobileNumber) setMobileNumberError('Please enter Mobile Number');
-                    else if (!validateMobileNumber(mobileNumber)) setMobileNumberError('Please enter valid Mobile Number');
-                  }
-                }}
-                keyboardType="phone-pad"
-                maxLength={10}
-                editable={!isInputDisabled}  
-              />
-            </View>
-            {mobileNumberTouched && mobileNumberError ? (
-              <View style={styles.errorContainer}>
-                <Ionicons name="warning" size={16} color="red" />
-                <Text style={styles.errorText}>{mobileNumberError}</Text>
+            {/* Mobile Number Field */}
+            <View style={styles.inputFieldContainer}>
+              <Text style={styles.label}>Mobile Number</Text>
+              <View style={styles.inputContainer}>
+                <MaterialIcons name="phone" size={20} color="grey" style={styles.inputIcon} />
+                <TextInput
+                  style={[styles.inputBox, { opacity: isInputDisabled ? 0.5 : 1 }]}  // Apply opacity
+                  placeholder="Enter 10-digit mobile number"
+                  value={mobileNumber}
+                  onChangeText={(text) => {
+                    setMobileNumber(text);
+                    setMobileNumberTouched(true);
+                    setMobileNumberError('');
+                  }}
+                  onBlur={() => {
+                    if (mobileNumberTouched) {
+                      if (!mobileNumber) setMobileNumberError('Please enter Mobile Number');
+                      else if (!validateMobileNumber(mobileNumber)) setMobileNumberError('Please enter valid Mobile Number');
+                    }
+                  }}
+                  keyboardType="phone-pad"
+                  maxLength={10}
+                  editable={!isInputDisabled}
+                />
               </View>
-            ) : null}
-          </View>
+              {mobileNumberTouched && mobileNumberError ? (
+                <View style={styles.errorContainer}>
+                  <Ionicons name="warning" size={16} color="red" />
+                  <Text style={styles.errorText}>{mobileNumberError}</Text>
+                </View>
+              ) : null}
+            </View>
 
-          {/* New Password */}
-          <View style={styles.inputFieldContainer}>
-            <Text style={styles.label}>New Password</Text>
-            <View style={styles.inputContainer}>
-              <MaterialIcons name="key" size={20} color="grey" style={styles.inputIcon} />
-              <TextInput
-                style={styles.inputBox}
-                value={newPassword}
-                onChangeText={(text) => {
-                  setNewPassword(text);
-                  setPasswordTouched(true);
-                  setPasswordError('');
-                }}
-                placeholder="Enter new password"
-                placeholderTextColor="grey"
-                secureTextEntry={!showPassword}
-                autoCapitalize="none"
-              />
-             
-              <TouchableOpacity
-                style={styles.eyeIcon}
-                onPress={() => setShowPassword(!showPassword)}
-              >
-                <Text>{showPassword ? '👁️' : '👁️‍🗨️'}</Text>
-              </TouchableOpacity>
-            </View>
-        
-            {passwordError !== '' && passwordTouched && (
-              <View style={styles.errorContainer}>
-                <Ionicons name="warning" size={16} color="red" />
-                <Text style={styles.errorText}>{passwordError}</Text>
-              </View>
-            )}
-          </View>
+            {/* New Password */}
+            <View style={styles.inputFieldContainer}>
+              <Text style={styles.label}>New Password</Text>
+              <View style={styles.inputContainer}>
+                <MaterialIcons name="key" size={20} color="grey" style={styles.inputIcon} />
+                <TextInput
+                  style={styles.inputBox}
+                  value={newPassword}
+                  onChangeText={(text) => {
+                    setNewPassword(text);
+                    setPasswordTouched(true);
+                    setPasswordError('');
+                  }}
+                  placeholder="Enter new password"
+                  placeholderTextColor="grey"
+                  secureTextEntry={!showPassword}
+                  autoCapitalize="none"
+                />
 
-          {/* Confirm Password */}
-          <View style={styles.inputFieldContainer}>
-            <Text style={styles.label}>Confirm New Password</Text>
-            <View style={styles.inputContainer}>
-              <MaterialIcons name="key" size={20} color="grey" style={styles.inputIcon} />
-              <TextInput
-                style={styles.inputBox}
-                value={confirmPassword}
-                onChangeText={(text) => {
-                  setConfirmPassword(text);
-                  setConfirmPasswordTouched(true);
-                  setConfirmPasswordError('');
-                }}
-                placeholder="Confirm new password"
-                placeholderTextColor="grey"
-                secureTextEntry={!showConfirmPassword}
-                autoCapitalize="none"
-              />
-         
-              <TouchableOpacity
-                style={styles.eyeIcon}
-                onPress={() => setShowConfirmPassword(!showConfirmPassword)}
-              >
-                <Text>{showConfirmPassword ? '👁️' : '👁️‍🗨️'}</Text>
-              </TouchableOpacity>
-            </View>
-           
-            {confirmPasswordError !== '' && confirmPasswordTouched && (
-              <View style={styles.errorContainer}>
-                <Ionicons name="warning" size={16} color="red" />
-                <Text style={styles.errorText}>{confirmPasswordError}</Text>
+                <TouchableOpacity
+                  style={styles.eyeIcon}
+                  onPress={() => setShowPassword(!showPassword)}
+                >
+                  <Ionicons name={showPassword ? 'eye' : 'eye-off'} size={24} color="grey" />
+                </TouchableOpacity>
               </View>
-            )}
-          </View>
+
+              {passwordError !== '' && passwordTouched && (
+                <View style={styles.errorContainer}>
+                  <Ionicons name="warning" size={16} color="red" />
+                  <Text style={styles.errorText}>{passwordError}</Text>
+                </View>
+              )}
+            </View>
+
+            {/* Confirm Password */}
+            <View style={styles.inputFieldContainer}>
+              <Text style={styles.label}>Confirm New Password</Text>
+              <View style={styles.inputContainer}>
+                <MaterialIcons name="key" size={20} color="grey" style={styles.inputIcon} />
+                <TextInput
+                  style={styles.inputBox}
+                  value={confirmPassword}
+                  onChangeText={(text) => {
+                    setConfirmPassword(text);
+                    setConfirmPasswordTouched(true);
+                    setConfirmPasswordError('');
+                  }}
+                  placeholder="Confirm new password"
+                  placeholderTextColor="grey"
+                  secureTextEntry={!showConfirmPassword}
+                  autoCapitalize="none"
+                />
+
+                <TouchableOpacity
+                  style={styles.eyeIcon}
+                  onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+                >
+                  <Ionicons name={showConfirmPassword ? 'eye' : 'eye-off'} size={24} color="grey" />
+                </TouchableOpacity>
+              </View>
+
+              {confirmPasswordError !== '' && confirmPasswordTouched && (
+                <View style={styles.errorContainer}>
+                  <Ionicons name="warning" size={16} color="red" />
+                  <Text style={styles.errorText}>{confirmPasswordError}</Text>
+                </View>
+              )}
+            </View>
 
 
             <TouchableOpacity style={styles.loginButton} onPress={handleSignUp}>
-            <Text style={styles.loginButtonText}>Register</Text>
-          </TouchableOpacity>
-  
+              <Text style={styles.loginButtonText}>Register</Text>
+            </TouchableOpacity>
+
             <View style={styles.signupContainer}>
               <Text style={styles.signupLabel}>Already have an account? </Text>
               <TouchableOpacity onPress={() => navigation.navigate('Login')}>
@@ -434,10 +432,10 @@ const NewUserRegScreen = ({ navigation }) => {
               </TouchableOpacity>
             </View>
 
-        </View> 
+          </View>
         </ScrollView>
       </KeyboardAvoidingView>
-  
+
       {/* Alert Modal */}
       <Modal
         animationType="fade"
@@ -457,7 +455,7 @@ const NewUserRegScreen = ({ navigation }) => {
           </View>
         </View>
       </Modal>
-  
+
       {/* Success Modal */}
       <Modal
         transparent
@@ -469,12 +467,12 @@ const NewUserRegScreen = ({ navigation }) => {
           <View style={styles.modalContainer}>
             <MaterialIcons name="check-circle" size={64} color="green" style={{ marginTop: 24 }} />
             <Text style={styles.modalText}>Successfully registered</Text>
-  
+
             <TouchableOpacity
               style={styles.modalButton}
               onPress={() => {
                 setShowSuccessModal(false);
-                navigation.navigate('Login'); 
+                navigation.navigate('Login');
               }}
             >
               <Text style={styles.modalButtonText}>Go to Login</Text>
@@ -483,7 +481,7 @@ const NewUserRegScreen = ({ navigation }) => {
         </View>
       </Modal>
 
-     {/*User Exists Modal*/}
+      {/*User Exists Modal*/}
       <Modal
         transparent
         visible={showUserExistsModal}
@@ -501,49 +499,49 @@ const NewUserRegScreen = ({ navigation }) => {
               <TouchableOpacity
                 style={[styles.modalButton, { width: '48%' }]}
                 onPress={() => setShowUserExistsModal(false)}
-        >
-          <Text style={styles.modalButtonText}>Cancel</Text>
-        </TouchableOpacity>
+              >
+                <Text style={styles.modalButtonText}>Cancel</Text>
+              </TouchableOpacity>
 
-        {/* Go to Login Button */}
-        <TouchableOpacity
-          style={[styles.modalButton, { width: '48%' }]} 
-          onPress={() => {
-            setShowUserExistsModal(false);
-            navigation.navigate('Login');
-          }}
-        >
-          <Text style={styles.modalButtonText}>Go to Login</Text>
-            </TouchableOpacity>
+              {/* Go to Login Button */}
+              <TouchableOpacity
+                style={[styles.modalButton, { width: '48%' }]}
+                onPress={() => {
+                  setShowUserExistsModal(false);
+                  navigation.navigate('Login');
+                }}
+              >
+                <Text style={styles.modalButtonText}>Go to Login</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
-      </View>
       </Modal>
 
-         <Modal
-              animationType="fade"
-              transparent
-              visible={alertVisible}
-              onRequestClose={() => setAlertVisible(false)}
+      <Modal
+        animationType="fade"
+        transparent
+        visible={alertVisible}
+        onRequestClose={() => setAlertVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContainer}>
+            <Text style={styles.modalText}>{alertMessage}</Text>
+            {alertMessage === 'Please enter a valid password' && <PasswordRequirements />}
+            <Pressable
+              style={styles.modalButton}
+              onPress={() => {
+                setAlertVisible(false);
+                if (alertMessage === 'Password reset successfully!') {
+                  navigation.navigate('Login');
+                }
+              }}
             >
-              <View style={styles.modalOverlay}>
-                <View style={styles.modalContainer}>
-                  <Text style={styles.modalText}>{alertMessage}</Text>
-                  {alertMessage === 'Please enter a valid password' && <PasswordRequirements />}
-                  <Pressable
-                    style={styles.modalButton}
-                    onPress={() => {
-                      setAlertVisible(false);
-                      if (alertMessage === 'Password reset successfully!') {
-                        navigation.navigate('Login');
-                      }
-                    }}
-                  >
-                    <Text style={styles.modalButtonText}>OK</Text>
-                  </Pressable>
-                </View>
-              </View>
-            </Modal>
+              <Text style={styles.modalButtonText}>OK</Text>
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
     </>
   );
 };
@@ -582,9 +580,9 @@ const styles = StyleSheet.create({
     marginLeft: 5,
   },
   eyeIcon: {
-      marginLeft: -10,
-      padding: 10,
-    },
+    marginLeft: -10,
+    padding: 10,
+  },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -687,7 +685,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     textAlign: 'center',
     paddingHorizontal: 24,
-    color: '#333',  
+    color: '#333',
     marginBottom: 10,
   },
   modalButton: {
@@ -704,50 +702,50 @@ const styles = StyleSheet.create({
   },
 });
 
- 
-  //Invalid Password Alert
-  const passwordStyles = StyleSheet.create({
-    container: {
-      width: '100%',
-      paddingHorizontal: 16,
-      alignSelf: 'center',
-    },
-    title: {
-      fontWeight: 'bold',
-      marginBottom: 5,
-      fontSize: 16,
-    },
-    requirement: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      marginVertical: 2,
-    },
-    subRequirement: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      marginLeft: 20,
-      marginVertical: 2,
-    },
-    text: {
-      marginLeft: 10,
-      fontSize: 14,
-    },
-    bullet: {
-      marginRight: 10,
-    },
-    errorContainer: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      marginTop: 2,
-      marginBottom: 8,
-      marginLeft: 5,
-    },
-    errorText: {
-      color: 'red',
-      fontSize: 13,
-      marginLeft: 5,
-    },
- 
+
+//Invalid Password Alert
+const passwordStyles = StyleSheet.create({
+  container: {
+    width: '100%',
+    paddingHorizontal: 16,
+    alignSelf: 'center',
+  },
+  title: {
+    fontWeight: 'bold',
+    marginBottom: 5,
+    fontSize: 16,
+  },
+  requirement: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 2,
+  },
+  subRequirement: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginLeft: 20,
+    marginVertical: 2,
+  },
+  text: {
+    marginLeft: 10,
+    fontSize: 14,
+  },
+  bullet: {
+    marginRight: 10,
+  },
+  errorContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 2,
+    marginBottom: 8,
+    marginLeft: 5,
+  },
+  errorText: {
+    color: 'red',
+    fontSize: 13,
+    marginLeft: 5,
+  },
+
 });
 
 export default NewUserRegScreen;

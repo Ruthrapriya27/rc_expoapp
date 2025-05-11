@@ -73,7 +73,7 @@ const LoginScreen = ({ navigation }) => {
     const hasSpecial = /[@$!%*#?&]/.test(password);
 
     return hasLower && hasUpper && hasNumber && hasSpecial;
-};
+  };
 
   const showAlert = (message) => {
     setAlertMessage(message);
@@ -84,7 +84,7 @@ const LoginScreen = ({ navigation }) => {
     // Mark both fields as touched
     setEmailTouched(true);
     setPasswordTouched(true);
-    
+
     // Reset errors
     setEmailError('');
     setPasswordError('');
@@ -94,26 +94,26 @@ const LoginScreen = ({ navigation }) => {
 
     // Email validation
     if (!email) {
-        setEmailError('Please enter your email address');
-        hasValidationError = true;
+      setEmailError('Please enter your email address');
+      hasValidationError = true;
     } else if (!validateEmail(email)) {
-        setEmailError('Please enter a valid email address');
-        hasValidationError = true;
+      setEmailError('Please enter a valid email address');
+      hasValidationError = true;
     }
 
     // Password validation
     if (!password) {
-        setPasswordError('Please enter your password');
-        hasValidationError = true;
+      setPasswordError('Please enter your password');
+      hasValidationError = true;
     } else if (!validatePassword(password)) {
-        shouldShowPasswordAlert = true;
-        hasValidationError = true; // Add this line
+      shouldShowPasswordAlert = true;
+      hasValidationError = true; // Add this line
     }
 
     // Show password alert if password is invalid
     if (shouldShowPasswordAlert) {
-        showAlert('Please enter a valid password');
-        return; // Add this line to prevent further checks
+      showAlert('Please enter a valid password');
+      return; // Add this line to prevent further checks
     }
 
     // Return if we have any other validation errors
@@ -127,7 +127,7 @@ const LoginScreen = ({ navigation }) => {
     // } else {
     //     showAlert('User Doesnt Exist.Please try again.');
     // }
-};
+  };
 
   return (
     <View style={styles.container}>
@@ -188,7 +188,7 @@ const LoginScreen = ({ navigation }) => {
           style={styles.eyeIcon}
           onPress={() => setShowPassword(!showPassword)}
         >
-          <Ionicons name={showPassword ? 'eye-off' : 'eye'} size={24} color="grey" />
+          <Ionicons name={showPassword ? 'eye' : 'eye-off'} size={24} color="grey" />
         </TouchableOpacity>
       </View>
       {passwordError !== '' && passwordTouched && (

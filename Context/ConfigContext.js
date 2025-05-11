@@ -11,7 +11,7 @@ export const ConfigProvider = ({ children }) => {
     customerName: '',
     deviceType: '',
     firmwareVersion: '',
-    
+
     // RF settings
     rfChannel: '',
     rfFrequency: '',
@@ -24,10 +24,10 @@ export const ConfigProvider = ({ children }) => {
     spreadFactor: '',
     codeRate: '',
     rfTransmissionPower: '',
-    
+
     // IR settings
     irLogicalAddress: '',
-    
+
     // Relay settings
     relayCount: '',
     keyCount: '',

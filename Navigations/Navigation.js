@@ -14,75 +14,74 @@ import WelcomeScreen from '../Screens/WelcomeScreen.js'
 
 const Stack = createStackNavigator();
 
-const App = () => 
-  {
+const App = () => {
   return (
-    
+
     <NavigationContainer>
       <Stack.Navigator
 
-        screenOptions = 
+        screenOptions=
         {{
-          headerTitleAlign: 'center' 
+          headerTitleAlign: 'center'
         }}
-      > 
-       <Stack.Screen
+      >
+        <Stack.Screen
           name="Welcome Screen"
           component={WelcomeScreen}
-          options={{ title: 'Welcome to Innospace',headerShown: false}}
-        /> 
+          options={{ title: 'Welcome to Innospace', headerShown: false }}
+        />
 
         <Stack.Screen
           name="Login"
           component={LoginScreen}
-          options={{ title: 'Login/Signup',headerShown: false}}
+          options={{ title: 'Login/Signup', headerShown: false }}
         />
-         
+
         <Stack.Screen
           name="SignUp"
           component={SignUpScreen}
-          options={{ title: 'New User Registration',headerShown: false}}
+          options={{ title: 'New User Registration', headerShown: false }}
         />
-         
-         <Stack.Screen
+
+        <Stack.Screen
           name="OtpVerification"
           component={OtpScreen}
-          options={{ title: 'OTP',headerShown: false}}
+          options={{ title: 'OTP', headerShown: false }}
         />
-         
-         <Stack.Screen
+
+        <Stack.Screen
           name="Forgot Password"
           component={ForgotPasswordScreen}
-          options={{ title: 'Reset Password',headerShown: false}}
+          options={{ title: 'Reset Password', headerShown: false }}
         />
 
         <Stack.Screen
           name="User Registration"
           component={NewUserRegistrationScreen}
-          options={{ title: 'Create Account',headerShown: false}}
+          options={{ title: 'Create Account', headerShown: false }}
         />
 
         <Stack.Screen
           name="TabScreen"
           component={TabScreen}
-          options={{ title: 'TabScreen',headerShown: false }}
-        />   
-       
-       <Stack.Screen
+          options={{ title: 'TabScreen', headerShown: false }}
+        />
+
+        <Stack.Screen
           name="Dashboard"
           component={DashboardScreen}
           options={{ title: 'Dashboard' }}
         />
 
-        <Stack.Screen 
-          name="Config Summary" 
-          component={ConfigSumScreen} 
+        <Stack.Screen
+          name="Config Summary"
+          component={ConfigSumScreen}
           options={{ title: 'Configuration Summary' }}
         />
- 
+
       </Stack.Navigator>
     </NavigationContainer>
-  
+
   );
 };
 

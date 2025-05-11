@@ -10,7 +10,6 @@ import {
   ScrollView,
   PermissionsAndroid,
   Platform,
-  Alert,
   StyleSheet,
   ActivityIndicator,
 
@@ -41,17 +40,21 @@ const BluetoothConfigScreen = () => {
   const [selectedPredefinedUUID, setSelectedPredefinedUUID] = useState(predefinedUUIDList[0]);
   const [customUUIDs, setCustomUUIDs] = useState({ service: '', read: '', write: '' });
 
-  const 
-  {
-    connectedDevice,
-    setConnectedDevice,
-    setServiceUUID,
-    setWriteUUID,
-    setReadUUID
-  } = useContext(BluetoothContext);
+  const [alertModalVisible, setAlertModalVisible] = useState(false);
+  const [alertMessage, setAlertMessage] = useState('');
+  const [alertTitle, setAlertTitle] = useState('');
+  const [alertAction, setAlertAction] = useState(null);
 
-  useEffect(() => 
+  const
     {
+      connectedDevice,
+      setConnectedDevice,
+      setServiceUUID,
+      setWriteUUID,
+      setReadUUID
+    } = useContext(BluetoothContext);
+
+  useEffect(() => {
     requestPermissions();
     return () => {
       manager.destroy();
@@ -68,11 +71,12 @@ const BluetoothConfigScreen = () => {
     }
   };
 
-  const scanDevices = async () => 
-    {
+  const scanDevices = async () => {
     const state = await manager.state();
     if (state !== State.PoweredOn) {
-      Alert.alert('Bluetooth Required', 'Please turn on Bluetooth to scan for devices');
+      setAlertTitle('Bluetooth Required');
+      setAlertMessage('Please turn on Bluetooth to scan for devices');
+      setAlertModalVisible(true);
       return;
     }
 
@@ -98,15 +102,13 @@ const BluetoothConfigScreen = () => {
 
     });
 
-    setTimeout(() => 
-    {
+    setTimeout(() => {
       manager.stopDeviceScan();
       setIsScanning(false);
     }, 5000);
   };
 
-  const connectToDevice = (device) => 
-    {
+  const connectToDevice = (device) => {
     setSelectedDevice(device);
     setShowUuidModal(true);
   };
@@ -116,14 +118,15 @@ const BluetoothConfigScreen = () => {
     if (!device) return;
 
     let serviceUUID, writeUUID, readUUID;
-    if (uuidMode === 'predefined') 
-    {
+    if (uuidMode === 'predefined') {
       serviceUUID = selectedPredefinedUUID.service;
       writeUUID = selectedPredefinedUUID.write;
       readUUID = selectedPredefinedUUID.read;
     } else {
       if (!customUUIDs.service || !customUUIDs.write) {
-        Alert.alert('Incomplete UUIDs', 'Please provide at least Service and Write UUIDs');
+        setAlertTitle('Incomplete UUIDs');
+        setAlertMessage('Please provide at least Service and Write UUIDs');
+        setAlertModalVisible(true);
         return;
       }
       serviceUUID = customUUIDs.service;
@@ -140,19 +143,21 @@ const BluetoothConfigScreen = () => {
       setServiceUUID(serviceUUID);
       setWriteUUID(writeUUID);
       setReadUUID(readUUID);
-      Alert.alert('Connected', `Successfully connected to ${device.name}`);
+      setAlertTitle('Connected');
+      setAlertMessage(`Successfully connected to ${device.name}`);
+      setAlertModalVisible(true);
     } catch (error) {
       console.log('Connection error:', error.message || error);
-      Alert.alert('Connection Failed', error.message || 'Failed to connect to device');
+      setAlertTitle('Connection Failed');
+      setAlertMessage(error.message || 'Failed to connect to device');
+      setAlertAction(() => retryConnection);
+      setAlertModalVisible(true);
     }
   };
 
-  const disconnectFromDevice = async () => 
-    {
-    if (connectedDevice) 
-      {
-      try 
-      {
+  const disconnectFromDevice = async () => {
+    if (connectedDevice) {
+      try {
         await manager.cancelDeviceConnection(connectedDevice.id);
         const disconnected = connectedDevice;
         setConnectedDevice(null);
@@ -163,20 +168,23 @@ const BluetoothConfigScreen = () => {
           }
           return prevDevices;
         });
-        Alert.alert('Disconnected', `Disconnected from ${disconnected.name}`);
+        setAlertTitle('Disconnected');
+        setAlertMessage(`Disconnected from ${disconnected.name}`);
+        setAlertModalVisible(true);
         scanDevices();
-      } 
-      catch (error) 
-      {
+      }
+      catch (error) {
         console.log('Disconnect error:', error);
-        Alert.alert('Error', 'Failed to disconnect from device');
+        setAlertTitle('Error');
+        setAlertMessage('Failed to disconnect from device');
+        setAlertModalVisible(true);
       }
     }
   };
 
   const renderDeviceItem = ({ item }) => (
-    <TouchableOpacity 
-      onPress={() => connectToDevice(item)} 
+    <TouchableOpacity
+      onPress={() => connectToDevice(item)}
       style={[
         styles.deviceItem,
         connectedDevice?.id === item.id && styles.connectedDeviceItem
@@ -191,14 +199,14 @@ const BluetoothConfigScreen = () => {
       </View>
       <Icon name="chevron-right" size={24} color="#888" />
     </TouchableOpacity>
-    );
+  );
 
   return (
     <View style={styles.container}>
 
       <View style={styles.content}>
-        <TouchableOpacity 
-          onPress={scanDevices} 
+        <TouchableOpacity
+          onPress={scanDevices}
           disabled={isScanning}
           style={styles.scanButton}
         >
@@ -221,8 +229,8 @@ const BluetoothConfigScreen = () => {
               <Text style={styles.connectedDeviceName}>{connectedDevice.name || 'Unnamed Device'}</Text>
               <Text style={styles.connectedDeviceId}>{connectedDevice.id}</Text>
             </View>
-            <TouchableOpacity 
-              onPress={disconnectFromDevice} 
+            <TouchableOpacity
+              onPress={disconnectFromDevice}
               style={styles.disconnectButton}
             >
               <Text style={styles.disconnectButtonText}>
@@ -237,7 +245,7 @@ const BluetoothConfigScreen = () => {
             <Text style={styles.deviceListTitle}>Available Devices</Text>
             <Text style={styles.deviceCount}>{devices.filter(d => d.id !== connectedDevice?.id).length} found</Text>
           </View>
-          
+
           {devices.filter(d => d.id !== connectedDevice?.id).length > 0 ? (
             <FlatList
               data={devices.filter((d) => d.id !== connectedDevice?.id)}
@@ -267,8 +275,8 @@ const BluetoothConfigScreen = () => {
 
             <Text style={styles.modalSubtitle}>Select UUID Mode</Text>
             <View style={styles.uuidModeSelector}>
-              <TouchableOpacity 
-                onPress={() => setUuidMode('predefined')} 
+              <TouchableOpacity
+                onPress={() => setUuidMode('predefined')}
                 style={[
                   styles.uuidModeButton,
                   uuidMode === 'predefined' && styles.uuidModeButtonActive
@@ -281,8 +289,8 @@ const BluetoothConfigScreen = () => {
                   Predefined
                 </Text>
               </TouchableOpacity>
-              <TouchableOpacity 
-                onPress={() => setUuidMode('custom')} 
+              <TouchableOpacity
+                onPress={() => setUuidMode('custom')}
                 style={[
                   styles.uuidModeButton,
                   uuidMode === 'custom' && styles.uuidModeButtonActive
@@ -327,63 +335,63 @@ const BluetoothConfigScreen = () => {
               </View>
             )}
 
-          {uuidMode === 'custom' && (
-                    <ScrollView
-                      style={styles.scrollWrapper}
-                      contentContainerStyle={styles.scrollContent}
-                      keyboardShouldPersistTaps="handled"
-                    >
-                      <View style={styles.customUuidContainer}>
-                        <Text style={styles.sectionTitle}>Enter Custom UUIDs</Text>
+            {uuidMode === 'custom' && (
+              <ScrollView
+                style={styles.scrollWrapper}
+                contentContainerStyle={styles.scrollContent}
+                keyboardShouldPersistTaps="handled"
+              >
+                <View style={styles.customUuidContainer}>
+                  <Text style={styles.sectionTitle}>Enter Custom UUIDs</Text>
 
-                        <View style={styles.inputGroup}>
-                          <Text style={styles.inputLabel}>Service UUID</Text>
-                          <TextInput
-                            style={styles.input}
-                            placeholder="0000xxxx-0000-1000-8000-00805f9b34fb"
-                            value={customUUIDs.service}
-                            onChangeText={(text) => setCustomUUIDs({ ...customUUIDs, service: text })}
-                          />
-                        </View>
+                  <View style={styles.inputGroup}>
+                    <Text style={styles.inputLabel}>Service UUID</Text>
+                    <TextInput
+                      style={styles.input}
+                      placeholder="0000xxxx-0000-1000-8000-00805f9b34fb"
+                      value={customUUIDs.service}
+                      onChangeText={(text) => setCustomUUIDs({ ...customUUIDs, service: text })}
+                    />
+                  </View>
 
-                        <View style={styles.inputGroup}>
-                          <Text style={styles.inputLabel}>Read Characteristic UUID (Optional)</Text>
-                          <TextInput
-                            style={styles.input}
-                            placeholder="0000xxxx-0000-1000-8000-00805f9b34fb"
-                            value={customUUIDs.read}
-                            onChangeText={(text) => setCustomUUIDs({ ...customUUIDs, read: text })}
-                          />
-                        </View>
+                  <View style={styles.inputGroup}>
+                    <Text style={styles.inputLabel}>Read Characteristic UUID (Optional)</Text>
+                    <TextInput
+                      style={styles.input}
+                      placeholder="0000xxxx-0000-1000-8000-00805f9b34fb"
+                      value={customUUIDs.read}
+                      onChangeText={(text) => setCustomUUIDs({ ...customUUIDs, read: text })}
+                    />
+                  </View>
 
-                        <View style={styles.inputGroup}>
-                          <Text style={styles.inputLabel}>Write Characteristic UUID</Text>
-                          <TextInput
-                            style={styles.input}
-                            placeholder="0000xxxx-0000-1000-8000-00805f9b34fb"
-                            value={customUUIDs.write}
-                            onChangeText={(text) => setCustomUUIDs({ ...customUUIDs, write: text })}
-                          />
-                        </View>
-                      </View>
-                    </ScrollView>
-                  )}
+                  <View style={styles.inputGroup}>
+                    <Text style={styles.inputLabel}>Write Characteristic UUID</Text>
+                    <TextInput
+                      style={styles.input}
+                      placeholder="0000xxxx-0000-1000-8000-00805f9b34fb"
+                      value={customUUIDs.write}
+                      onChangeText={(text) => setCustomUUIDs({ ...customUUIDs, write: text })}
+                    />
+                  </View>
+                </View>
+              </ScrollView>
+            )}
 
 
             <View style={styles.modalButtons}>
-              <TouchableOpacity 
-                onPress={() => setShowUuidModal(false)} 
+              <TouchableOpacity
+                onPress={() => setShowUuidModal(false)}
                 style={styles.secondaryButton}
               >
                 <Text style={styles.secondaryButtonText}>Cancel</Text>
               </TouchableOpacity>
-              <TouchableOpacity 
+              <TouchableOpacity
                 onPress={connectWithUUIDs}
                 disabled={uuidMode === 'custom' && (!customUUIDs.service || !customUUIDs.write)}
                 style={[
                   styles.primaryButton,
-                  (uuidMode === 'custom' && (!customUUIDs.service || !customUUIDs.write)) && 
-                    styles.primaryButtonDisabled
+                  (uuidMode === 'custom' && (!customUUIDs.service || !customUUIDs.write)) &&
+                  styles.primaryButtonDisabled
                 ]}
               >
                 <Text style={styles.primaryButtonText}>
@@ -394,6 +402,32 @@ const BluetoothConfigScreen = () => {
           </View>
         </View>
       </Modal>
+
+
+      {/*ALERT MODAL*/}
+      <Modal
+        transparent={true}
+        animationType="fade"
+        visible={alertModalVisible}
+        onRequestClose={() => setAlertModalVisible(false)}
+      >
+        <View style={styles.alertModalOverlay}>
+          <View style={styles.alertModalContainer}>
+            {alertTitle && <Text style={[styles.alertModalText, { fontWeight: 'bold' }]}>{alertTitle}</Text>}
+            <Text style={styles.alertModalText}>{alertMessage}</Text>
+            <TouchableOpacity
+              onPress={() => {
+                setAlertModalVisible(false);
+                alertAction?.();
+              }}
+              style={styles.alertModalButton}
+            >
+              <Text style={styles.alertModalButtonText}>OK</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
     </View>
   );
 };
@@ -402,12 +436,12 @@ const getStyles = () =>
   StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: '#F9FAFB', 
+      backgroundColor: '#F9FAFB',
     },
     header: {
       padding: 16,
-      backgroundColor: '#1A73E8', 
-      elevation: 8, 
+      backgroundColor: '#1A73E8',
+      elevation: 8,
       shadowColor: '#000',
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.2,
@@ -423,7 +457,7 @@ const getStyles = () =>
       padding: 16,
     },
     scanButton: {
-      backgroundColor: '#1A73E8', 
+      backgroundColor: '#1A73E8',
       padding: 16,
       borderRadius: 8,
       alignItems: 'center',
@@ -441,8 +475,8 @@ const getStyles = () =>
       fontSize: 16,
     },
     connectedContainer: {
-      backgroundColor: '#FFFFFF', 
-      borderRadius: 12, 
+      backgroundColor: '#FFFFFF',
+      borderRadius: 12,
       padding: 16,
       marginBottom: 16,
       elevation: 4,
@@ -450,7 +484,7 @@ const getStyles = () =>
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.1,
       shadowRadius: 6,
-      borderLeftWidth: 0, 
+      borderLeftWidth: 0,
     },
     connectedHeader: {
       flexDirection: 'row',
@@ -461,8 +495,8 @@ const getStyles = () =>
       fontSize: 16,
       fontWeight: 'bold',
       marginLeft: 8,
-      color: '#1A73E8', 
-      textDecorationLine: 'none', 
+      color: '#1A73E8',
+      textDecorationLine: 'none',
     },
     connectedDeviceInfo: {
       marginBottom: 12,
@@ -470,16 +504,16 @@ const getStyles = () =>
     connectedDeviceName: {
       fontSize: 16,
       fontWeight: '500',
-      color: '#1C1C1C', 
+      color: '#1C1C1C',
     },
     connectedDeviceId: {
       fontSize: 12,
-      color: '#5F6368', 
+      color: '#5F6368',
       marginTop: 4,
     },
     disconnectButton: {
-      backgroundColor: '#FFA000', 
-      padding: 12, 
+      backgroundColor: '#FFA000',
+      padding: 12,
       borderRadius: 8,
       alignItems: 'center',
       elevation: 2,
@@ -490,7 +524,7 @@ const getStyles = () =>
     },
     deviceListContainer: {
       flex: 1,
-      backgroundColor: '#FFFFFF', 
+      backgroundColor: '#FFFFFF',
       borderRadius: 12,
       elevation: 4,
       shadowColor: '#000',
@@ -498,7 +532,7 @@ const getStyles = () =>
       shadowOpacity: 0.1,
       shadowRadius: 6,
       padding: 16,
-      borderLeftWidth: 0, 
+      borderLeftWidth: 0,
     },
     listHeader: {
       flexDirection: 'row',
@@ -514,7 +548,7 @@ const getStyles = () =>
     },
     deviceCount: {
       fontSize: 12,
-      color: '#5F6368', 
+      color: '#5F6368',
     },
     listContent: {
       paddingBottom: 8,
@@ -525,16 +559,16 @@ const getStyles = () =>
       paddingVertical: 12,
       paddingHorizontal: 8,
       borderBottomWidth: 1,
-      borderColor: '#E0E0E0', 
+      borderColor: '#E0E0E0',
     },
     connectedDeviceItem: {
-      backgroundColor: '#E8F0FE', 
+      backgroundColor: '#E8F0FE',
     },
     deviceIconContainer: {
       width: 40,
       height: 40,
       borderRadius: 20,
-      backgroundColor: '#E8F0FE', 
+      backgroundColor: '#E8F0FE',
       alignItems: 'center',
       justifyContent: 'center',
       marginRight: 12,
@@ -560,12 +594,12 @@ const getStyles = () =>
     },
     emptyStateText: {
       fontSize: 16,
-      color: '#5F6368', 
+      color: '#5F6368',
       marginTop: 16,
     },
     emptyStateSubtext: {
       fontSize: 14,
-      color: '#5F6368', 
+      color: '#5F6368',
       marginTop: 8,
     },
     modalBackground: {
@@ -591,17 +625,17 @@ const getStyles = () =>
       alignItems: 'center',
       padding: 16,
       borderBottomWidth: 1,
-      borderColor: '#E0E0E0', 
+      borderColor: '#E0E0E0',
     },
     modalTitle: {
       fontSize: 18,
       fontWeight: 'bold',
-      color: '#1A73E8', 
-      textDecorationLine: 'none', 
+      color: '#1A73E8',
+      textDecorationLine: 'none',
     },
     modalSubtitle: {
       fontSize: 14,
-      color: '#5F6368', 
+      color: '#5F6368',
       marginHorizontal: 16,
       marginTop: 8,
     },
@@ -610,21 +644,21 @@ const getStyles = () =>
       marginHorizontal: 16,
       marginTop: 12,
       borderWidth: 1,
-      borderColor: '#E0E0E0', 
+      borderColor: '#E0E0E0',
       borderRadius: 8,
       overflow: 'hidden',
     },
     uuidModeButton: {
       flex: 1,
       padding: 12,
-      backgroundColor: '#F9FAFB', 
+      backgroundColor: '#F9FAFB',
     },
     uuidModeButtonActive: {
-      backgroundColor: '#1A73E8', 
+      backgroundColor: '#1A73E8',
     },
     uuidModeButtonText: {
       textAlign: 'center',
-      color: '#5F6368', 
+      color: '#5F6368',
       fontWeight: '500',
     },
     uuidModeButtonTextActive: {
@@ -648,20 +682,20 @@ const getStyles = () =>
       alignItems: 'center',
       padding: 12,
       borderWidth: 1,
-      borderColor: '#E0E0E0', 
+      borderColor: '#E0E0E0',
       borderRadius: 8,
       marginBottom: 8,
     },
     selectedUuidItem: {
       borderColor: '#1A73E8',
-      backgroundColor: '#E8F0FE', 
+      backgroundColor: '#E8F0FE',
     },
     uuidSelect: {
       width: 20,
       height: 20,
       borderRadius: 10,
       borderWidth: 2,
-      borderColor: '#5F6368', 
+      borderColor: '#5F6368',
       marginRight: 12,
       alignItems: 'center',
       justifyContent: 'center',
@@ -670,7 +704,7 @@ const getStyles = () =>
       width: 10,
       height: 10,
       borderRadius: 5,
-      backgroundColor: '#1A73E8', 
+      backgroundColor: '#1A73E8',
     },
     uuidDetails: {
       flex: 1,
@@ -678,11 +712,11 @@ const getStyles = () =>
     uuidName: {
       fontWeight: '500',
       marginBottom: 4,
-      color: '#1C1C1C', 
+      color: '#1C1C1C',
     },
     uuidValue: {
       fontSize: 12,
-      color: '#5F6368', 
+      color: '#5F6368',
     },
     customUuidContainer: {
       marginTop: 16,
@@ -693,26 +727,26 @@ const getStyles = () =>
     },
     inputLabel: {
       fontSize: 14,
-      color: '#1A73E8', 
+      color: '#1A73E8',
       marginBottom: 4,
     },
     input: {
       borderWidth: 1,
-      borderColor: '#E0E0E0', 
+      borderColor: '#E0E0E0',
       borderRadius: 8,
       padding: 12,
-      backgroundColor: '#FFFFFF', 
+      backgroundColor: '#FFFFFF',
     },
     modalButtons: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       padding: 16,
       borderTopWidth: 1,
-      borderColor: '#E0E0E0', 
+      borderColor: '#E0E0E0',
     },
     primaryButton: {
       flex: 1,
-      backgroundColor: '#1A73E8', 
+      backgroundColor: '#1A73E8',
       padding: 14,
       borderRadius: 8,
       alignItems: 'center',
@@ -720,7 +754,7 @@ const getStyles = () =>
       elevation: 2,
     },
     primaryButtonDisabled: {
-      backgroundColor: '#C5D9F8', 
+      backgroundColor: '#C5D9F8',
     },
     primaryButtonText: {
       color: 'white',
@@ -728,7 +762,7 @@ const getStyles = () =>
     },
     secondaryButton: {
       flex: 1,
-      backgroundColor: '#FFA000', 
+      backgroundColor: '#FFA000',
       padding: 14,
       borderRadius: 8,
       alignItems: 'center',
@@ -740,14 +774,49 @@ const getStyles = () =>
       fontWeight: '500',
     },
     scanButtonDisabled: {
-      backgroundColor: '#B8D3FF', 
+      backgroundColor: '#B8D3FF',
+    },
+    //Alert Modal
+    alertModalOverlay: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: 'rgba(0,0,0,0.5)',
+    },
+    alertModalContainer: {
+      backgroundColor: '#F8F8F8',
+      borderRadius: 13,
+      padding: 0,
+      width: 270,
+      overflow: 'hidden',
+    },
+    alertModalText: {
+      fontSize: 17,
+      textAlign: 'center',
+      padding: 20,
+      paddingBottom: 16,
+      color: '#000',
+      fontWeight: '400',
+    },
+    alertModalButton: {
+      borderTopWidth: 0.5,
+      borderTopColor: '#DBDBDB',
+      paddingVertical: 12,
+      width: '100%',
+      alignItems: 'center',
+      backgroundColor: 'transparent',
+    },
+    alertModalButtonText: {
+      color: '#007AFF',
+      fontSize: 17,
+      fontWeight: '600',
     },
     scrollWrapper: {
-      maxHeight: 300, 
+      maxHeight: 300,
     },
     scrollContent: {
       paddingBottom: 16,
     },
   });
 
-  export default BluetoothConfigScreen;
+export default BluetoothConfigScreen;

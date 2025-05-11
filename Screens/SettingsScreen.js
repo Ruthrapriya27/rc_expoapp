@@ -23,14 +23,13 @@ const SettingsScreen = ({ navigation }) => {
   const [currentPassword, setCurrentPassword] = useState('');
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showModal, setShowModal] = useState(false);
-  const [modalMessage, setModalMessage] = useState(''); 
-  const [showLogoutModal, setShowLogoutModal] = useState(false); 
-  const[isInputDisabled, setInputDisabled] = useState(false);
+  const [modalMessage, setModalMessage] = useState('');
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   useEffect(() => {
     const loadUserData = async () => {
       try {
-        const [[storedName], [storedEmail], [storedMobile], [storedBluetooth] , [storedPassword]] =
+        const [[storedName], [storedEmail], [storedMobile], [storedBluetooth], [storedPassword]] =
           await AsyncStorage.multiGet([
             '@username',
             '@email',
@@ -63,17 +62,17 @@ const SettingsScreen = ({ navigation }) => {
       ]);
 
       setModalMessage('Changes have been saved.');
-      setShowModal(true);  
+      setShowModal(true);
     } catch (error) {
 
       setModalMessage('Failed to save changes.');
-      setShowModal(true);  
+      setShowModal(true);
     }
   };
 
   const handleLogout = () => {
-    setShowLogoutModal(false); 
-    navigation.replace('Login'); 
+    setShowLogoutModal(false);
+    navigation.replace('Login');
   };
 
   return (
@@ -90,7 +89,7 @@ const SettingsScreen = ({ navigation }) => {
           {/* Profile Section */}
           <View style={styles.sectionContainer}>
             <Text style={styles.sectionTitle}>Profile Information</Text>
-  
+
             {/* Name */}
             <View style={styles.inputContainer}>
               <Text style={styles.label}>Name</Text>
@@ -102,35 +101,35 @@ const SettingsScreen = ({ navigation }) => {
                 onChangeText={setName}
               />
             </View>
-  
+
             {/* Email */}
             <View style={styles.inputContainer}>
               <Text style={styles.label}>Email ID</Text>
               <TextInput
-                style={[styles.inputBox,{ opacity: 0.5 }]}
+                style={[styles.inputBox, { opacity: 0.5 }]}
                 placeholder="Enter your email"
                 placeholderTextColor="#999"
                 value={email}
                 onChangeText={setEmail}
                 keyboardType="email-address"
-                editable={false} 
+                editable={false}
               />
             </View>
-  
+
             {/* Mobile */}
             <View style={styles.inputContainer}>
               <Text style={styles.label}>Mobile Number</Text>
               <TextInput
-                style={[styles.inputBox,{ opacity: 0.5 }]}
+                style={[styles.inputBox, { opacity: 0.5 }]}
                 placeholder="Enter your mobile number"
                 placeholderTextColor="#999"
                 value={mobile}
                 onChangeText={setMobile}
                 keyboardType="phone-pad"
-                editable={false} 
+                editable={false}
               />
             </View>
-          
+
             {/* Designation*/}
             <View style={styles.inputContainer}>
               <Text style={styles.label}>Designation</Text>
@@ -143,11 +142,11 @@ const SettingsScreen = ({ navigation }) => {
               />
             </View>
           </View>
-  
+
           {/* Device Section */}
           <View style={styles.sectionContainer}>
             <Text style={styles.sectionTitle}>Device Settings</Text>
-  
+
             {/* Device Name */}
             <View style={styles.inputContainer}>
               <Text style={styles.label}>Device Name</Text>
@@ -160,38 +159,38 @@ const SettingsScreen = ({ navigation }) => {
               />
             </View>
           </View>
-  
+
           {/* Security Section */}
           <View style={styles.sectionContainer}>
             <Text style={styles.sectionTitle}>Security</Text>
-  
-            {/* Current Password */}
-          <View style={styles.inputContainer}>
-          <Text style={styles.label}>Current Password</Text>
-          <View style={styles.passwordContainer}>
-            <TextInput
-              style={[styles.passwordInput, { opacity: 0.5 }]} 
-              placeholder="Enter your current password"
-              placeholderTextColor="#999"
-              value={currentPassword}
-              secureTextEntry={!showCurrentPassword}
-              editable={false} 
-            />
-            <TouchableOpacity
-              style={styles.eyeIcon}
-              onPress={() => setShowCurrentPassword(!showCurrentPassword)}
-            >
-              <Ionicons
-                name={showCurrentPassword ? 'eye-off' : 'eye'}
-                size={24}
-                color="#666"
-              />
-            </TouchableOpacity>
-          </View>
-        </View>
-      </View>
 
-  
+            {/* Current Password */}
+            <View style={styles.inputContainer}>
+              <Text style={styles.label}>Current Password</Text>
+              <View style={styles.passwordContainer}>
+                <TextInput
+                  style={[styles.passwordInput, { opacity: 0.5 }]}
+                  placeholder="Enter your current password"
+                  placeholderTextColor="#999"
+                  value={currentPassword}
+                  secureTextEntry={!showCurrentPassword}
+                  editable={false}
+                />
+                <TouchableOpacity
+                  style={styles.eyeIcon}
+                  onPress={() => setShowCurrentPassword(!showCurrentPassword)}
+                >
+                  <Ionicons
+                    name={showCurrentPassword ? 'eye' : 'eye-off'}
+                    size={24}
+                    color="#666"
+                  />
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+
+
           {/* Save Button */}
           <TouchableOpacity
             style={styles.saveButton}
@@ -202,7 +201,7 @@ const SettingsScreen = ({ navigation }) => {
               <Text style={styles.saveButtonText}>Save Changes</Text>
             </View>
           </TouchableOpacity>
-  
+
           {/* Logout Button */}
           <TouchableOpacity
             onPress={() => setShowLogoutModal(true)}
@@ -221,7 +220,7 @@ const SettingsScreen = ({ navigation }) => {
           </TouchableOpacity>
         </ScrollView>
       </KeyboardAvoidingView>
-  
+
       {/* Modal for Changes Saved */}
       <Modal
         transparent
@@ -241,7 +240,7 @@ const SettingsScreen = ({ navigation }) => {
           </View>
         </View>
       </Modal>
-  
+
       {/* Logout Confirmation Modal */}
       <Modal
         transparent
@@ -255,13 +254,13 @@ const SettingsScreen = ({ navigation }) => {
             <View style={{ flexDirection: 'row' }}>
               <TouchableOpacity
                 style={styles.logoutmodalButton}
-                onPress={() => setShowLogoutModal(false)} 
+                onPress={() => setShowLogoutModal(false)}
               >
                 <Text style={styles.logoutmodalButtonText}>Cancel</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={styles.logoutmodalButton} 
-                onPress={handleLogout} 
+                style={styles.logoutmodalButton}
+                onPress={handleLogout}
               >
                 <Text style={styles.logoutmodalButtonText}>Logout</Text>
               </TouchableOpacity>
@@ -394,8 +393,8 @@ const styles = StyleSheet.create({
   modalContainer: {
     backgroundColor: '#FFFFFF',
     borderRadius: 13,
-    width: 300,  
-    height: 120, 
+    width: 300,
+    height: 120,
     overflow: 'hidden',
     alignItems: 'center',
   },
@@ -422,45 +421,47 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 
-// Logout Modal Styles
-logoutmodalOverlay: {
-  flex: 1,
-  justifyContent: 'center',
-  alignItems: 'center',
-  backgroundColor: 'rgba(0, 0, 0, 0.75)',
-},
-logoutmodalContainer: {
-  backgroundColor: '#FFFFFF',
-  borderRadius: 13,
-  width: 300,
-  height: 160,  // Increased height for better spacing
-  overflow: 'hidden',
-},
-logoutmodalText: {
-  fontSize: 16,
-  textAlign: 'center',
-  paddingHorizontal: 24,
-  paddingTop: 25,
-  paddingBottom: 20,
-  color: '#000',
-  fontWeight: '400',
-  lineHeight: 24,
-},
-logoutmodalButtonContainer: {
-  flexDirection: 'row',
-  borderTopWidth: 0.5,
-  borderTopColor: '#DBDBDB',
-},
-logoutmodalButton: {
-  flex: 1,
-  paddingVertical: 12,
-  alignItems: 'center',
-},
-logoutmodalButtonText: {
-  color: '#007AFF',
-  fontSize: 17,
-  fontWeight: '600',
-},
+  // Logout Modal Styles
+  logoutmodalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.75)',
+  },
+  logoutmodalContainer: {
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 13,
+    width: 300,
+    height: 150,
+    overflow: 'hidden',
+  },
+  logoutmodalText: {
+    fontSize: 16,
+    textAlign: 'center',
+    paddingHorizontal: 24,
+    paddingTop: 25,
+    paddingBottom: 20,
+    color: '#000',
+    fontWeight: '400',
+    lineHeight: 24,
+  },
+  logoutmodalButtonContainer: {
+    flexDirection: 'row',
+    borderTopWidth: 0.5,
+    borderTopColor: '#DBDBDB',
+  },
+  logoutmodalButton: {
+    flex: 1,
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  logoutmodalButtonText: {
+    color: '#007AFF',
+    fontSize: 17,
+    fontWeight: '600',
+  },
 });
 
 export default SettingsScreen;

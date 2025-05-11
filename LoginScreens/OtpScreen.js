@@ -1,29 +1,39 @@
 import React, { useState, useRef } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Alert, StyleSheet, Modal} from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Alert, StyleSheet, Modal } from 'react-native';
 
 const OTPScreen = ({ navigation }) => {
   const [otp, setOtp] = useState(['', '', '', '']);
   const [otpVerified, setOtpVerified] = useState(false);
   const inputRefs = [useRef(null), useRef(null), useRef(null), useRef(null)];
 
+  const [alertModalVisible, setAlertModalVisible] = useState(false);
+  const [alertTitle, setAlertTitle] = useState('');
+  const [alertMessage, setAlertMessage] = useState('');
+  const [alertAction, setAlertAction] = useState(null);
+
   const [otpErrorModalVisible, setOtpErrorModalVisible] = useState(false);
   const showOtpErrorModal = () => setOtpErrorModalVisible(true);
   const closeOtpErrorModal = () => setOtpErrorModalVisible(false);
+  const [otpResentModalVisible, setOtpResentModalVisible] = useState(false);
 
   const handleVerifyOTP = () => {
     const otpString = otp.join('');
     if (otpString.length !== 4) {
-      Alert.alert('Invalid OTP', 'Please enter a 4-digit OTP.');
+      setAlertTitle('Invalid OTP');
+      setAlertMessage('Please enter a 4-digit OTP.');
+      setAlertModalVisible(true);
       return;
     }
 
-    if (otpString === '1234') {  
+    if (otpString === '1234') {
       setOtpVerified(true);
       navigation.navigate('User Registration');
     } else {
-      showOtpErrorModal();
+      setAlertTitle('Incorrect OTP');
+      setAlertMessage('Please try again.');
+      setAlertModalVisible(true);
     }
-      };
+  };
 
   const handleChangeOtp = (text, index) => {
     const updatedOtp = [...otp];
@@ -41,7 +51,7 @@ const OTPScreen = ({ navigation }) => {
     <View style={styles.container}>
       <Text style={styles.title}>Enter OTP</Text>
       <Text style={styles.subtitle}>We've sent a verification code to your mobile</Text>
-      
+
       <View style={styles.inputContainer}>
         {otp.map((digit, index) => (
           <TextInput
@@ -58,30 +68,43 @@ const OTPScreen = ({ navigation }) => {
           />
         ))}
       </View>
-      
+
       <TouchableOpacity style={styles.button} onPress={handleVerifyOTP}>
         <Text style={styles.buttonText}>Verify OTP</Text>
       </TouchableOpacity>
-      
-      <TouchableOpacity onPress={() => Alert.alert('OTP Resent', 'OTP sent again')}>
-        <Text style={styles.resendText}>Didn't receive code? <Text style={styles.resendLink}>Resend</Text></Text>
+
+      <TouchableOpacity onPress={() => {
+        setAlertTitle('');
+        setAlertMessage('OTP sent again');
+        setAlertModalVisible(true);
+      }}>
+        <Text style={styles.resendText}>
+          Didn't receive code? <Text style={styles.resendLink}>Resend</Text>
+        </Text>
       </TouchableOpacity>
-  
-      {/* OTP Error Modal - Now properly nested inside the parent View */}
+
+
+      {/*OTP ERROR MESSAGE AND RESEND OTP ALERT MODAL*/}
       <Modal
-        visible={otpErrorModalVisible}
-        transparent
+        transparent={true}
         animationType="fade"
-        onRequestClose={closeOtpErrorModal}
+        visible={alertModalVisible}
+        onRequestClose={() => setAlertModalVisible(false)}
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContainer}>
-            <Text style={styles.modalText}>Incorrect OTP. Please try again.</Text>
-            <TouchableOpacity 
-              style={styles.modalButton} 
-              onPress={closeOtpErrorModal}
+            {alertTitle !== '' && (
+              <Text style={[styles.modalText, { fontWeight: 'bold' }]}>{alertTitle}</Text>
+            )}
+            <Text style={styles.modalText}>{alertMessage}</Text>
+            <TouchableOpacity
+              style={styles.modalButton}
+              onPress={() => {
+                setAlertModalVisible(false);
+                alertAction?.();
+              }}
             >
-              <Text style={styles.modalButtonText}>Close</Text>
+              <Text style={styles.modalButtonText}>OK</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -166,46 +189,45 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 
-  
-//INCORRECT OTP Alert Modal 
-modalOverlay: {
-  flex: 1,
-  justifyContent: 'center',
-  alignItems: 'center',
-  backgroundColor: 'rgba(0, 0, 0, 0.75)',
-},
-modalContainer: {
-  backgroundColor: '#FFFFFF',
-  borderRadius: 13,
-  width: '85%',
-  maxWidth: 360,
-  overflow: 'hidden',
-  alignItems: 'center',
-  marginHorizontal: 16,
-},
-modalText: {
-  fontSize: 16,
-  textAlign: 'center',
-  paddingHorizontal: 24,
-  paddingTop: 20,
-  paddingBottom: 10,
-  color: '#000',
-  fontWeight: '400',
-  lineHeight: 24,
-},
-modalButton: {
-  borderTopWidth: 0.5,
-  borderTopColor: '#DBDBDB',
-  width: '100%',
-  paddingVertical: 12,
-  alignItems: 'center',
-},
-modalButtonText: {
-  color: '#007AFF',
-  fontSize: 17,
-  fontWeight: '600',
-},
-});
 
+  //INCORRECT OTP AND RESEND OTP ALERT MODAL
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.75)',
+  },
+  modalContainer: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 13,
+    width: '70%',
+    maxWidth: 360,
+    overflow: 'hidden',
+    alignItems: 'center',
+    marginHorizontal: 16,
+  },
+  modalText: {
+    fontSize: 16,
+    textAlign: 'center',
+    paddingHorizontal: 24,
+    paddingTop: 20,
+    paddingBottom: 10,
+    color: '#000',
+    fontWeight: '400',
+    lineHeight: 24,
+  },
+  modalButton: {
+    borderTopWidth: 0.5,
+    borderTopColor: '#DBDBDB',
+    width: '100%',
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  modalButtonText: {
+    color: '#007AFF',
+    fontSize: 17,
+    fontWeight: '600',
+  },
+});
 
 export default OTPScreen;
