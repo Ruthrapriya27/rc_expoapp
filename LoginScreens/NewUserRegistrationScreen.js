@@ -198,7 +198,7 @@ const NewUserRegScreen = ({ navigation }) => {
     if (hasValidationErrors) return;
 
 
-    try {
+        try {
       await AsyncStorage.multiSet([
         ['@username', fullName],
         ['@designation', designation],
@@ -211,6 +211,43 @@ const NewUserRegScreen = ({ navigation }) => {
       showAlert("Failed to save data. Please try again.");
     }
   };
+
+  //   try {
+  //     console.log("Saving to AsyncStorage:", fullName, designation, confirmPassword);
+  //     await AsyncStorage.multiSet([
+  //       ['@username', fullName],
+  //       ['@designation', designation],
+  //       ['@password', confirmPassword]
+  //     ]);
+
+  //     // Check if variables are present
+  //     console.log("Sending to backend:");
+  //     console.log("Email:", email);
+  //     console.log("Password:", confirmPassword);
+
+  //     const response = await fetch("http://192.168.137.145:8000/api/register/", {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //       },
+  //       body: JSON.stringify({
+  //         email: email,
+  //         password: confirmPassword,
+  //       }),
+  //     });
+
+  //     const data = await response.json();
+
+  //     if (response.ok) {
+  //       console.log("Registration successful:", data);
+  //       setShowSuccessModal
+  //     } else {
+  //       console.error("Server responded with error:", data);
+  //     }
+  //   } catch (error) {
+  //     console.error("Network or unexpected error during registration:", error);
+  //   }
+  // };
 
   return (
     <>

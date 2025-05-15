@@ -9,6 +9,7 @@ import {
   Pressable
 } from 'react-native';
 import { Ionicons, MaterialIcons, FontAwesome } from '@expo/vector-icons';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = React.useState('');
@@ -129,6 +130,11 @@ const LoginScreen = ({ navigation }) => {
     // }
   };
 
+  const handleGmailSignup = () => {
+      console.log('Redirecting to Gmail');
+      // navigation.navigate('TabScreen');
+    };
+
   return (
     <View style={styles.container}>
       <View style={styles.logoContainer}>
@@ -199,8 +205,18 @@ const LoginScreen = ({ navigation }) => {
       )}
 
       <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
+         <Icon name="login" style={styles.icon} />
         <Text style={styles.loginButtonText}>Login</Text>
       </TouchableOpacity>
+
+      
+       <View style={styles.dividerLine} />
+
+      <TouchableOpacity style={styles.gmailButton} onPress={handleGmailSignup}>
+        <Icon name="gmail" style={styles.icon} />
+        <Text style={styles.gmailButtonText}>Login using Gmail</Text>
+      </TouchableOpacity>
+
 
       <View style={styles.signupContainer}>
         <Text style={styles.signupLabel}>Don't have an account? </Text>
@@ -316,13 +332,15 @@ const styles = StyleSheet.create({
     textAlign: 'right',
   },
   loginButton: {
+    flexDirection: 'row', 
     backgroundColor: '#FFA000',
     height: 50,
     borderRadius: 8,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 30,
-    marginBottom: 30,
+    marginTop: 20,
+    marginHorizontal: 30,
+    marginBottom: 20,
     shadowColor: '#FFA000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
@@ -331,14 +349,41 @@ const styles = StyleSheet.create({
   },
   loginButtonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: 17,
     fontWeight: 'bold',
+    textAlign: 'center',
+  },
+    dividerLine: {
+    height: 1,
+    backgroundColor: '#E0E0E0',
+    width: '80%',
+    alignSelf: 'center',
+    marginVertical: 50,
+  },
+   gmailButton: {
+    flexDirection: 'row',
+    backgroundColor: '#649de8',
+    paddingVertical: 14,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginHorizontal: 30,
+  },
+  gmailButtonText: {
+    color: '#fff',
+    fontSize: 17,
+    fontWeight: 'bold',
+    marginLeft: 8,
+  },
+  icon: {
+    color: '#fff',
+    fontSize: 20,
   },
   signupContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 10,
+    marginTop: 40,
   },
   signupLabel: {
     color: '#5F6368',
@@ -393,6 +438,7 @@ const styles = StyleSheet.create({
     fontSize: 17,
     fontWeight: '600',
   },
+ 
 });
 
 const passwordStyles = StyleSheet.create({

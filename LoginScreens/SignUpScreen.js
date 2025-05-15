@@ -51,19 +51,16 @@ const SignUpScreen = ({ navigation }) => {
     //   return;
     // }
 
-    try {
-      await AsyncStorage.multiSet([
-        ['@email', email],
-        ['@mobileNumber', mobile],
-      ]);
+  try {
+      await AsyncStorage.multiSet([ ['@email', email], ['@mobileNumber', mobile]]);
       setIsModalVisible(true);
     } catch (error) {
       console.error("Error saving data to AsyncStorage", error);
       showAlert("Failed to save data. Please try again.");
     }
-  };
+   };
 
-  const handleGmailSignup = () => {
+    const handleGmailSignup = () => {
     console.log('Redirecting to Gmail');
     // navigation.navigate('TabScreen');
   };

@@ -51,7 +51,7 @@ const DashboardScreen = () => {
   ];
   const containerHeight = animation.interpolate({
     inputRange: [0, 1],
-    outputRange: [0, 298] // Adjust this value based on your content height
+    outputRange: [0, 298] 
   });
 
   const rotateArrow = animation.interpolate({
