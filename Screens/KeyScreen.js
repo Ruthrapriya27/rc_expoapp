@@ -25,7 +25,6 @@ const KeyScreen = () => {
   const [alertAction, setAlertAction] = useState(null);
   const [inputValue, setInputValue] = useState('');
   const [currentAction, setCurrentAction] = useState(null);
-  const [currentButton, setCurrentButton] = useState(null);
   const [serialNumber, setSerialNumber] = useState('');
   const [deviceName, setDeviceName] = useState('');
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -127,6 +126,55 @@ const KeyScreen = () => {
                     return;
                   }
 
+                  const rfBandwidthMap = {
+                    0: "7.8 kHz",
+                    8: "10.4 kHz",
+                    1: "15.6 kHz",
+                    9: "20.8 kHz",
+                    2: "31.25 kHz",
+                    10: "41.7 kHz",
+                    3: "62.5 kHz",
+                    4: "125 kHz",
+                    5: "250 kHz",
+                    6: "500 kHz"
+                  };
+
+                  const spreadFactorMap = {
+                    5: "Spread Factor 5",
+                    6: "Spread Factor 6",
+                    7: "Spread Factor 7",
+                    8: "Spread Factor 8",
+                    9: "Spread Factor 9",
+                    10: "Spread Factor 10",
+                    11: "Spread Factor 11",
+                    12: "Spread Factor 12"
+                  };
+
+                  const codeRateMap = {
+                    1: "Code Rate 4/5",
+                    2: "Code Rate 4/6",
+                    3: "Code Rate 4/7",
+                    4: "Code Rate 4/8"
+                  };
+
+                  // Apply mapping for RF Bandwidth
+                  if (parsed.rsp === "RF_BANDWIDTH_GET" && parsed.err === 0 && Array.isArray(parsed.data) && parsed.data.length > 0) {
+                    const code = parsed.data[0];
+                    parsed.data[0] = rfBandwidthMap[code] || `Unknown (${code})`;
+                  }
+
+                  // Apply mapping for Spread Factor
+                  if (parsed.rsp === "SPREAD_FACTOR_GET" && parsed.err === 0 && Array.isArray(parsed.data) && parsed.data.length > 0) {
+                    const code = parsed.data[0];
+                    parsed.data[0] = spreadFactorMap[code] || `Unknown (${code})`;
+                  }
+
+                  // Apply mapping for Code Rate
+                  if (parsed.rsp === "CODE_RATE_GET" && parsed.err === 0 && Array.isArray(parsed.data) && parsed.data.length > 0) {
+                    const code = parsed.data[0];
+                    parsed.data[0] = codeRateMap[code] || `Unknown (${code})`;
+                  }
+
                 } catch (jsonError) {
                   setAlertTitle('JSON Parse Error');
                   setAlertMessage(jsonError.message);
@@ -215,15 +263,8 @@ const KeyScreen = () => {
 
       setAlertTitle('Command sent successfully');
       setAlertMessage(jsonCommand);
-      setAlertAction(() => {
-        console.log('Alert closed');
-      });
-      setAlertModalVisible(true);
+      setAlertModalVisible(false);
 
-      setTimeout(() => {
-        setAlertModalVisible(false);
-        console.log('Closing alert after 7 seconds');
-      }, 7000);
     } catch (error) {
       console.log('Error sending command:', error.message);
       addLog(`Error sending command: ${error.message}`);
@@ -352,7 +393,8 @@ const KeyScreen = () => {
     }
   ];
 
-  //RF BUTTONS CONFIGURATIONS 
+  //IRRF BUTTONS CONFIGURATIONS 
+
   const rfbuttons = [
     {
       title: 'Set RF Channel',
@@ -680,7 +722,7 @@ const KeyScreen = () => {
       title: 'Set RF Bandwidth',
       action: 'RF_BANDWIDTH_SET',
       needsInput: true,
-      placeholder: 'Enter Bandwidth value (0-10)',
+      placeholder: 'Choose Bandwidth Frequency',
       validate: (value) => /^[0-9]+$/.test(value) && value >= 0 && value <= 10,
       errorMessage: 'Invalid input. Enter a number between 0-10.',
       onSend: (value) => JSON.stringify({ cmd: "RF_BANDWIDTH_SET", args: [parseInt(value, 10)] })
@@ -695,7 +737,7 @@ const KeyScreen = () => {
       title: 'Set Spread Factor',
       action: 'SPREAD_FACTOR_SET',
       needsInput: true,
-      placeholder: 'Enter SF value (5-12)',
+      placeholder: 'Choose Spread Factor Value (5-12)',
       validate: (value) => /^[0-9]+$/.test(value) && value >= 5 && value <= 12,
       errorMessage: 'Invalid input. Enter a number between 5-12.',
       onSend: (value) => JSON.stringify({ cmd: "SPREAD_FACTOR_SET", args: [parseInt(value, 10)] })
@@ -710,7 +752,7 @@ const KeyScreen = () => {
       title: 'Set Code Rate',
       action: 'CODE_RATE_SET',
       needsInput: true,
-      placeholder: 'Enter CR value (1-4)',
+      placeholder: 'Choose CR\ode Rate Value',
       validate: (value) => /^[0-9]+$/.test(value) && value >= 1 && value <= 4,
       errorMessage: 'Invalid input. Enter a number between 1-4.',
       onSend: (value) => JSON.stringify({ cmd: "CODE_RATE_SET", args: [parseInt(value, 10)] })
@@ -725,7 +767,7 @@ const KeyScreen = () => {
       title: 'Set RF Transmission Power',
       action: 'RF_TRANSMISSION_POWER_SET',
       needsInput: true,
-      placeholder: 'Enter Power (e.g., 1-22)',
+      placeholder: 'Enter Transmission Power (e.g., 1-22)',
       validate: (value) => /^[0-9]+$/.test(value) && value >= 1 && value <= 22,
       errorMessage: 'Invalid input. Enter a number between 1-22.',
       onSend: (value) => JSON.stringify({ cmd: "RF_TRANSMISSION_POWER_SET", args: [parseInt(value, 10)] })
@@ -740,7 +782,7 @@ const KeyScreen = () => {
       title: 'Set RF Sync Word',
       action: 'SYNC_WORD_SET',
       needsInput: true,
-      placeholder: 'Enter Sync Word (e.g.0001)',
+      placeholder: 'Enter RF Sync Word (e.g.0001)',
       validate: (value) => /^[0-9]{4}$/.test(value) && parseInt(value, 10) >= 1 && parseInt(value, 10) <= 65535,
       errorMessage: 'Invalid input. Enter 4 digits between 0001-65535.',
       onSend: (value) => JSON.stringify({ cmd: "SYNC_WORD_SET", args: [value] })
@@ -770,7 +812,7 @@ const KeyScreen = () => {
       title: 'Set Logical Address',
       action: 'RF_LOGICADDR_SET',
       needsInput: true,
-      placeholder: 'Enter Address (0-255)',
+      placeholder: 'Enter Logic Address (0-255)',
       validate: (value) => /^[0-9]+$/.test(value) && value >= 0 && value <= 255,
       errorMessage: 'Invalid input. Enter a number between 0-255.',
       onSend: (value) => JSON.stringify({ cmd: "RF_LOGICADDR_SET", args: [parseInt(value, 10)] })
@@ -785,7 +827,7 @@ const KeyScreen = () => {
       title: 'Set Preamble Length',
       action: 'PREAMBLE_LENGTH_SET',
       needsInput: true,
-      placeholder: 'Enter Length (1-255)',
+      placeholder: 'Enter Preamble Length (1-255)',
       validate: (value) => /^[0-9]+$/.test(value) && value >= 1 && value <= 255,
       errorMessage: 'Invalid input. Enter a number between 1-255.',
       onSend: (value) => JSON.stringify({ cmd: "PREAMBLE_LENGTH_SET", args: [parseInt(value, 10)] })
@@ -800,7 +842,7 @@ const KeyScreen = () => {
       title: 'Set Payload Length',
       action: 'PAYLOAD_LENGTH_SET',
       needsInput: true,
-      placeholder: 'Enter Length (1-255)',
+      placeholder: 'Enter Payload Length (1-255)',
       validate: (value) => /^[0-9]+$/.test(value) && value >= 1 && value <= 255,
       errorMessage: 'Invalid input. Enter a number between 1-255.',
       onSend: (value) => JSON.stringify({ cmd: "PAYLOAD_LENGTH_SET", args: [parseInt(value, 10)] })
@@ -1005,7 +1047,9 @@ const KeyScreen = () => {
             <TouchableOpacity
               onPress={() => {
                 setAlertModalVisible(false);
-                alertAction?.();
+                if (alertAction) {
+                  alertAction();
+                }
               }}
               style={styles.alertModalButton}
             >
@@ -1089,73 +1133,79 @@ const KeyScreen = () => {
             ))}
           </ScrollView>
         </View>
+        <>
+          {(deviceName === 'IR/RF' || deviceName === 'GR') && (
+            <>
+              {/* RF PRODUCTION Configurations Container */}
+              <View style={styles.rfConfigContainer}>
+                <Text style={styles.sectionTitle}>RF Configurations</Text>
+                <ScrollView nestedScrollEnabled style={styles.innerScroll}>
+                  {rfbuttons.map((button, index) => (
+                    <View key={button.title}>
+                      <TouchableOpacity
+                        style={styles.rfConfigItem}
+                        onPress={() => handleButtonPress(button)}
+                      >
+                        <Text style={styles.rfConfigItemText} numberOfLines={1}>
+                          {button.title}
+                        </Text>
+                        <Text style={styles.arrow}>›</Text>
+                      </TouchableOpacity>
+                      {index < rfbuttons.length - 1 && <View style={styles.separator} />}
+                    </View>
+                  ))}
+                </ScrollView>
+              </View>
+            </>
+          )}
 
-        {deviceName === 'IR/RF' && (
-          <>
-            {/* RF PRODUCTION Configurations Container */}
-            <View style={styles.rfConfigContainer}>
-              <Text style={styles.sectionTitle}>RF Configurations</Text>
-              <ScrollView nestedScrollEnabled style={styles.innerScroll}>
-                {rfbuttons.map((button, index) => (
-                  <View key={button.title}>
-                    <TouchableOpacity
-                      style={styles.rfConfigItem}
-                      onPress={() => handleButtonPress(button)}
-                    >
-                      <Text style={styles.rfConfigItemText} numberOfLines={1}>
-                        {button.title}
-                      </Text>
-                      <Text style={styles.arrow}>›</Text>
-                    </TouchableOpacity>
-                    {index < rfbuttons.length - 1 && <View style={styles.separator} />}
-                  </View>
-                ))}
-              </ScrollView>
-            </View>
+          {deviceName === 'IR/RF' && (
+            <>
+              {/* RF PRODUCT IR Configurations Container */}
+              <View style={styles.rfIrConfigContainer}>
+                <Text style={styles.sectionTitle}>IR Configurations</Text>
+                <ScrollView nestedScrollEnabled style={styles.innerScroll}>
+                  {rfirbuttons.map((button, index) => (
+                    <View key={button.title}>
+                      <TouchableOpacity
+                        style={styles.rfIrConfigItem}
+                        onPress={() => handleButtonPress(button)}
+                      >
+                        <Text style={styles.rfIrConfigItemText} numberOfLines={1}>
+                          {button.title}
+                        </Text>
+                        <Text style={styles.arrow}>›</Text>
+                      </TouchableOpacity>
+                      {index < rfirbuttons.length - 1 && <View style={styles.separator} />}
+                    </View>
+                  ))}
+                </ScrollView>
+              </View>
 
-            {/* RF PRODUCT IR Configurations Container */}
-            <View style={styles.rfIrConfigContainer}>
-              <Text style={styles.sectionTitle}>IR Configurations</Text>
-              <ScrollView nestedScrollEnabled style={styles.innerScroll}>
-                {rfirbuttons.map((button, index) => (
-                  <View key={button.title}>
-                    <TouchableOpacity
-                      style={styles.rfIrConfigItem}
-                      onPress={() => handleButtonPress(button)}
-                    >
-                      <Text style={styles.rfIrConfigItemText} numberOfLines={1}>
-                        {button.title}
-                      </Text>
-                      <Text style={styles.arrow}>›</Text>
-                    </TouchableOpacity>
-                    {index < rfirbuttons.length - 1 && <View style={styles.separator} />}
-                  </View>
-                ))}
-              </ScrollView>
-            </View>
+              {/* RF PRODUCT Relay Configurations Container */}
+              <View style={styles.rfRelayConfigContainer}>
+                <Text style={styles.sectionTitle}>RF Relay Configurations</Text>
+                <ScrollView nestedScrollEnabled style={styles.innerScroll}>
+                  {rfrlbuttons.map((button, index) => (
+                    <View key={button.title}>
+                      <TouchableOpacity
+                        style={styles.rfRelayConfigItem}
+                        onPress={() => handleButtonPress(button)}
+                      >
+                        <Text style={styles.rfRelayConfigItemText} numberOfLines={1}>
+                          {button.title}
+                        </Text>
+                        <Text style={styles.arrow}>›</Text>
+                      </TouchableOpacity>
+                      {index < rfrlbuttons.length - 1 && <View style={styles.separator} />}
+                    </View>
+                  ))}
+                </ScrollView>
+              </View>
+            </>
+          )}
+        </>
 
-            {/* RF PRODUCT Relay Configurations Container */}
-            <View style={styles.rfRelayConfigContainer}>
-              <Text style={styles.sectionTitle}>RF Relay Configurations</Text>
-              <ScrollView nestedScrollEnabled style={styles.innerScroll}>
-                {rfrlbuttons.map((button, index) => (
-                  <View key={button.title}>
-                    <TouchableOpacity
-                      style={styles.rfRelayConfigItem}
-                      onPress={() => handleButtonPress(button)}
-                    >
-                      <Text style={styles.rfRelayConfigItemText} numberOfLines={1}>
-                        {button.title}
-                      </Text>
-                      <Text style={styles.arrow}>›</Text>
-                    </TouchableOpacity>
-                    {index < rfrlbuttons.length - 1 && <View style={styles.separator} />}
-                  </View>
-                ))}
-              </ScrollView>
-            </View>
-          </>
-        )}
 
         {deviceName === 'LRM3' && (
           <>
@@ -1718,8 +1768,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   deviceInfoContainer: {
-
-    backgroundColor: '#E3F2FD', // Soft light blue (Google-style blue-100)
+    backgroundColor: '#E3F2FD',
     paddingVertical: 12,
     paddingHorizontal: 24,
     borderRadius: 20,
@@ -1727,16 +1776,17 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 3,
-    elevation: 36,
-    maxWidth: '66%',
-    alignSelf: 'flex-end',
+    elevation: 6,
+    alignSelf: 'center', // center the container
     marginTop: 8,
-    minWidth: 200, // ensures full "Not Found" text is visible
+    alignItems: 'center', // center the content inside
   },
+
   deviceInfoText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#0D47A1', // Darker blue for good contrast
+    color: '#0D47A1',
+    textAlign: 'center', // center the text
   },
   deviceInfoWrapper: {
     flex: 0.6,

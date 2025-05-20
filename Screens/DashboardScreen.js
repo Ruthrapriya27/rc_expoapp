@@ -5,7 +5,7 @@ import { LogContext } from '../Context/LogContext';
 import { BluetoothContext } from '../Context/BluetoothContext';
 
 const DashboardScreen = () => {
-  const { logs, clearLogs, deviceIdcode, customerName, timestamp, deviceID } = useContext(LogContext);
+  const { logs, clearLogs, deviceIdcode, customerName, timestamp } = useContext(LogContext);
   const [areLogsExpanded, setAreLogsExpanded] = useState(false);
   const [animation] = useState(new Animated.Value(0));
   const { connectedDevice } = useContext(BluetoothContext);

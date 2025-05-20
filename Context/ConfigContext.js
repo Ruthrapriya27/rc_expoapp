@@ -33,6 +33,20 @@ export const ConfigProvider = ({ children }) => {
     keyCount: '',
     momentaryTimeout: '',
     relayTimeout: '',
+
+    //LRM3 settings 
+    rfDeviceType: '',
+    rfFirmwareVersion: '',
+    rfBandwidth: '',
+    spreadFactor: '',
+    codeRate: '',
+    rfTransmissionPower: '',
+    rfFrequency: '',
+    rfLogicalAddress: '',
+    preambleLength: '',
+    payloadLength: '',
+    crcControl: '',
+    rfRelayTimeout: ''
   });
 
   const updateConfig = (key, value) => {
