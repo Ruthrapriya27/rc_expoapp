@@ -1,9 +1,9 @@
 import React, { createContext, useState, useContext } from 'react';
 
-const ConfigContext = createContext();
+export const ConfigContext = createContext();
 
 export const ConfigProvider = ({ children }) => {
-  const [configValues, setConfigValues] = useState({
+  const [commonconfigValues, setcommonconfigValues] = useState({
     // Common settings
     productName: '',
     deviceIdCode: '',
@@ -11,6 +11,9 @@ export const ConfigProvider = ({ children }) => {
     customerName: '',
     deviceType: '',
     firmwareVersion: '',
+  })
+
+  const [rfconfigValues, setrfconfigValues] = useState({
 
     // RF settings
     rfChannel: '',
@@ -33,7 +36,9 @@ export const ConfigProvider = ({ children }) => {
     keyCount: '',
     momentaryTimeout: '',
     relayTimeout: '',
+  })
 
+  const [lrmconfigValues, setlrmconfigValue] = useState({
     //LRM3 settings 
     rfDeviceType: '',
     rfFirmwareVersion: '',
@@ -49,12 +54,33 @@ export const ConfigProvider = ({ children }) => {
     rfRelayTimeout: ''
   });
 
-  const updateConfig = (key, value) => {
-    setConfigValues(prev => ({ ...prev, [key]: value }));
+  const updateCommonConfig = (key, value) => {
+    setcommonconfigValues(prev => ({ ...prev, [key]: value }));
   };
 
+  const updateRfConfig = (key, value) => {
+    setrfconfigValues(prev => ({ ...prev, [key]: value }));
+  };
+
+  const updateLRMConfig = (key, value) => {
+    setlrmconfigValue(prev => ({ ...prev, [key]: value }));
+  };
+
+
   return (
-    <ConfigContext.Provider value={{ configValues, updateConfig }}>
+    <ConfigContext.Provider
+      value={{
+        commonconfigValues,
+        setcommonconfigValues,
+        rfconfigValues,
+        setrfconfigValues,
+        lrmconfigValues,
+        setlrmconfigValue,
+        updateCommonConfig,
+        updateRfConfig,
+        updateLRMConfig,
+      }}
+    >
       {children}
     </ConfigContext.Provider>
   );

@@ -7,6 +7,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { Picker } from '@react-native-picker/picker';
 import { LayoutAnimation, Platform, UIManager } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Enable LayoutAnimation on Android
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -16,7 +17,7 @@ const KeyScreen = () => {
 
   //USE STATES 
   const { connectedDevice, serviceUUID, writeUUID, readUUID } = useContext(BluetoothContext);
-  const { addLog, setDeviceIdcode, setCustomerName, setRfChannel, setTimestamp, setDeviceId } = useContext(LogContext);
+  const { addLog, setDeviceIdcode, setCustomerName, setTimestamp, setDeviceId } = useContext(LogContext);
 
   const [modalVisible, setModalVisible] = useState(false);
   const [alertModalVisible, setAlertModalVisible] = useState(false);
@@ -55,21 +56,23 @@ const KeyScreen = () => {
   //RESPONSE READ AND LABEL MAP FOR OUTPUT RESPONSE VALUE
   useEffect(() => {
     let subscription;
+
     const monitorResponse = async () => {
       if (connectedDevice && serviceUUID && readUUID) {
         subscription = connectedDevice.monitorCharacteristicForService(
           serviceUUID,
           readUUID,
-          (error, characteristic) => {
+          async (error, characteristic) => {
             if (characteristic?.value) {
               try {
                 const decoded = Buffer.from(characteristic.value, 'base64').toString('utf8');
                 console.log('Received from ESP32:', decoded);
-                addLog(`Received from ESP32:' ${decoded}`);
+                addLog(`Received from ESP32: ${decoded}`);
                 let parsed;
 
                 try {
                   parsed = JSON.parse(decoded);
+
                   if (
                     (parsed.rsp === "RF_FIRMWARE_VERSION_GET" || parsed.rsp === "FIRMWARE_VERSION_GET") &&
                     parsed.err === 0 && parsed.data?.[0]
@@ -106,14 +109,19 @@ const KeyScreen = () => {
 
                         if (char5 === 'G' && char6 === 'R') {
                           setDeviceName("GRAB");
+                          await AsyncStorage.setItem('@config_common_deviceName', "GRAB");
                         } else if (char5 === 'I' && char6 === 'R') {
                           setDeviceName("IR/RF");
+                          await AsyncStorage.setItem('@config_common_deviceName', "IR/RF");
                         } else if (char5 === 'L' && char6 === '3') {
                           setDeviceName("LRM3");
+                          await AsyncStorage.setItem('@config_common_deviceName', "LRM3");
                         } else {
                           setDeviceName("UNKNOWN");
                           setNoProductConnectedVisible(true);
+                          await AsyncStorage.setItem('@config_common_deviceName', "UNKNOWN");
                         }
+
                       } else {
                         setDeviceName("Not Found");
                         setNoProductConnectedVisible(true);
@@ -121,6 +129,7 @@ const KeyScreen = () => {
                     } else {
                       setDeviceName("Not Found");
                       setNoProductConnectedVisible(true);
+                      await AsyncStorage.setItem('@config_common_deviceName', "Not Found");
                     }
 
                     return;
@@ -157,22 +166,19 @@ const KeyScreen = () => {
                     4: "Code Rate 4/8"
                   };
 
-                  // Apply mapping for RF Bandwidth
                   if (parsed.rsp === "RF_BANDWIDTH_GET" && parsed.err === 0 && Array.isArray(parsed.data) && parsed.data.length > 0) {
-                    const code = parsed.data[0];
-                    parsed.data[0] = rfBandwidthMap[code] || `Unknown (${code})`;
+                    const mappedvalue = parsed.data[0];
+                    parsed.data[0] = rfBandwidthMap[mappedvalue] || `Unknown (${mappedvalue})`;
                   }
 
-                  // Apply mapping for Spread Factor
                   if (parsed.rsp === "SPREAD_FACTOR_GET" && parsed.err === 0 && Array.isArray(parsed.data) && parsed.data.length > 0) {
-                    const code = parsed.data[0];
-                    parsed.data[0] = spreadFactorMap[code] || `Unknown (${code})`;
+                    const mappedvalue = parsed.data[0];
+                    parsed.data[0] = spreadFactorMap[mappedvalue] || `Unknown (${mappedvalue})`;
                   }
 
-                  // Apply mapping for Code Rate
                   if (parsed.rsp === "CODE_RATE_GET" && parsed.err === 0 && Array.isArray(parsed.data) && parsed.data.length > 0) {
-                    const code = parsed.data[0];
-                    parsed.data[0] = codeRateMap[code] || `Unknown (${code})`;
+                    const mappedvalue = parsed.data[0];
+                    parsed.data[0] = codeRateMap[mappedvalue] || `Unknown (${mappedvalue})`;
                   }
 
                 } catch (jsonError) {
@@ -222,14 +228,45 @@ const KeyScreen = () => {
 
                 if (!isFailedSerial) {
                   setAlertTitle('Status');
-                  setAlertMessage
-                    (
-                      `\u200B\nDescription: ${description}\n\u200B\nAction: ${action}\n\u200B\nMessage: ${message}\n\u200B\nData: ${dataOutput}`
-                    );
+                  setAlertMessage(
+                    `\u200B\nDescription: ${description}\n\u200B\nAction: ${action}\n\u200B\nMessage: ${message}\n\u200B\nData: ${dataOutput}`
+                  );
                   setAlertModalVisible(true);
                 }
-              }
-              catch (decodeError) {
+
+                //ALL GET CONFIGURATIONS ASYNC STORAGE
+                (async () => {
+                  try {
+                    switch (parsed.rsp) {
+
+                      case 'DEV_TYPE_GET':
+                        await AsyncStorage.setItem('@config_common_deviceType', dataOutput);
+                        break;
+                      case 'FIRMWARE_VERSION_GET':
+                        await AsyncStorage.setItem('@config_common_firmwareVersion', dataOutput);
+                        break;
+                      case 'RF_CHIP_ID_GET':
+                        await AsyncStorage.setItem('@config_rf_chipId', dataOutput);
+                        break;
+                      case 'RELAY_COUNT_GET':
+                        await AsyncStorage.setItem('@config_relay_count', dataOutput);
+                        break;
+                      case 'KEY_COUNT_GET':
+                        await AsyncStorage.setItem('@config_key_count', dataOutput);
+                        break;
+                      case 'RF_DEV_TYPE_GET':
+                        await AsyncStorage.setItem('@config_rf_deviceType', dataOutput);
+                        break;
+                      case 'RF_FIRMWARE_VERSION_GET':
+                        await AsyncStorage.setItem('@config_rf_firmwareVersion', dataOutput);
+                        break;
+                    }
+                  } catch (e) {
+                    console.error('Error saving dataOutput:', e);
+                  }
+                })();
+
+              } catch (decodeError) {
                 setAlertTitle('Decode Error');
                 setAlertMessage(decodeError.message);
                 setAlertModalVisible(true);
@@ -239,6 +276,7 @@ const KeyScreen = () => {
         );
       }
     };
+
 
     //RESPONSE FROM DEVICE
     monitorResponse();
@@ -275,11 +313,11 @@ const KeyScreen = () => {
     }
   }
 
-  //BLUETOOTH NAME BUTTON CONFIGURATIONS 
+  //BLUETOOTH NAME CONFIGURATIONS 
   const nbuttons = [
     {
       title: 'Set Device ID',
-      action: 'DEV_ID_SET',
+      action: 'DEVH_ID_SET',
       needsInput: true,
       placeholder: 'Enter Device ID (max 6 digits, e.g., 000000)',
       validate: (value) => /^\d+$/.test(value) && value.length == 6,
@@ -297,7 +335,7 @@ const KeyScreen = () => {
     }
   ];
 
-  //GET SERIAL NO.
+  //GET SERIAL NO. CONFIGURATION 
   const cbutton = [
     {
       title: 'Get Product Name',
@@ -308,7 +346,7 @@ const KeyScreen = () => {
     }
   ]
 
-  //COMMON BUTTONS CONFIGURATIONS
+  //COMMON CONFIGURATIONS
   const cbuttons = [
     {
       title: 'Get Product Name',
@@ -393,7 +431,7 @@ const KeyScreen = () => {
     }
   ];
 
-  //IRRF BUTTONS CONFIGURATIONS 
+  //IR/RF - RF CONFIGURATIONS AND GRAB CONFIGURATIONS 
 
   const rfbuttons = [
     {
@@ -404,7 +442,6 @@ const KeyScreen = () => {
       validate: (value) => /^[0-9]+$/.test(value),
       errorMessage: 'Invalid input. Only numeric values allowed.',
       onSend: (value) => {
-        setRfChannel(value);
         return JSON.stringify({ cmd: "RF_CHANNEL_SET", args: [parseInt(value, 10)] });
       }
     },
@@ -498,6 +535,7 @@ const KeyScreen = () => {
     }
   ];
 
+  //IR/RF - IR CONFIGURATIONS
   const rfirbuttons = [
     {
       title: 'Set IR Logical Address',
@@ -516,6 +554,7 @@ const KeyScreen = () => {
     }
   ];
 
+  //IR/RF - RELAY CONFIGURATIONS
   const rfrlbuttons = [
     {
       title: 'Get No. of Relays',
@@ -588,7 +627,7 @@ const KeyScreen = () => {
       errorMessage: 'Invalid input. Only numeric values allowed.',
       onSend: () => {
         return JSON.stringify({
-          cmd: "MODE_VALUE_SET",
+          cmd: "MODE_VALUE_GET",
           args: [{
             idx: Number(inputKeyIndex)
           }]
@@ -685,7 +724,7 @@ const KeyScreen = () => {
     }
   ];
 
-  //LRM3 BUTTONS CONFIGURATIONS 
+  //LRM - RELAY CONFIGURATIONS 
   const lrmrlbuttons = [
     {
       title: 'Set Relay Timeout',
@@ -705,6 +744,7 @@ const KeyScreen = () => {
     }
   ];
 
+  //LRM - RF CONFIGURATIONS 
   const lrmrfbuttons = [
     {
       title: 'Get RF Device Type',
@@ -949,7 +989,7 @@ const KeyScreen = () => {
   };
 
   //HANDLE  SEND FUNCTION
-  const handleSend = () => {
+  const handleSend = async () => {
     if (currentAction.validate && !currentAction.validate(inputValue)) {
       setAlertTitle('Error');
       setAlertMessage(currentAction.errorMessage);
@@ -958,6 +998,119 @@ const KeyScreen = () => {
     }
     sendCommand(currentAction.onSend(inputValue));
     setModalVisible(false);
+
+    try {
+      switch (currentAction.action) {
+        // COMMON BUTTON CONFIGURATIONS
+        case 'DEV_IDCODE_SET':
+          await AsyncStorage.setItem('@config_common_deviceIdCode', inputValue);
+          break;
+        case 'PROD_TIMESTAMP_SET':
+          await AsyncStorage.setItem('@config_common_prodTimestamp', inputValue);
+          break;
+        case 'CUSTOMER_NAME_SET':
+          await AsyncStorage.setItem('@config_common_customerName', inputValue);
+          break;
+
+        // IR RF BUTTON CONFIGURATIONS
+        case 'RF_CHANNEL_SET':
+          await AsyncStorage.setItem('@config_rf_channel', inputValue);
+          break;
+        case 'RF_FREQ_SET':
+          await AsyncStorage.setItem('@config_rf_frequency', inputValue);
+          break;
+        case 'RF_LOGICADDR_SET':
+          await AsyncStorage.setItem('@config_rf_logicalAddress', inputValue);
+          break;
+        case 'RF_ENCRYPTKEY_SET':
+          await AsyncStorage.setItem('@config_rf_encryptionKey', inputValue);
+          break;
+        case 'SYNC_WORD_SET':
+          await AsyncStorage.setItem('@config_rf_syncWord', inputValue);
+          break;
+        case 'RF_BAUDRATE_SET':
+          await AsyncStorage.setItem('@config_rf_baudrate', inputValue);
+          break;
+        case 'IR_LOGICADDR_SET':
+          await AsyncStorage.setItem('@config_ir_logicalAddress', inputValue);
+          break;
+
+        // RELAY BUTTON CONFIGURATIONS
+        case 'MOMENTARY_TIMEOUT_SET':
+          await AsyncStorage.setItem('@config_relay_momentaryTimeout', inputValue);
+          break;
+        case 'KEY_VALUE_SET':
+          await AsyncStorage.setItem('@config_relay_keyValue', JSON.stringify({
+            idx: inputKeyIndex,
+            value: inputKeyValue
+          }));
+          break;
+        case 'MODE_VALUE_SET':
+          await AsyncStorage.setItem('@config_relay_modeValue', JSON.stringify({
+            idx: inputKeyIndex,
+            value: inputKeyValue
+          }));
+          break;
+        case 'ONTIME_DELAY_SET':
+          await AsyncStorage.setItem('@config_relay_ontimeDelay', JSON.stringify({
+            idx: inputKeyIndex,
+            value: inputKeyValue
+          }));
+          break;
+        case 'OFFTIME_DELAY_SET':
+          await AsyncStorage.setItem('@config_relay_offtimeDelay', JSON.stringify({
+            idx: inputKeyIndex,
+            value: inputKeyValue
+          }));
+          break;
+        case 'INTERLOCK_VALUE_SET':
+          await AsyncStorage.setItem('@config_relay_interlockValue', JSON.stringify({
+            idx: inputKeyIndex,
+            value: inputKeyValue
+          }));
+          break;
+        case 'RELAY_NUMBER_SET':
+          await AsyncStorage.setItem('@config_relay_relayNumber', JSON.stringify({
+            idx: inputKeyIndex,
+            value: inputKeyValue
+          }));
+          break;
+
+        // LRM BUTTON CONFIGURATIONS
+        case 'RELAY_TIMEOUT_SET':
+          await AsyncStorage.setItem('@config_lrm_relayTimeout', inputValue);
+          break;
+        case 'RF_BANDWIDTH_SET':
+          await AsyncStorage.setItem('@config_lrm_rfBandwidth', rfBandwidthMap[mappedvalue] || `Unknown (${mappedvalue})`);
+          break;
+        case 'SPREAD_FACTOR_SET':
+          await AsyncStorage.setItem('@config_lrm_spreadFactor', spreadFactorMap[mappedvalue] || `Unknown (${mappedvalue})`);
+          break;
+        case 'CODE_RATE_SET':
+          await AsyncStorage.setItem('@config_lrm_codeRate', codeRateMap[mappedvalue] || `Unknown (${mappedvalue})`);
+          break;
+        case 'RF_TRANSMISSION_POWER_SET':
+          await AsyncStorage.setItem('@config_lrm_rfTransmissionPower', inputValue);
+          break;
+        case 'PREAMBLE_LENGTH_SET':
+          await AsyncStorage.setItem('@config_lrm_preambleLength', inputValue);
+          break;
+        case 'PAYLOAD_LENGTH_SET':
+          await AsyncStorage.setItem('@config_lrm_payloadLength', inputValue);
+          break;
+        case 'CRC_CONTROL_SET':
+          await AsyncStorage.setItem('@config_lrm_crcControl', String(inputValue));
+          break;
+        case 'RF_RELAY_TIMEOUT_SET':
+          await AsyncStorage.setItem('@config_lrm_rfRelayTimeout', inputValue);
+          break;
+
+        default:
+          console.warn('Unknown action:', currentAction.action);
+      }
+    } catch (error) {
+      console.error('Failed to save config value:', error);
+    }
   };
 
   // RETURN FUNCTION CONTAINERS FOR BUTTONS
@@ -1113,7 +1266,7 @@ const KeyScreen = () => {
           )}
         </View>
 
-        {/* GENERAL Configurations Container */}
+        {/* Common Configurations Container */}
         <View style={styles.commonConfigContainer}>
           <Text style={styles.sectionTitle}>Device Configurations</Text>
           <ScrollView nestedScrollEnabled style={styles.innerScroll}>
@@ -1134,9 +1287,10 @@ const KeyScreen = () => {
           </ScrollView>
         </View>
         <>
+
           {(deviceName === 'IR/RF' || deviceName === 'GR') && (
             <>
-              {/* RF PRODUCTION Configurations Container */}
+              {/* IR/RF - RF Configurations Container and Grab Configurations Container */}
               <View style={styles.rfConfigContainer}>
                 <Text style={styles.sectionTitle}>RF Configurations</Text>
                 <ScrollView nestedScrollEnabled style={styles.innerScroll}>
@@ -1161,7 +1315,7 @@ const KeyScreen = () => {
 
           {deviceName === 'IR/RF' && (
             <>
-              {/* RF PRODUCT IR Configurations Container */}
+              {/* IR/RF - IR Configurations Container */}
               <View style={styles.rfIrConfigContainer}>
                 <Text style={styles.sectionTitle}>IR Configurations</Text>
                 <ScrollView nestedScrollEnabled style={styles.innerScroll}>
@@ -1182,7 +1336,7 @@ const KeyScreen = () => {
                 </ScrollView>
               </View>
 
-              {/* RF PRODUCT Relay Configurations Container */}
+              {/* IR/RF - Relay Configurations Container */}
               <View style={styles.rfRelayConfigContainer}>
                 <Text style={styles.sectionTitle}>RF Relay Configurations</Text>
                 <ScrollView nestedScrollEnabled style={styles.innerScroll}>
@@ -1209,28 +1363,7 @@ const KeyScreen = () => {
 
         {deviceName === 'LRM3' && (
           <>
-            {/* LRM3 PRODUCT RELAY CONFIGURATION Container */}
-            <View style={styles.lrm3RelayConfigContainer}>
-              <Text style={styles.sectionTitle}>LRM3 Relay Configuration</Text>
-              <ScrollView nestedScrollEnabled style={styles.innerScroll}>
-                {lrmrlbuttons.map((button, index) => (
-                  <View key={button.title}>
-                    <TouchableOpacity
-                      style={styles.lrm3RelayConfigItem}
-                      onPress={() => handleButtonPress(button)}
-                    >
-                      <Text style={styles.lrm3RelayConfigItemText} numberOfLines={1}>
-                        {button.title}
-                      </Text>
-                      <Text style={styles.arrow}>›</Text>
-                    </TouchableOpacity>
-                    {index < lrmrlbuttons.length - 1 && <View style={styles.separator} />}
-                  </View>
-                ))}
-              </ScrollView>
-            </View>
-
-            {/* LRM3 RF CONFIGURATION Container */}
+            {/* LRM - RF Configurations Container */}
             <View style={styles.lrm3ConfigContainer}>
               <Text style={styles.sectionTitle}>LRM3 RF Configuration</Text>
               <ScrollView nestedScrollEnabled style={styles.innerScroll}>
@@ -1251,6 +1384,26 @@ const KeyScreen = () => {
               </ScrollView>
             </View>
 
+            {/* LRM - Relay Configurations Container */}
+            <View style={styles.lrm3RelayConfigContainer}>
+              <Text style={styles.sectionTitle}>LRM3 Relay Configuration</Text>
+              <ScrollView nestedScrollEnabled style={styles.innerScroll}>
+                {lrmrlbuttons.map((button, index) => (
+                  <View key={button.title}>
+                    <TouchableOpacity
+                      style={styles.lrm3RelayConfigItem}
+                      onPress={() => handleButtonPress(button)}
+                    >
+                      <Text style={styles.lrm3RelayConfigItemText} numberOfLines={1}>
+                        {button.title}
+                      </Text>
+                      <Text style={styles.arrow}>›</Text>
+                    </TouchableOpacity>
+                    {index < lrmrlbuttons.length - 1 && <View style={styles.separator} />}
+                  </View>
+                ))}
+              </ScrollView>
+            </View>
           </>
         )}
       </ScrollView>
@@ -1614,7 +1767,7 @@ const KeyScreen = () => {
                 </View>
               </>
 
-              /*----------- Modal of LRM3Buttons -----------*/
+              //----------- Modal of LRM3Buttons -----------
             ) : currentAction?.title === 'Set RF Bandwidth' ? (
               <View style={styles.input}>
                 <Text>Select RF Bandwidth</Text>
@@ -1777,16 +1930,16 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 3,
     elevation: 6,
-    alignSelf: 'center', // center the container
+    alignSelf: 'center',
     marginTop: 8,
-    alignItems: 'center', // center the content inside
+    alignItems: 'center',
   },
 
   deviceInfoText: {
     fontSize: 16,
     fontWeight: '600',
     color: '#0D47A1',
-    textAlign: 'center', // center the text
+    textAlign: 'center',
   },
   deviceInfoWrapper: {
     flex: 0.6,
@@ -1955,7 +2108,7 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
 
-  // LRM3 Relay Config
+  // LRM Relay Configurations
   lrm3RelayConfigContainer: {
     backgroundColor: 'white',
     borderRadius: 10,
@@ -1982,7 +2135,7 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
 
-  // LRM3 RF Config
+  // LRM RF Configurations
   lrm3ConfigContainer: {
     backgroundColor: 'white',
     borderRadius: 10,

@@ -1,122 +1,197 @@
-import React, { useContext, useState } from 'react';
-import { ScrollView, Text, StyleSheet, View } from 'react-native';
-import { useConfig } from '../Context/ConfigContext';
-import { LogContext } from '../Context/LogContext';
+import React, { useEffect, useState } from 'react';
+import { View, Text, ScrollView, StyleSheet, Platform } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const ConfigSumScreen = () => {
-  const { configValues } = useConfig();
-  const { deviceIdcode, customerName, timestamp, deviceID } = useContext(LogContext);
-  const productName = configValues.productName || 'Not configured';
+const ConfigSummaryScreen = () => {
+  const [configData, setConfigData] = useState({});
 
-  // Helper function to display values consistently
-  const displayValue = (value) => value || 'N/A';
+  useEffect(() => {
+    const loadConfigData = async () => {
+      try {
+        const keys = {
+          // COMMON CONFIGURATIONS
+          deviceName: '@config_common_deviceName',
+          deviceIdCode: '@config_common_deviceIdCode',
+          prodTimestamp: '@config_common_prodTimestamp',
+          customerName: '@config_common_customerName',
+          deviceType: '@config_common_deviceType',
+          firmwareVersion: '@config_common_firmwareVersion',
 
-  // Common settings data
-  const commonSettings = [
-    { key: 'Product Name', value: productName },
-    { key: 'Device ID Code', value: displayValue(deviceIdcode) },
-    { key: 'Customer Name', value: displayValue(customerName) },
-    { key: 'Timestamp', value: displayValue(timestamp) },
-    { key: 'Device Type', value: displayValue(configValues.deviceType) },
-    { key: 'Firmware Version', value: displayValue(configValues.firmwareVersion) },
-  ];
+          // IR/RF - RF CONFIGURATIONS
+          rfChannel: '@config_rf_channel',
+          rfFrequency: '@config_rf_frequency',
+          rfLogicalAddress: '@config_rf_logicalAddress',
+          rfEncryptionKey: '@config_rf_encryptionKey',
+          rfSyncWord: '@config_rf_syncWord',
+          rfBaudrate: '@config_rf_baudrate',
+          rfChipId: '@config_rf_chipId',
 
-  // IR/RF specific settings
-  const irRfSettings = [
-    { key: 'RF Channel', value: displayValue(configValues.rfChannel) },
-    { key: 'RF Frequency', value: displayValue(configValues.rfFrequency) },
-    { key: 'Logical Address', value: displayValue(configValues.rfLogicalAddress) },
-    { key: 'Encryption Key', value: displayValue(configValues.rfEncryptionKey) },
-    { key: 'Sync Word', value: displayValue(configValues.rfSyncWord) },
-    { key: 'Baudrate', value: displayValue(configValues.rfBaudrate) },
-    { key: 'Chip ID', value: displayValue(configValues.rfChipId) },
-    { key: 'IR Logical Address', value: displayValue(configValues.irLogicalAddress) },
-  ];
+          // IR/RF - IR CONFIGURATIONS
+          irLogicalAddress: '@config_ir_logicalAddress',
 
-  // Relay settings
-  const relaySettings = [
-    { key: 'Number of Relays', value: displayValue(configValues.relayCount) },
-    { key: 'Number of Keys', value: displayValue(configValues.keyCount) },
-    { key: 'Momentary Timeout', value: displayValue(configValues.momentaryTimeout) },
-    { key: 'Relay Timeout', value: displayValue(configValues.relayTimeout) },
-    { key: 'Mode Value', value: displayValue(configValues.modeValue) },
-    { key: 'Ontime Delay', value: displayValue(configValues.ontimeDelay) },
-    { key: 'Offtime Delay', value: displayValue(configValues.offtimeDelay) },
-    { key: 'Interlock Value', value: displayValue(configValues.interlockValue) },
-    { key: 'Relay Number', value: displayValue(configValues.relayNumber) },
-  ];
+          // IR/RF RELAY CONFIGURATIONS
+          momentaryTimeout: '@config_relay_momentaryTimeout',
+          keyValue: '@config_relay_keyValue',
+          modeValue: '@config_relay_modeValue',
+          ontimeDelay: '@config_relay_ontimeDelay',
+          offtimeDelay: '@config_relay_offtimeDelay',
+          interlockValue: '@config_relay_interlockValue',
+          relayNumber: '@config_relay_relayNumber',
+          relayCount: '@config_relay_relayCount',
+          keyCount: '@config_relay_keyCount',
 
-  // LRM3 specific settings
-  const lrm3Settings = [
-    { key: 'RF Device Type', value: displayValue(configValues.rfDeviceType) },
-    { key: 'RF Firmware Version', value: displayValue(configValues.rfFirmwareVersion) },
-    { key: 'Bandwidth', value: displayValue(configValues.rfBandwidth) },
-    { key: 'Spread Factor', value: displayValue(configValues.spreadFactor) },
-    { key: 'Code Rate', value: displayValue(configValues.codeRate) },
-    { key: 'Transmission Power', value: displayValue(configValues.rfTransmissionPower) },
-    { key: 'Frequency', value: displayValue(configValues.rfFrequency) },
-    { key: 'Logical Address', value: displayValue(configValues.rfLogicalAddress) },
-    { key: 'Preamble Length', value: displayValue(configValues.preambleLength) },
-    { key: 'Payload Length', value: displayValue(configValues.payloadLength) },
-    { key: 'CRC Control', value: displayValue(configValues.crcControl) },
-    { key: 'RF Relay Timeout', value: displayValue(configValues.rfRelayTimeout) },
-  ];
+          // LRM - RF CONFIGURATIONS
+          lrmRfBandwidth: '@config_lrm_rfBandwidth',
+          lrmSpreadFactor: '@config_lrm_spreadFactor',
+          lrmCodeRate: '@config_lrm_codeRate',
+          lrmRfTransmissionPower: '@config_lrm_rfTransmissionPower',
+          lrmPreambleLength: '@config_lrm_preambleLength',
+          lrmPayloadLength: '@config_lrm_payloadLength',
+          lrmCrcControl: '@config_lrm_crcControl',
+          lrmRfRelayTimeout: '@config_lrm_rfRelayTimeout',
+          rfDeviceType: '@config_rf_deviceType',
+          rfFirmwareVersion: '@config_rf_firmwareVersion',
 
-  const renderSettingItem = ({ item }) => (
-    <View style={styles.settingItem}>
-      <Text style={styles.settingKey}>{item.key}</Text>
-      <Text style={styles.settingValue}>{item.value}</Text>
+          // LRM - RELAY CONFIGURATIONS
+          lrmRelayTimeout: '@config_lrm_relayTimeout',
+        };
+
+        const entries = await Promise.all(
+          Object.entries(keys).map(async ([label, storageKey]) => {
+            const value = await AsyncStorage.getItem(storageKey);
+            return [label, value ?? 'Not Set'];
+          })
+        );
+
+        setConfigData(Object.fromEntries(entries));
+      } catch (error) {
+        console.error('Failed to load configuration data:', error);
+      }
+    };
+
+    loadConfigData();
+  }, []);
+
+  const renderSettingItem = ({ key, value }) => (
+    <View style={styles.settingItem} key={key}>
+      <Text style={styles.settingKey}>{key}</Text>
+      <Text style={styles.settingValue}>{value}</Text>
     </View>
   );
 
+  // Grouped config arrays
+  const commonConfigs = [
+    { key: 'Device Name', value: configData.deviceName },
+    { key: 'Device ID Code', value: configData.deviceIdCode },
+    { key: 'Production Timestamp', value: configData.prodTimestamp },
+    { key: 'Customer Name', value: configData.customerName },
+    { key: 'Device Type', value: configData.deviceType },
+    { key: 'Firmware Version', value: configData.firmwareVersion },
+  ];
+
+  const irRfRfConfigs = [
+    { key: 'RF Channel', value: configData.rfChannel },
+    { key: 'RF Frequency', value: configData.rfFrequency },
+    { key: 'RF Logical Address', value: configData.rfLogicalAddress },
+    { key: 'RF Encryption Key', value: configData.rfEncryptionKey },
+    { key: 'RF Sync Word', value: configData.rfSyncWord },
+    { key: 'RF Baudrate', value: configData.rfBaudrate },
+    { key: 'RF Chip ID', value: configData.rfChipId },
+  ];
+
+  const irConfigs = [
+    { key: 'IR Logical Address', value: configData.irLogicalAddress },
+  ];
+
+  const irRfRelayConfigs = [
+    { key: 'Momentary Timeout', value: configData.momentaryTimeout },
+    { key: 'Key Value', value: configData.keyValue },
+    { key: 'Mode Value', value: configData.modeValue },
+    { key: 'On-time Delay', value: configData.ontimeDelay },
+    { key: 'Off-time Delay', value: configData.offtimeDelay },
+    { key: 'Interlock Value', value: configData.interlockValue },
+    { key: 'Relay Number', value: configData.relayNumber },
+    { key: 'No. of Relays', value: configData.relayCount },
+    { key: 'No. of Keys', value: configData.keyCount },
+  ];
+
+  const lrmRfConfigs = [
+    { key: 'RF Bandwidth', value: configData.lrmRfBandwidth },
+    { key: 'Spread Factor', value: configData.lrmSpreadFactor },
+    { key: 'Code Rate', value: configData.lrmCodeRate },
+    { key: 'RF Transmission Power', value: configData.lrmRfTransmissionPower },
+    { key: 'Preamble Length', value: configData.lrmPreambleLength },
+    { key: 'Payload Length', value: configData.lrmPayloadLength },
+    { key: 'CRC Control', value: configData.lrmCrcControl },
+    { key: 'RF Relay Timeout', value: configData.lrmRfRelayTimeout },
+    { key: 'RF Device Type', value: configData.rfDeviceType },
+    { key: 'RF Firmware Version', value: configData.rfFirmwareVersion },
+  ];
+
+  const lrmRelayConfigs = [
+    { key: 'LRM Relay Timeout', value: configData.lrmRelayTimeout },
+  ];
+
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView
+      style={styles.container}
+      showsVerticalScrollIndicator={false}
+      contentContainerStyle={{ paddingVertical: 16, paddingHorizontal: 16 }}
+    >
+      {/* Common Configurations */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Device Information</Text>
-        {commonSettings.map((item, index) => (
-          <View key={index}>
-            {renderSettingItem({ item })}
-            {index < commonSettings.length - 1 && <View style={styles.separator} />}
-          </View>
-        ))}
+        <Text style={styles.sectionTitle}>Common Configurations</Text>
+        {commonConfigs.map(renderSettingItem)}
       </View>
 
-      {/* Only for IR/RF */}
-      {productName === 'IR/RF' && (
+      {/* IR/RF Configuration Sections */}
+      {configData.deviceName === 'IR/RF' && (
         <>
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>IR RF Configuration</Text>
-            {irRfSettings.map((item, index) => (
-              <View key={index}>
-                {renderSettingItem({ item })}
-                {index < irRfSettings.length - 1 && <View style={styles.separator} />}
-              </View>
-            ))}
+            <Text style={styles.sectionTitle}>IR/RF - RF Configurations</Text>
+            {irRfRfConfigs.map(renderSettingItem)}
           </View>
 
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>RF Relay Configuration</Text>
-            {relaySettings.map((item, index) => (
-              <View key={index}>
-                {renderSettingItem({ item })}
-                {index < relaySettings.length - 1 && <View style={styles.separator} />}
-              </View>
-            ))}
+            <Text style={styles.sectionTitle}>IR Configurations</Text>
+            {irConfigs.map(renderSettingItem)}
+          </View>
+
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>IR/RF Relay Configurations</Text>
+            {irRfRelayConfigs.map(renderSettingItem)}
           </View>
         </>
       )}
 
-      {/* Only for LRM3 */}
-      {productName === 'LRM3' && (
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>LRM3 RF Configuration</Text>
-          {lrm3Settings.map((item, index) => (
-            <View key={index}>
-              {renderSettingItem({ item })}
-              {index < lrm3Settings.length - 1 && <View style={styles.separator} />}
-            </View>
-          ))}
-        </View>
+      {/* GRAB Configuration Sections */}
+      {configData.deviceName === 'GRAB' && (
+        <>
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>IR/RF - RF Configurations</Text>
+            {irRfRfConfigs.map(renderSettingItem)}
+          </View>
+
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>IR Configurations</Text>
+            {irConfigs.map(renderSettingItem)}
+          </View>
+        </>
+      )}
+
+      {/* LRM Configuration Sections */}
+      {configData.deviceName === 'LRM3' && (
+        <>
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>LRM - RF Configurations</Text>
+            {lrmRfConfigs.map(renderSettingItem)}
+          </View>
+
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>LRM - Relay Configurations</Text>
+            {lrmRelayConfigs.map(renderSettingItem)}
+          </View>
+        </>
       )}
     </ScrollView>
   );
@@ -126,44 +201,43 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F9FAFB',
-    padding: 16,
   },
   section: {
     backgroundColor: '#FFFFFF',
     borderRadius: 12,
     padding: 16,
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
+    marginBottom: 20,
+    elevation: 3,
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: '600',
     marginBottom: 12,
-    color: '#1C1C1C',
+    color: '#007AFF',
+    letterSpacing: 0.3,
   },
   settingItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingVertical: 8,
+    paddingVertical: 10,
+    borderBottomColor: '#E0E0E0',
+    borderBottomWidth: StyleSheet.hairlineWidth,
   },
   settingKey: {
     fontSize: 16,
     color: '#5F6368',
+    flex: 1,
   },
   settingValue: {
     fontSize: 16,
     fontWeight: '500',
     color: '#1C1C1C',
-  },
-  separator: {
-    height: 1,
-    backgroundColor: '#E0E0E0',
-    marginVertical: 4,
+    flex: 1,
+    textAlign: 'right',
   },
 });
 
-export default ConfigSumScreen;
+export default ConfigSummaryScreen;
+
+
+
