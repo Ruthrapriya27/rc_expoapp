@@ -4,6 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const ConfigSummaryScreen = () => {
   const [configData, setConfigData] = useState({});
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const loadConfigData = async () => {
@@ -41,9 +42,9 @@ const ConfigSummaryScreen = () => {
           keyCount: '@config_relay_keyCount',
 
           // LRM - RF CONFIGURATIONS
-          lrmRfBandwidth: '@config_lrm_rfBandwidth',
-          lrmSpreadFactor: '@config_lrm_spreadFactor',
-          lrmCodeRate: '@config_lrm_codeRate',
+            lrmRfBandwidth: '@config_lrm_rfBandwidth',
+  lrmSpreadFactor: '@config_lrm_spreadFactor',
+  lrmCodeRate: '@config_lrm_codeRate',
           lrmRfTransmissionPower: '@config_lrm_rfTransmissionPower',
           lrmPreambleLength: '@config_lrm_preambleLength',
           lrmPayloadLength: '@config_lrm_payloadLength',
@@ -56,9 +57,11 @@ const ConfigSummaryScreen = () => {
           lrmRelayTimeout: '@config_lrm_relayTimeout',
         };
 
+        console.log('Loading config with keys:', keys);
         const entries = await Promise.all(
           Object.entries(keys).map(async ([label, storageKey]) => {
             const value = await AsyncStorage.getItem(storageKey);
+            console.log(`Loaded ${label}:`, value); // Debug log
             return [label, value ?? 'Not Set'];
           })
         );
@@ -66,6 +69,8 @@ const ConfigSummaryScreen = () => {
         setConfigData(Object.fromEntries(entries));
       } catch (error) {
         console.error('Failed to load configuration data:', error);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -116,9 +121,18 @@ const ConfigSummaryScreen = () => {
   ];
 
   const lrmRfConfigs = [
-    { key: 'RF Bandwidth', value: configData.lrmRfBandwidth },
-    { key: 'Spread Factor', value: configData.lrmSpreadFactor },
-    { key: 'Code Rate', value: configData.lrmCodeRate },
+    { 
+    key: 'RF Bandwidth', 
+    value: configData.lrmRfBandwidth || 'Not Set' 
+  },
+  { 
+    key: 'Spread Factor', 
+    value: configData.lrmSpreadFactor || 'Not Set' 
+  },
+  { 
+    key: 'Code Rate', 
+    value: configData.lrmCodeRate || 'Not Set' 
+  },
     { key: 'RF Transmission Power', value: configData.lrmRfTransmissionPower },
     { key: 'Preamble Length', value: configData.lrmPreambleLength },
     { key: 'Payload Length', value: configData.lrmPayloadLength },
@@ -131,6 +145,15 @@ const ConfigSummaryScreen = () => {
   const lrmRelayConfigs = [
     { key: 'LRM Relay Timeout', value: configData.lrmRelayTimeout },
   ];
+
+  if (loading) {
+    return (
+      <View style={styles.container}>
+        <Text>Loading configuration...</Text>
+      </View>
+    );
+  }
+
 
   return (
     <ScrollView
